@@ -27,3 +27,6 @@
 - 配速 >10:00/km 的月份／單趟會被標為異常（疑似步行或混合活動），圖表中壓在上限且不納入移動平均。
 - 比賽日（2026-10-25）過後可把 `profile.json` 的 `race_date` 與 `make_plan.py` 的內容換成新目標。
 - 訓練計畫若要調整（例如受傷），直接修改 `make_plan.py` 的 `DAYS` 後重跑上面指令。
+
+## 版面（分頁式）
+- 目前是 5 分頁 app 式版面（總覽／月度／每週／配速／課表），來源 `index_template.html`（layout meta：tabs-v3）；支援 `#tab=plan` 網址與 localStorage 記住分頁／區間。測試：`/workspace/pwenv/bin/python test_tabs.py 390 700`（截圖輸出 `tab_*.png`）。舊版備份：`index_template.pre_tabs.html`。
