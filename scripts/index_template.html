@@ -8,100 +8,99 @@
 <title>跑步儀表板｜半馬倒數</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <style>
-:root{--bg:#0f1720;--card:#1a2633;--fg:#e8eef5;--mut:#8fa3b8;--acc:#fc4c02;--acc2:#3fb6ff;--ok:#4cd08a}
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1f2937;--mut:#6b7280;--line:#e5e7eb;--acc:#f08a4b;--blue:#5b9bd5;--teal:#4db6a4;--ok:#2f9e6e;--bad:#d9534f;--soft:#f3f5f8;
+ --shadow:0 1px 2px rgba(16,24,40,.05),0 2px 8px rgba(16,24,40,.04)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.5}
-header{padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;max-width:1100px;margin:auto}
-h1{font-size:1.35rem;margin:0}
-h2{font-size:1.05rem;margin:0 0 8px;color:var(--fg)}
-main{max-width:1100px;margin:auto;padding:0 12px 40px}
-.countdown{background:linear-gradient(135deg,#fc4c02,#c0392b);border-radius:12px;padding:10px 16px;text-align:center}
-.countdown b{font-size:1.8rem}
-.ranges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-.ranges button{background:var(--card);color:var(--fg);border:1px solid #2d3d4f;border-radius:20px;padding:8px 14px;font-size:.95rem;cursor:pointer}
-.ranges button.on{background:var(--acc);border-color:var(--acc);font-weight:bold}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
-.card,.panel{background:var(--card);border-radius:12px;padding:12px 14px}
-.card .t{color:var(--mut);font-size:.8rem}
-.card .v{font-size:1.5rem;font-weight:700}
-.card .s{color:var(--mut);font-size:.8rem}
-.panel{margin-bottom:14px}
-.note{color:var(--mut);font-size:.8rem;margin:4px 0 0}
-.chart{width:100%;height:340px}
-table{width:100%;border-collapse:collapse;font-size:.88rem}
-th,td{padding:6px 8px;border-bottom:1px solid #2d3d4f;text-align:left;vertical-align:top}
-th{color:var(--mut);position:sticky;top:0;background:var(--card)}
-.tablewrap{max-height:560px;overflow:auto}
-tr.rest td{color:var(--mut)}
-tr.str td{color:var(--mut)}
-td.na{color:var(--mut)}
-tr.today td{background:#3a2a1c;outline:1px solid var(--acc)}
-tr.race td{background:#4a1f12;font-weight:bold}
-tr.wk td{background:#223142;color:var(--acc2);font-weight:bold}
-ul.plain{margin:6px 0;padding-left:20px}
-.warn{border-left:4px solid var(--acc);padding:8px 12px;background:#2a2320;border-radius:6px;font-size:.9rem}
-footer{color:var(--mut);font-size:.8rem;text-align:center;padding:16px}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-.chart.tall{height:380px}
-.warn,.card,.panel,td{overflow-wrap:anywhere}
-/* ===== 手機版（<=600px）：單欄、大字、2 欄卡片、計畫表轉卡片 ===== */
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6;font-size:15px}
+header{padding:24px 20px 8px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;max-width:1100px;margin:auto}
+h1{font-size:1.5rem;margin:0 0 4px}
+main{max-width:1100px;margin:auto;padding:0 20px 48px}
+.note{color:var(--mut);font-size:.85rem;line-height:1.6;margin:10px 0 0}
+.countdown{background:#fff4ec;border:1px solid #fbd9c0;border-radius:14px;padding:12px 20px;text-align:center;color:#8a4a1c}
+.countdown b{font-size:2rem;color:#e0702a}
+.ranges{display:flex;gap:8px;flex-wrap:wrap;margin:8px -20px 8px;padding:12px 20px;position:sticky;top:0;background:rgba(246,247,249,.96);backdrop-filter:blur(6px);z-index:5;border-bottom:1px solid var(--line)}
+.ranges button{background:#fff;color:var(--fg);border:1px solid #d5dae1;border-radius:999px;padding:9px 18px;font-size:.95rem;cursor:pointer}
+.ranges button.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+.sec{font-size:1.25rem;font-weight:700;margin:40px 0 4px;padding-top:24px;border-top:1px solid var(--line)}
+.sec:first-of-type{margin-top:24px}
+.sec small{display:block;font-size:.85rem;font-weight:400;color:var(--mut);margin-top:2px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0 0}
+.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.card .t{color:var(--mut);font-size:.88rem}
+.card .v{font-size:2rem;font-weight:700;line-height:1.25;margin:4px 0 2px;letter-spacing:-.5px}
+.card .v i{font-style:normal;font-size:.9rem;font-weight:500;color:var(--mut);margin-left:4px;letter-spacing:0}
+.card .s{color:var(--mut);font-size:.82rem;line-height:1.5}
+.d{font-size:.82rem;font-weight:600;line-height:1.5;margin-top:2px}
+.d.up{color:var(--ok)}.d.down{color:var(--bad)}.d.flat{color:var(--mut)}
+.cards.small .card{padding:12px 16px}
+.cards.small .v{font-size:1.4rem}
+.cards.small{grid-template-columns:repeat(6,minmax(0,1fr))}
+.panel{margin-top:16px}
+.panel h3{font-size:1.05rem;margin:0 0 4px;line-height:1.4}
+.take{margin:0 0 12px;color:#374151;font-size:.9rem;line-height:1.55;background:var(--soft);border-radius:8px;padding:8px 12px}
+.chart{width:100%;height:340px}
+.chart.tall{height:360px}
+.panel,.card,.warn{overflow-wrap:anywhere}
+ul.plain,ol.plain{margin:8px 0;padding-left:20px}
+ul.plain li,ol.plain li{margin-bottom:8px;line-height:1.6}
+.warn{border-left:4px solid var(--acc);padding:12px 14px;background:#fff7f0;border-radius:8px;font-size:.92rem;line-height:1.6}
+/* 訓練計畫：每週一張卡 */
+.week{margin-top:16px}
+.week h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin:0 0 8px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.week h3 span{font-size:.85rem;font-weight:500;color:var(--mut)}
+.day{padding:12px 12px;border-radius:10px;margin:0 -4px;border-bottom:1px solid #f0f1f4}
+.day:last-child{border-bottom:0}
+.day .r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.day .dt{font-weight:700}.day .dt em{font-style:normal;font-weight:400;color:var(--mut);margin-left:6px}
+.day .km{font-weight:700;color:#d9702f;white-space:nowrap}
+.day .ty{font-weight:600;line-height:1.5;margin-top:2px}
+.day .ex{color:#4b5563;font-size:.88rem;line-height:1.5;margin-top:2px}
+.day .nt{color:var(--mut);font-size:.88rem;line-height:1.5;margin-top:2px}
+.day.rest .ty,.day.str .ty{color:var(--mut);font-weight:500}
+.day.today{background:#fff3e6;border:1px solid #f2b98a;border-bottom:1px solid #f2b98a}
+.day.race{background:#fdecea;border:1px solid #f1b5b0}
+.badge{display:inline-block;background:#e0702a;color:#fff;border-radius:999px;font-size:.72rem;padding:1px 9px;margin-left:8px;font-weight:600;vertical-align:1px}
+footer{color:var(--mut);font-size:.8rem;text-align:center;padding:16px 20px 32px;line-height:1.6}
+/* ===== 手機版 ===== */
+@media(max-width:900px){.cards.small{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){
   html,body{overflow-x:clip;max-width:100%}
-  body{font-size:15px;line-height:1.55}
-  header{padding:14px 12px 4px;gap:10px}
+  body{font-size:15px;line-height:1.6}
+  header{padding:20px 16px 4px;gap:16px}
   header>div:first-child{width:100%}
-  h1{font-size:1.3rem}
-  h2{font-size:1.1rem;line-height:1.35;margin-bottom:6px}
-  main{padding:0 10px 32px}
-  .note{font-size:14px;line-height:1.5}
-  .countdown{width:100%;padding:8px 14px;font-size:15px}
-  .countdown b{font-size:1.9rem}
-  .ranges{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px -10px 12px;padding:8px 10px;box-shadow:0 4px 8px -4px rgba(0,0,0,.6)}
-  .ranges button{min-height:46px;padding:0 2px;font-size:14.5px;border-radius:12px;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .card{padding:10px 11px}
-  .card .t{font-size:14px}
-  .card .v{font-size:1.6rem;line-height:1.25;font-weight:800}
-  .card .s{font-size:13px;line-height:1.4}
-  .panel{padding:12px 10px;margin-bottom:12px}
-  .chart,.chart.tall{height:280px}
-  .chart.tall{height:300px}
+  h1{font-size:1.4rem}
+  main{padding:0 16px 40px}
+  .countdown{width:100%;padding:12px 16px}
+  .ranges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px -16px 4px;padding:12px 16px}
+  .ranges button{min-height:44px;padding:0 2px;font-size:14.5px;border-radius:12px;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .sec{font-size:1.2rem;margin:40px 0 4px;padding-top:24px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+  .card{padding:16px 14px}
+  .card .t{font-size:13.5px}
+  .card .v{font-size:1.85rem;line-height:1.2;margin:6px 0 4px}
+  .card .v i{font-size:.8rem}
+  .card .s,.d{font-size:12.5px}
+  .cards.small{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .cards.small .card{padding:12px 14px}
+  .cards.small .v{font-size:1.35rem}
+  .panel{padding:18px 16px;margin-top:20px}
+  .panel h3{font-size:1.05rem}
+  .take{font-size:14px;margin-bottom:14px}
+  .chart,.chart.tall{height:300px}
   .chart .nsewdrag,.chart .main-svg{touch-action:pan-y !important}
-  ul.plain{padding-left:18px}ul.plain li,ol.plain li{margin-bottom:4px}
+  .note{font-size:13.5px}
   .warn{font-size:14px}
-  footer{font-size:13px;padding:14px 12px}
-  /* 訓練計畫：表格 → 卡片 */
-  .tablewrap{max-height:none;overflow:visible}
-  table,tbody{display:block;width:100%}
-  thead{display:none}
-  tbody tr{display:grid;grid-template-columns:auto auto 1fr auto;grid-template-areas:"d w t k" "p p p p" "m m m m" "n n n n";column-gap:8px;row-gap:2px;align-items:baseline;background:#223142;border-radius:10px;padding:9px 12px;margin-bottom:8px}
-  tbody td{display:block;padding:0;border:0;font-size:14px;line-height:1.5}
-  td:nth-child(1){grid-area:d;font-weight:700;font-size:15px}
-  td:nth-child(2){grid-area:w;color:var(--mut)}
-  td:nth-child(3){grid-area:t;font-weight:600;color:var(--fg)}
-  td:nth-child(4){grid-area:k;text-align:right;font-weight:700;color:var(--acc)}
-  td:nth-child(4):not(.na)::after{content:" km";font-weight:400;font-size:13px}
-  td:nth-child(5){grid-area:p;color:var(--acc2)}
-  td:nth-child(5)::before{content:"配速 ";color:var(--mut)}
-  td:nth-child(5).na{display:none}
-  td:nth-child(6){grid-area:m;color:var(--acc2)}
-  td:nth-child(6)::before{content:"跑步機 ";color:var(--mut)}
-  td:nth-child(6).na{display:none}
-  td:nth-child(7){grid-area:n;color:var(--mut)}
-  tr.rest,tr.str{background:#1e2b39}
-  tr.rest td:nth-child(3),tr.str td:nth-child(3){color:var(--mut)}
-  tr.today{background:#3a2a1c;outline:1px solid var(--acc)}
-  tr.race{background:#4a1f12}
-  tr.wk{display:block;background:transparent;border-bottom:1px solid #2d3d4f;border-radius:0;padding:10px 2px 4px;margin:6px 0 8px}
-  tr.wk td{display:block;background:transparent;font-size:14px;color:var(--acc2);font-weight:700}
-  tr.wk td::before,tr.wk td::after{content:none !important}
+  .day{margin:0 -6px;padding:14px 10px}
+  .day .ty{font-size:15px}
+  .day .ex,.day .nt{font-size:14px}
 }
 @media(max-width:340px){.ranges{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>🏃 跑步儀表板</h1><div class="note">資料更新日：<span id="updated">—</span>（資料截至 <span id="through">—</span>）</div></div>
+  <div><h1>🏃 跑步儀表板</h1><div class="note" style="margin:0">資料更新日：<span id="updated">—</span>（資料截至 <span id="through">—</span>）</div></div>
   <div class="countdown">距離半馬（2026-10-25）<br><b id="cd">—</b> 天</div>
 </header>
 <main>
@@ -109,49 +108,54 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button data-m="3">近3個月</button><button data-m="6">近6個月</button><button data-m="12">近12個月</button><button data-m="0" class="on">至今</button>
   </div>
 
+  <h2 class="sec">重點數字<small id="rangeNote">所選期間的統計</small></h2>
   <section class="cards" id="cards"></section>
 
-  <section class="panel"><h2>每月跑量（公里）與跑步次數</h2><div id="c_month" class="chart"></div>
-    <p class="note">長條＝公里；折線＝跑步次數。點擊圖例可開關，拖曳可縮放，雙擊還原。</p></section>
-  <section class="panel"><h2>每月移動時間（小時）</h2><div id="c_time" class="chart"></div></section>
-  <section class="panel"><h2>每月平均配速（分/公里）</h2><div id="c_mpace" class="chart"></div>
-    <p class="note">* 資料異常提示：超過 <span id="thr">10:00</span>/km 的月份（如 2025-07 的 18:48、2025-12 的 18:29）多半是步行或混合活動，並非真正跑速；圖中以空心點標示並壓在上限（軸頂端），不納入趨勢判讀，滑過可看原始值。</p></section>
-  <section class="panel"><h2>每週跑量與 4 週滾動平均（最近約 13 週）</h2><div id="c_week" class="chart"></div>
-    <p class="note">滾動平均＝當週及前 3 週的總公里 ÷ 4。最後一週若未滿 7 天以淡色標示。每週明細只有 2026-07-03 之後的資料。</p></section>
-  <section class="panel"><h2>每趟配速（點大小＝距離）</h2><div id="c_pace" class="chart tall"></div>
-    <p class="note">配速軸向上＝較快。超過 10:00/km 的活動（疑似步行/混合）以 ✕ 標示並壓在上限，不影響趨勢線。虛線為 7 趟移動平均（已排除異常值）。</p></section>
+  <h2 class="sec">全時間累計與 PR<small>不受上方期間影響</small></h2>
+  <section class="cards small" id="fixed"></section>
 
-  <section class="panel"><h2>🗓 半馬訓練計畫（2026-10-01 ～ 2026-10-25）</h2>
-    <div class="warn" id="caveat"></div>
-    <p class="note"><b>背景與假設：</b></p><ul class="plain" id="assump"></ul>
-    <div class="tablewrap"><table><thead><tr><th>日期</th><th>星期</th><th>內容</th><th>km</th><th>路跑配速</th><th>跑步機 0%</th><th>說明</th></tr></thead><tbody id="plan"></tbody></table></div>
-    <h2 style="margin-top:14px">比賽日策略（半馬 21.1 km）</h2><ol class="plain" id="racep"></ol>
-    <p class="note">完整文字版：<a style="color:var(--acc2)" href="plan.md">plan.md</a></p>
-  </section>
+  <h2 class="sec">趨勢圖表<small>隨上方期間切換</small></h2>
+  <section class="panel"><h3>每月跑量與次數</h3><p class="take" id="k_month"></p><div id="c_month" class="chart"></div>
+    <p class="note">長條＝公里；折線＝次數。點圖例可開關。</p></section>
+  <section class="panel"><h3>每月移動時間（小時）</h3><p class="take" id="k_time"></p><div id="c_time" class="chart"></div></section>
+  <section class="panel"><h3>每月平均配速（分/公里）</h3><p class="take" id="k_mpace"></p><div id="c_mpace" class="chart"></div>
+    <p class="note">超過 <span id="thr">10:00</span>/km 的月份（如 2025-07、2025-12）多半是步行或混合活動，以 ✕ 標示並壓在上限，不納入平均配速。</p></section>
+  <section class="panel"><h3>每週跑量與 4 週滾動平均</h3><p class="take" id="k_week"></p><div id="c_week" class="chart"></div>
+    <p class="note" id="n_week">滾動平均＝當週及前 3 週的總公里 ÷ 4。每週明細只有 2026-07-03 之後的資料；未滿一週以淡色標示。</p></section>
+  <section class="panel"><h3>每趟配速（點大小＝距離）</h3><p class="take" id="k_pace"></p><div id="c_pace" class="chart tall"></div>
+    <p class="note" id="n_pace">配速軸向上＝較快。虛線為 7 趟移動平均（已排除異常值）。</p></section>
 
-  <section class="panel" id="checkin_panel"><h2>📋 <span id="ck_title">每週檢查</span></h2>
+  <h2 class="sec">🗓 半馬訓練計畫<small>2026-10-01 ～ 2026-10-25，依週分組</small></h2>
+  <section class="panel"><div class="warn" id="caveat"></div>
+    <p class="note" style="margin-top:16px"><b>背景與假設</b></p><ul class="plain" id="assump"></ul></section>
+  <div id="plan"></div>
+  <section class="panel"><h3>比賽日策略（半馬 21.1 km）</h3><ol class="plain" id="racep"></ol>
+    <p class="note">完整文字版：<a style="color:var(--blue)" href="plan.md">plan.md</a></p></section>
+
+  <h2 class="sec">📋 <span id="ck_title">每週檢查</span></h2>
+  <section class="panel" id="checkin_panel">
     <ul class="plain" id="ck_items"></ul>
     <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p>
     <p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></section>
 </main>
 <footer>資料來源：Strava 匯出（monthly.csv／activities.csv）。圖表以 Plotly.js 繪製。<br>
-註：部分舊月份平均配速（如 2025-07 的 18:48/km）疑為步行或混合活動造成的資料異常，已標示且不納入趨勢判讀。</footer>
+註：部分舊月份平均配速（如 2025-07 的 18:48/km）疑為步行或混合活動，已標示且不納入平均配速。</footer>
 
 <script>
 const $=id=>document.getElementById(id);
-const L={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#e8eef5'},margin:{l:48,r:44,t:10,b:70},
-  legend:{orientation:'h',y:-0.22},hovermode:'closest',xaxis:{gridcolor:'#2d3d4f'},yaxis:{gridcolor:'#2d3d4f'}};
+const GRID='#eceff3',TXT='#374151',C_BLUE='#6aa7e0',C_ORG='#f4a261',C_TEAL='#5cbfae',C_OUT='#e76f51';
+const L={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT},margin:{l:48,r:44,t:10,b:70},
+  legend:{orientation:'h',y:-0.22},hovermode:'closest',xaxis:{gridcolor:GRID,linecolor:GRID},yaxis:{gridcolor:GRID,zerolinecolor:GRID}};
 const MQ=window.matchMedia('(max-width:600px)');
 const isMob=()=>MQ.matches;
 const CFG_D={responsive:true,displaylogo:false,scrollZoom:false};
 const CFG_M={responsive:true,displaylogo:false,scrollZoom:false,displayModeBar:false,doubleClick:false};
-// 手機：緊湊邊界、小字、圖例移到圖下方、少量 x 軸刻度、點一下顯示 tooltip（不攔截捲動）
 function plot(id,traces,layout,opt={}){
   if(!isMob()) return Plotly.react(id,traces,layout,CFG_D);
   const lay={...layout};
-  lay.font={color:'#e8eef5',size:12};
-  lay.margin={l:42,r:opt.y2?34:10,t:8,b:opt.legend===false?44:78};
-  lay.legend={orientation:'h',x:0,xanchor:'left',y:-0.24,yanchor:'top',font:{size:12},itemsizing:'constant',tracegroupgap:0};
+  lay.font={color:TXT,size:12};
+  lay.margin={l:44,r:opt.y2?36:12,t:8,b:opt.legend===false?48:84};
+  lay.legend={orientation:'h',x:0,xanchor:'left',y:-0.26,yanchor:'top',font:{size:12},itemsizing:'constant',tracegroupgap:0};
   lay.dragmode=false; lay.hovermode=opt.hover||'closest';
   lay.hoverlabel={font:{size:13},namelength:-1};
   const fix=(ax,extra)=>{const a={...(lay[ax]||{}),...extra};delete a.title;a.fixedrange=true;a.automargin=true;a.tickfont={size:11};return a;};
@@ -159,71 +163,138 @@ function plot(id,traces,layout,opt={}){
   if(lay.yaxis2) lay.yaxis2=fix('yaxis2',{});
   return Plotly.react(id,traces,lay,CFG_M);
 }
-// 類別軸（月/週）：每 step 個顯示一個標籤，格式縮短（2026-09 → 26/09；週起 2026-07-06 → 07/06）
 function catTicks(vals,fmt){
   const n=vals.length,step=Math.max(1,Math.ceil(n/6));
   const idx=vals.map((_,i)=>i).filter(i=>(n-1-i)%step===0);
   return {tickmode:'array',tickvals:idx.map(i=>vals[i]),ticktext:idx.map(i=>fmt(vals[i])),tickangle:-45};
 }
 const abbrM=m=>m.slice(2,4)+'/'+m.slice(5,7), abbrW=w=>w.slice(5,7)+'/'+w.slice(8,10);
-const fmtP=s=>s?`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`:'';
+const fmtP=s=>(s&&isFinite(s))?`${Math.floor(Math.round(s)/60)}:${String(Math.round(s)%60).padStart(2,'0')}`:'—';
+const f1=x=>(Math.round(x*10)/10).toFixed(1);
+const hms=t=>t.split(':').reduce((a,b)=>a*60+ +b,0);
+const addM=(ym,k)=>{let y=+ym.slice(0,4),m=+ym.slice(5,7)-1+k;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+'-'+String(m+1).padStart(2,'0');};
+const dayMs=864e5, isoMs=s=>Date.parse(s+'T00:00:00Z');
+const lastDay=ym=>{const y=+ym.slice(0,4),m=+ym.slice(5,7);return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);};
 let D={}, months=0;
+const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
   const [m,a,w,s,p]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json'].map(g));
   D={m,a,w,s,p}; $('updated').textContent=s.generated; $('through').textContent=s.data_through;
-  $('thr').textContent=s.outlier_threshold+':00'; cards(); plan(); render();
+  $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
 }
-function cutoff(n){ // n 個月前的 YYYY-MM-DD / YYYY-MM
-  const end=new Date(D.s.data_through+'T00:00:00'); if(!n) return {d:'0000-00-00',m:'0000-00'};
-  const d=new Date(end); d.setMonth(d.getMonth()-n); d.setDate(d.getDate()+1);
-  const iso=d.toISOString().slice(0,10);
-  const e=new Date(end.getFullYear(),end.getMonth()-(n-1),1);
-  return {d:iso,m:e.getFullYear()+'-'+String(e.getMonth()+1).padStart(2,'0')};
+// 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
+function period(n){
+  const end=D.s.data_through, em=end.slice(0,7), first=D.m[0].month;
+  let sm=n?addM(em,-(n-1)):first;
+  const sd=n?sm+'-01':(D.s.first_run||first+'-01');
+  const cur={sm,em,sd,ed:end,n:n||D.m.filter(r=>r.month>=sm).length};
+  let prev=null;
+  if(n){const pe=addM(sm,-1),ps=addM(pe,-(n-1));prev={sm:ps,em:pe,sd:ps+'-01',ed:lastDay(pe),n};}
+  return {cur,prev};
+}
+function agg(p){ // 以 monthly 彙總
+  const M=D.m.filter(r=>r.month>=p.sm&&r.month<=p.em);
+  const days=(isoMs(p.ed)-isoMs(p.sd))/dayMs+1;
+  const km=M.reduce((s,r)=>s+r.km,0), runs=M.reduce((s,r)=>s+r.runs,0);
+  const okm=M.filter(r=>!r.outlier&&r.km>0);
+  const pk=okm.reduce((s,r)=>s+r.km,0), ps=okm.reduce((s,r)=>s+hms(r.time),0);
+  return {M,days,km,runs,have:M.length,active:M.filter(r=>r.runs>0).length,pace:pk?ps/pk:null,
+    perMonth:M.length?km/M.length:0,perWeek:km/(days/7)};
+}
+function delta(cur,prev,kind,lab,partial){
+  if(prev==null) return `<div class="d flat">全期間累計</div>`;
+  const tag=partial?'（部分資料）':'';
+  if(kind==='pace'){
+    if(!cur||!prev) return `<div class="d flat">—</div>`;
+    const df=Math.round(prev-cur); if(df===0) return `<div class="d flat">持平 vs ${lab}${tag}</div>`;
+    return `<div class="d ${df>0?'up':'down'}">${df>0?'▲ 快':'▼ 慢'} ${fmtP(Math.abs(df))} vs ${lab}${tag}</div>`;
+  }
+  if(!prev) return `<div class="d flat">${lab}無資料</div>`;
+  const pc=Math.round((cur/prev-1)*100);
+  return `<div class="d ${pc>0?'up':pc<0?'down':'flat'}">${pc>0?'▲ +':pc<0?'▼ ':'＝ '}${pc}% vs ${lab}${tag}</div>`;
 }
 function cards(){
+  const s=D.s,{cur,prev}=period(months),c=agg(cur),pv=prev?agg(prev):null;
+  const nm=RN[months], lab=months?`前${months}個月`:'';
+  const partial=pv&&pv.have<prev.n;
+  let km=c.km,runs=c.runs;
+  if(!months){km=s.alltime.km;runs=s.alltime.runs;c.perMonth=km/c.have;c.perWeek=km/(c.days/7);}
+  const A=D.a.filter(r=>r.date>=cur.sd&&r.date<=cur.ed);
+  const lg=A.length?A.reduce((a,b)=>b.km>a.km?b:a):null;
+  const cover=runs>A.length;const fs=(f=>(+f.slice(5,7))+'/'+(+f.slice(8,10)))(D.a[0].date);
+  const D_=(a,b,k)=>delta(a,pv?b:null,k,lab,partial);
+  const items=[
+   [`${nm} 總跑量`,f1(km),'km',`${c.active} 個月有跑步`,D_(km,pv&&pv.km,'n')],
+   [`${nm} 跑步次數`,runs,'次',`平均每週 ${f1(runs/(c.days/7))} 次`,D_(runs,pv&&pv.runs,'n')],
+   [`${nm} 月均跑量`,f1(c.perMonth),'km／月',`共 ${c.have} 個月`,D_(c.perMonth,pv&&pv.perMonth,'n')],
+   [`${nm} 週均跑量`,f1(c.perWeek),'km／週',`約 ${f1(c.days/7)} 週`,D_(c.perWeek,pv&&pv.perWeek,'n')],
+   [`${nm} 平均配速`,fmtP(c.pace),'／km','依月彙總・排除 >10:00 月份',D_(c.pace,pv&&pv.pace,'pace')],
+   [`${nm} 最長單趟`,lg?f1(lg.km):'—','km',lg?`${lg.date.slice(5).replace('-','/')}${cover?'・單趟資料自 '+fs+' 起':''}`:'此期間無單趟資料','']
+  ];
+  $('cards').innerHTML=items.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div><div class="s">${x[3]}</div>${x[4]}</div>`).join('');
+  $('rangeNote').textContent=`${nm}：${cur.sd} ～ ${cur.ed}${months?`（對照 ${prev.sd.slice(0,7)} ～ ${prev.ed.slice(0,7)}）`:''}`;
+  return {c,pv,A};
+}
+function fixedRow(){
   const s=D.s,pr=s.prs;
-  const c=[
-   ['近 4 週跑量',`${s.w4.km} km`,'最近 28 天'],
-   ['週平均跑量',`${s.w4.km_per_week} km`,'近 4 週平均／週'],
-   ['近 4 週次數',`${s.w4.runs} 次`,`近 12 週 ${s.w12.runs} 次`],
-   ['最長單趟',`${s.longest.km} km`,s.longest.date],
-   ['累計（全時間）',`${s.alltime.km} km`,`${s.alltime.runs} 次 · 平均 ${s.alltime.pace}/km`],
-   ['個人最佳 PR',`5K ${pr['5K']}`,`10K ${pr['10K']} · 1K ${pr['1K']}`]];
-  $('cards').innerHTML=c.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+  const it=[['累計里程',s.alltime.km,'km',''],['累計次數',s.alltime.runs,'次',`平均 ${s.alltime.pace}/km`],
+    ['5K PR',pr['5K'],'',''],['10K PR',pr['10K'],'',''],['1K PR',pr['1K'],'',''],['1 英里 PR',pr['1 英里']||'—','','']];
+  $('fixed').innerHTML=it.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div>${x[3]?`<div class="s">${x[3]}</div>`:''}</div>`).join('');
 }
 function render(){
-  const co=cutoff(months), thr=D.s.outlier_threshold*60;
+  const info=cards(), co={d:period(months).cur.sd,m:period(months).cur.sm}, thr=D.s.outlier_threshold*60;
+  const nm=RN[months];
   const M=D.m.filter(r=>r.month>=co.m);
   const mo=M.map(r=>r.month);
+  // takeaways
+  const best=M.reduce((a,b)=>b.km>a.km?b:a,M[0]);
+  $('k_month').textContent=`${nm}月彙總合計 ${f1(M.reduce((s,r)=>s+r.km,0))} km；單月最高是 ${best.month} 的 ${f1(best.km)} km（${best.runs} 次）。`;
+  const hrs=M.reduce((s,r)=>s+r.hours,0);
+  $('k_time').textContent=`${nm}累計 ${f1(hrs)} 小時，平均每月 ${f1(hrs/M.length)} 小時。`;
+  const okM=M.filter(r=>!r.outlier&&r.pace_sec);
+  if(okM.length){const fast=okM.reduce((a,b)=>b.pace_sec<a.pace_sec?b:a);
+    $('k_mpace').textContent=`最快月份是 ${fast.month}（${fast.pace}/km）；最近一個正常月份為 ${okM[okM.length-1].month}（${okM[okM.length-1].pace}/km）。`;}
+  else $('k_mpace').textContent='此期間沒有正常配速月份。';
   plot('c_month',[
-    {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:'#fc4c02'},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
-    {type:'scatter',mode:'lines+markers',x:mo,y:M.map(r=>r.runs),name:'跑步次數',yaxis:'y2',line:{color:'#3fb6ff'},hovertemplate:'%{x}<br>%{y} 次<extra></extra>'}],
-    {...L,yaxis:{title:'km',gridcolor:'#2d3d4f'},yaxis2:{title:'次數',overlaying:'y',side:'right',showgrid:false,rangemode:'tozero'},xaxis:{type:'category',gridcolor:'#2d3d4f'}},{y2:true,hover:'x',x:catTicks(mo,abbrM)});
-  plot('c_time',[{type:'bar',x:mo,y:M.map(r=>r.hours),name:'移動時間（小時）',marker:{color:'#4cd08a'},customdata:M.map(r=>r.time),hovertemplate:'%{x}<br>%{customdata}（%{y:.1f} 小時）<extra></extra>'}],
-    {...L,yaxis:{title:'小時',gridcolor:'#2d3d4f'},xaxis:{type:'category',gridcolor:'#2d3d4f'}},{x:catTicks(mo,abbrM),legend:false});
+    {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:mo,y:M.map(r=>r.runs),name:'跑步次數',yaxis:'y2',line:{color:C_BLUE,width:3},marker:{size:7},hovertemplate:'%{x}<br>%{y} 次<extra></extra>'}],
+    {...L,yaxis:{title:'km',gridcolor:GRID},yaxis2:{title:'次數',overlaying:'y',side:'right',showgrid:false,rangemode:'tozero'},xaxis:{type:'category',gridcolor:GRID}},{y2:true,hover:'x',x:catTicks(mo,abbrM)});
+  plot('c_time',[{type:'bar',x:mo,y:M.map(r=>r.hours),name:'移動時間（小時）',marker:{color:C_TEAL},customdata:M.map(r=>r.time),hovertemplate:'%{x}<br>%{customdata}（%{y:.1f} 小時）<extra></extra>'}],
+    {...L,yaxis:{title:'小時',gridcolor:GRID},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM),legend:false});
   const P=M.filter(r=>r.pace_sec), cap=r=>Math.min(r.pace_sec,thr);
   plot('c_mpace',[
-    {type:'scatter',mode:'lines',x:P.map(r=>r.month),y:P.map(cap),line:{color:'#8fa3b8',width:1.5},hoverinfo:'skip',showlegend:false},
-    {type:'scatter',mode:'markers',name:'正常月份',x:P.filter(r=>!r.outlier).map(r=>r.month),y:P.filter(r=>!r.outlier).map(r=>r.pace_sec),marker:{size:10,color:'#3fb6ff'},text:P.filter(r=>!r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
-    {type:'scatter',mode:'markers',name:'異常（已壓在上限）',x:P.filter(r=>r.outlier).map(r=>r.month),y:P.filter(r=>r.outlier).map(cap),marker:{size:11,color:'rgba(0,0,0,0)',line:{color:'#fc4c02',width:2},symbol:'x-open'},text:P.filter(r=>r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>原始 %{text}/km（疑似步行/混合）<extra></extra>'}],
-    {...L,yaxis:{title:'配速',autorange:'reversed',gridcolor:'#2d3d4f',...(isMob()?{tickvals:[300,360,420,480,600],ticktext:['5:00','6:00','7:00','8:00','10+']}:{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{type:'category',gridcolor:'#2d3d4f'}},{x:catTicks(mo,abbrM)});
-  // weekly: 最近 13 週（受範圍按鈕限制：3個月≈13週，其他沿用全部可用週數）
-  let W=D.w.slice(); const lim=months===0||months>=3?13:13; W=W.slice(-lim);
+    {type:'scatter',mode:'lines',x:P.map(r=>r.month),y:P.map(cap),line:{color:'#c3cad4',width:1.5},hoverinfo:'skip',showlegend:false},
+    {type:'scatter',mode:'markers',name:'正常月份',x:P.filter(r=>!r.outlier).map(r=>r.month),y:P.filter(r=>!r.outlier).map(r=>r.pace_sec),marker:{size:10,color:C_BLUE},text:P.filter(r=>!r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
+    {type:'scatter',mode:'markers',name:'異常（壓在上限）',x:P.filter(r=>r.outlier).map(r=>r.month),y:P.filter(r=>r.outlier).map(cap),marker:{size:11,color:'rgba(0,0,0,0)',line:{color:C_OUT,width:2},symbol:'x-open'},text:P.filter(r=>r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>原始 %{text}/km（疑似步行/混合）<extra></extra>'}],
+    {...L,yaxis:{title:'配速',autorange:'reversed',gridcolor:GRID,...(isMob()?{tickvals:[300,360,420,480,600],ticktext:['5:00','6:00','7:00','8:00','10+']}:{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM)});
+  // weekly：範圍內的週（週資料自 7/6 起，最多顯示 13 週）
+  const wkStart=co.d.slice(0,10);
+  let W=D.w.filter(r=>r.week>=wkStart||(isoMs(r.week)+6*dayMs)>=isoMs(wkStart)).slice(-13);
+  if(W.length){const lw=W[W.length-1],rl=[...W].reverse().find(r=>r.rolling4!=null);
+    $('k_week').textContent=`最近一週（${abbrW(lw.week)} 起）${f1(lw.km)} km${lw.partial?'（未滿一週）':''}${rl?`；4 週滾動平均 ${f1(rl.rolling4)} km/週`:''}。`;}
+  $('n_week').textContent='滾動平均＝當週及前 3 週的總公里 ÷ 4。'+(months===3?`顯示 ${nm}內的 ${W.length} 週。`:`每週明細只有 ${D.w[0].week.slice(5).replace('-','/')} 之後的資料，故最多顯示 ${W.length} 週。`)+'未滿一週以淡色標示。';
   plot('c_week',[
-    {type:'bar',x:W.map(r=>r.week),y:W.map(r=>r.km),name:'每週公里',marker:{color:W.map(r=>r.partial?'rgba(252,76,2,.4)':'#fc4c02')},text:W.map(r=>r.partial?'（未滿一週）':''),hovertemplate:'週起 %{x}<br>%{y:.1f} km %{text}<extra></extra>'},
-    {type:'scatter',mode:'lines+markers',x:W.filter(r=>r.rolling4!=null).map(r=>r.week),y:W.filter(r=>r.rolling4!=null).map(r=>r.rolling4),name:'4 週滾動平均',line:{color:'#3fb6ff',width:3},hovertemplate:'週起 %{x}<br>4週均 %{y:.1f} km/週<extra></extra>'}],
-    {...L,yaxis:{title:'km',gridcolor:'#2d3d4f'},xaxis:{type:'category',gridcolor:'#2d3d4f',tickangle:-45}},{hover:'x',x:catTicks(W.map(r=>r.week),abbrW)});
-  // scatter
+    {type:'bar',x:W.map(r=>r.week),y:W.map(r=>r.km),name:'每週公里',marker:{color:W.map(r=>r.partial?'rgba(244,162,97,.45)':C_ORG)},text:W.map(r=>r.partial?'（未滿一週）':''),hovertemplate:'週起 %{x}<br>%{y:.1f} km %{text}<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:W.filter(r=>r.rolling4!=null).map(r=>r.week),y:W.filter(r=>r.rolling4!=null).map(r=>r.rolling4),name:'4 週滾動平均',line:{color:C_BLUE,width:3},hovertemplate:'週起 %{x}<br>4週均 %{y:.1f} km/週<extra></extra>'}],
+    {...L,yaxis:{title:'km',gridcolor:GRID},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},{hover:'x',x:catTicks(W.map(r=>r.week),abbrW)});
+  // 每趟
   const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier), bad=A.filter(r=>r.outlier);
-  const sz=r=>Math.max(6,Math.min(36,r.km*3.2));
+  const first=D.a[0].date, fshort=+first.slice(5,7)+'/'+ +first.slice(8,10);
+  const partialData=info.c.runs>A.length;
+  $('n_pace').textContent='配速軸向上＝較快。虛線為 7 趟移動平均（已排除異常值）；✕＝超過 10:00/km 的疑似步行。'+(partialData?`單趟資料自 ${fshort} 起（較早月份只有月彙總），此處顯示全部單趟。`:'');
+  if(ok.length){const tk=ok.reduce((s,r)=>s+r.km,0),ts=ok.reduce((s,r)=>s+r.pace_sec*r.km,0);
+    const l7=ok.slice(-7),a7=l7.reduce((s,r)=>s+r.pace_sec,0)/l7.length;
+    $('k_pace').textContent=`${partialData?`單趟資料自 ${fshort} 起，`:`${nm}`}共 ${A.length} 趟，平均 ${fmtP(ts/tk)}/km；最近 ${l7.length} 趟平均 ${fmtP(a7)}/km。`;}
+  else $('k_pace').textContent='此期間沒有單趟資料。';
+  const sz=r=>Math.max(6,Math.min(34,r.km*3.2));
   const ma=ok.map((_,i)=>{const w=ok.slice(Math.max(0,i-6),i+1);return w.reduce((s,r)=>s+r.pace_sec,0)/w.length});
   plot('c_pace',[
-    {type:'scatter',mode:'markers',name:'每趟（點大小＝公里）',x:ok.map(r=>r.date),y:ok.map(r=>r.pace_sec),marker:{size:ok.map(sz),color:ok.map(r=>r.km),colorscale:'Turbo',showscale:false,opacity:.75,line:{width:1,color:'#fff'}},customdata:ok.map(r=>[r.km,r.pace,r.time]),hovertemplate:'%{x}<br>%{customdata[0]} km · %{customdata[1]}/km<br>時間 %{customdata[2]}<extra></extra>'},
-    {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:'#ffd166',dash:'dash'},hoverinfo:'skip'},
-    {type:'scatter',mode:'markers',name:'異常 >10:00（疑似步行）',x:bad.map(r=>r.date),y:bad.map(()=>thr),marker:{symbol:'x',size:10,color:'#fc4c02'},customdata:bad.map(r=>[r.km,r.pace]),hovertemplate:'%{x}<br>%{customdata[0]} km · 原始 %{customdata[1]}/km<extra></extra>'}],
-    {...L,yaxis:{title:'配速（分/公里）',autorange:'reversed',gridcolor:'#2d3d4f',...(isMob()?{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10+']}:{tickvals:[300,330,360,390,420,450,480,540,600],ticktext:['5:00','5:30','6:00','6:30','7:00','7:30','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{gridcolor:'#2d3d4f'}},{x:{nticks:5,tickformat:'%y/%m',tickangle:-45}});
+    {type:'scatter',mode:'markers',name:'每趟（點大小＝公里）',x:ok.map(r=>r.date),y:ok.map(r=>r.pace_sec),marker:{size:ok.map(sz),color:ok.map(r=>r.km),colorscale:[[0,'#cfe3f6'],[.5,'#7fb5e6'],[1,'#3f7fc4']],showscale:false,opacity:.8,line:{width:1,color:'#fff'}},customdata:ok.map(r=>[r.km,r.pace,r.time]),hovertemplate:'%{x}<br>%{customdata[0]} km · %{customdata[1]}/km<br>時間 %{customdata[2]}<extra></extra>'},
+    {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:C_ORG,dash:'dash',width:2.5},hoverinfo:'skip'},
+    {type:'scatter',mode:'markers',name:'異常 >10:00',x:bad.map(r=>r.date),y:bad.map(()=>thr),marker:{symbol:'x',size:10,color:C_OUT},customdata:bad.map(r=>[r.km,r.pace]),hovertemplate:'%{x}<br>%{customdata[0]} km · 原始 %{customdata[1]}/km<extra></extra>'}],
+    {...L,yaxis:{title:'配速（分/公里）',autorange:'reversed',gridcolor:GRID,...(isMob()?{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10+']}:{tickvals:[300,330,360,390,420,450,480,540,600],ticktext:['5:00','5:30','6:00','6:30','7:00','7:30','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{gridcolor:GRID}},{x:{nticks:5,tickformat:'%m/%d',tickangle:-45}});
 }
 function plan(){
   const p=D.p; $('caveat').textContent=p.caveat;
@@ -233,11 +304,18 @@ function plan(){
     $('ck_items').innerHTML=c.items.map(x=>`<li>${x}</li>`).join('');
     $('ck_goals').textContent=c.goals.join('；');$('ck_rules').textContent=c.rules.join('；');}
   const today=new Date(Date.now()+ (new Date().getTimezoneOffset()+480)*60000).toISOString().slice(0,10);
-  let h='',wk='';
-  p.days.forEach(d=>{
-    if(d.week!==wk){wk=d.week;const t=p.weekly_km[wk];h+=`<tr class="wk"><td colspan="7">週起 ${wk}${t!=null?` ・ 本週計畫 ${t} km${wk==='2026-09-28'?'（10/1 起）':''}`:''}</td></tr>`;}
-    const cls=d.date===p.race_date?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
-    h+=`<tr class="${cls}"><td>${d.date.slice(5)}${d.date===today?' ◀今天':''}</td><td>${d.weekday}</td><td>${d.type}</td><td class="${d.km?'':'na'}">${d.km?d.km:'—'}</td><td class="${d.pace?'':'na'}">${d.pace||'—'}</td><td class="${d.treadmill&&d.treadmill!=='—'?'':'na'}">${d.treadmill||'—'}</td><td>${d.note}</td></tr>`;
+  const weeks={};p.days.forEach(d=>(weeks[d.week]=weeks[d.week]||[]).push(d));
+  let h='';
+  Object.keys(weeks).sort().forEach(wk=>{
+    const t=p.weekly_km[wk];
+    h+=`<section class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${t!=null?`本週計畫 ${t} km${wk==='2026-09-28'?'（10/1 起）':''}`:''}</span></h3>`;
+    weeks[wk].forEach(d=>{
+      const cls=d.date===p.race_date?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
+      const ex=[d.pace?`配速 ${d.pace}`:'',(d.treadmill&&d.treadmill!=='—')?`跑步機 ${d.treadmill}`:''].filter(Boolean).join('・');
+      h+=`<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="km">${d.km?d.km+' km':''}</span></div>
+        <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
+    });
+    h+='</section>';
   });
   $('plan').innerHTML=h;
   const cd=Math.ceil((new Date(p.race_date+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5);
