@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跑步儀表板｜馬拉松倒數</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root{--bg:#0f1720;--card:#1a2633;--fg:#e8eef5;--mut:#8fa3b8;--acc:#fc4c02;--acc2:#3fb6ff;--ok:#4cd08a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.5}
+header{padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;max-width:1100px;margin:auto}
+h1{font-size:1.35rem;margin:0}
+h2{font-size:1.05rem;margin:0 0 8px;color:var(--fg)}
+main{max-width:1100px;margin:auto;padding:0 12px 40px}
+.countdown{background:linear-gradient(135deg,#fc4c02,#c0392b);border-radius:12px;padding:10px 16px;text-align:center}
+.countdown b{font-size:1.8rem}
+.ranges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.ranges button{background:var(--card);color:var(--fg);border:1px solid #2d3d4f;border-radius:20px;padding:8px 14px;font-size:.95rem;cursor:pointer}
+.ranges button.on{background:var(--acc);border-color:var(--acc);font-weight:bold}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.card,.panel{background:var(--card);border-radius:12px;padding:12px 14px}
+.card .t{color:var(--mut);font-size:.8rem}
+.card .v{font-size:1.5rem;font-weight:700}
+.card .s{color:var(--mut);font-size:.8rem}
+.panel{margin-bottom:14px}
+.note{color:var(--mut);font-size:.8rem;margin:4px 0 0}
+.chart{width:100%;height:340px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:6px 8px;border-bottom:1px solid #2d3d4f;text-align:left;vertical-align:top}
+th{color:var(--mut);position:sticky;top:0;background:var(--card)}
+.tablewrap{max-height:560px;overflow:auto}
+tr.rest td{color:var(--mut)}
+tr.today td{background:#3a2a1c;outline:1px solid var(--acc)}
+tr.race td{background:#4a1f12;font-weight:bold}
+tr.wk td{background:#223142;color:var(--acc2);font-weight:bold}
+ul.plain{margin:6px 0;padding-left:20px}
+.warn{border-left:4px solid var(--acc);padding:8px 12px;background:#2a2320;border-radius:6px;font-size:.9rem}
+footer{color:var(--mut);font-size:.8rem;text-align:center;padding:16px}
+@media(max-width:600px){.chart{height:300px}h1{font-size:1.15rem}.card .v{font-size:1.25rem}th:nth-child(2),td:nth-child(2){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>🏃 跑步儀表板</h1><div class="note">資料更新日：<span id="updated">—</span>（資料截至 <span id="through">—</span>）</div></div>
+  <div class="countdown">距離馬拉松（2026-10-25）<br><b id="cd">—</b> 天</div>
+</header>
+<main>
+  <div class="ranges" id="ranges">
+    <button data-m="3">近3個月</button><button data-m="6">近6個月</button><button data-m="12">近12個月</button><button data-m="0" class="on">至今</button>
+  </div>
+
+  <section class="cards" id="cards"></section>
+
+  <section class="panel"><h2>每月跑量（公里）與跑步次數</h2><div id="c_month" class="chart"></div>
+    <p class="note">長條＝公里；折線＝跑步次數。點擊圖例可開關，拖曳可縮放，雙擊還原。</p></section>
+  <section class="panel"><h2>每月移動時間（小時）</h2><div id="c_time" class="chart"></div></section>
+  <section class="panel"><h2>每月平均配速（分/公里）</h2><div id="c_mpace" class="chart"></div>
+    <p class="note">* 資料異常提示：超過 <span id="thr">10:00</span>/km 的月份（如 2025-07 的 18:48、2025-12 的 18:29）多半是步行或混合活動，並非真正跑速；圖中以空心點標示並壓在上限（軸頂端），不納入趨勢判讀，滑過可看原始值。</p></section>
+  <section class="panel"><h2>每週跑量與 4 週滾動平均（最近約 13 週）</h2><div id="c_week" class="chart"></div>
+    <p class="note">滾動平均＝當週及前 3 週的總公里 ÷ 4。最後一週若未滿 7 天以淡色標示。每週明細只有 2026-07-03 之後的資料。</p></section>
+  <section class="panel"><h2>每趟配速（點大小＝距離）</h2><div id="c_pace" class="chart" style="height:380px"></div>
+    <p class="note">配速軸向上＝較快。超過 10:00/km 的活動（疑似步行/混合）以 ✕ 標示並壓在上限，不影響趨勢線。虛線為 7 趟移動平均（已排除異常值）。</p></section>
+
+  <section class="panel"><h2>🗓 馬拉松訓練計畫（2026-10-02 ～ 2026-10-25）</h2>
+    <div class="warn" id="caveat"></div>
+    <p class="note"><b>假設：</b></p><ul class="plain" id="assump"></ul>
+    <div class="tablewrap"><table><thead><tr><th>日期</th><th>星期</th><th>內容</th><th>km</th><th>配速</th><th>說明</th></tr></thead><tbody id="plan"></tbody></table></div>
+    <h2 style="margin-top:14px">比賽日策略</h2><ol class="plain" id="racep"></ol>
+    <p class="note">完整文字版：<a style="color:var(--acc2)" href="plan.md">plan.md</a></p>
+  </section>
+</main>
+<footer>資料來源：Strava 匯出（monthly.csv／activities.csv）。圖表以 Plotly.js 繪製。<br>
+註：部分舊月份平均配速（如 2025-07 的 18:48/km）疑為步行或混合活動造成的資料異常，已標示且不納入趨勢判讀。</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const L={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#e8eef5'},margin:{l:48,r:44,t:10,b:70},
+  legend:{orientation:'h',y:-0.22},hovermode:'closest',xaxis:{gridcolor:'#2d3d4f'},yaxis:{gridcolor:'#2d3d4f'}};
+const CFG={responsive:true,displaylogo:false,scrollZoom:false};
+const fmtP=s=>s?`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`:'';
+let D={}, months=0;
+
+async function load(){
+  const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
+  const [m,a,w,s,p]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json'].map(g));
+  D={m,a,w,s,p}; $('updated').textContent=s.generated; $('through').textContent=s.data_through;
+  $('thr').textContent=s.outlier_threshold+':00'; cards(); plan(); render();
+}
+function cutoff(n){ // n 個月前的 YYYY-MM-DD / YYYY-MM
+  const end=new Date(D.s.data_through+'T00:00:00'); if(!n) return {d:'0000-00-00',m:'0000-00'};
+  const d=new Date(end); d.setMonth(d.getMonth()-n); d.setDate(d.getDate()+1);
+  const iso=d.toISOString().slice(0,10);
+  const e=new Date(end.getFullYear(),end.getMonth()-(n-1),1);
+  return {d:iso,m:e.getFullYear()+'-'+String(e.getMonth()+1).padStart(2,'0')};
+}
+function cards(){
+  const s=D.s,pr=s.prs;
+  const c=[
+   ['累計（全時間）',`${s.alltime.km} km`,`${s.alltime.runs} 次 · ${s.alltime.time} · 平均 ${s.alltime.pace}/km`],
+   ['近 12 週平均',`${s.w12.km_per_week} km/週`,`${s.w12.runs} 次 · ${s.w12.km} km · 配速 ${s.w12.pace}/km`],
+   ['近 4 週平均',`${s.w4.km_per_week} km/週`,`${s.w4.runs} 次 · ${s.w4.km} km`],
+   ['最長單趟',`${s.longest.km} km`,s.longest.date],
+   ['最高月跑量',`${s.best_month}`,`九月 ${s.trend.sep_km} km（較八月 ${s.trend.aug_to_sep_pct>0?'+':''}${s.trend.aug_to_sep_pct}%）`],
+   ['個人最佳 PR',`5K ${pr['5K']}`,`1K ${pr['1K']} · 1英里 ${pr['1 英里']} · 10K ${pr['10K']}`]];
+  $('cards').innerHTML=c.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+}
+function render(){
+  const co=cutoff(months), thr=D.s.outlier_threshold*60;
+  const M=D.m.filter(r=>r.month>=co.m);
+  const mo=M.map(r=>r.month);
+  Plotly.react('c_month',[
+    {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:'#fc4c02'},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:mo,y:M.map(r=>r.runs),name:'跑步次數',yaxis:'y2',line:{color:'#3fb6ff'},hovertemplate:'%{x}<br>%{y} 次<extra></extra>'}],
+    {...L,yaxis:{title:'km',gridcolor:'#2d3d4f'},yaxis2:{title:'次數',overlaying:'y',side:'right',showgrid:false,rangemode:'tozero'},xaxis:{type:'category',gridcolor:'#2d3d4f'}},CFG);
+  Plotly.react('c_time',[{type:'bar',x:mo,y:M.map(r=>r.hours),name:'移動時間（小時）',marker:{color:'#4cd08a'},customdata:M.map(r=>r.time),hovertemplate:'%{x}<br>%{customdata}（%{y:.1f} 小時）<extra></extra>'}],
+    {...L,yaxis:{title:'小時',gridcolor:'#2d3d4f'},xaxis:{type:'category',gridcolor:'#2d3d4f'}},CFG);
+  const P=M.filter(r=>r.pace_sec), cap=r=>Math.min(r.pace_sec,thr);
+  Plotly.react('c_mpace',[
+    {type:'scatter',mode:'lines',x:P.map(r=>r.month),y:P.map(cap),line:{color:'#8fa3b8',width:1.5},hoverinfo:'skip',showlegend:false},
+    {type:'scatter',mode:'markers',name:'正常月份',x:P.filter(r=>!r.outlier).map(r=>r.month),y:P.filter(r=>!r.outlier).map(r=>r.pace_sec),marker:{size:10,color:'#3fb6ff'},text:P.filter(r=>!r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
+    {type:'scatter',mode:'markers',name:'異常（已壓在上限）',x:P.filter(r=>r.outlier).map(r=>r.month),y:P.filter(r=>r.outlier).map(cap),marker:{size:11,color:'rgba(0,0,0,0)',line:{color:'#fc4c02',width:2},symbol:'x-open'},text:P.filter(r=>r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>原始 %{text}/km（疑似步行/混合）<extra></extra>'}],
+    {...L,yaxis:{title:'配速',autorange:'reversed',gridcolor:'#2d3d4f',tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10:00+'],range:[thr+20,270]},xaxis:{type:'category',gridcolor:'#2d3d4f'}},CFG);
+  // weekly: 最近 13 週（受範圍按鈕限制：3個月≈13週，其他沿用全部可用週數）
+  let W=D.w.slice(); const lim=months===0||months>=3?13:13; W=W.slice(-lim);
+  Plotly.react('c_week',[
+    {type:'bar',x:W.map(r=>r.week),y:W.map(r=>r.km),name:'每週公里',marker:{color:W.map(r=>r.partial?'rgba(252,76,2,.4)':'#fc4c02')},text:W.map(r=>r.partial?'（未滿一週）':''),hovertemplate:'週起 %{x}<br>%{y:.1f} km %{text}<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:W.filter(r=>r.rolling4!=null).map(r=>r.week),y:W.filter(r=>r.rolling4!=null).map(r=>r.rolling4),name:'4 週滾動平均',line:{color:'#3fb6ff',width:3},hovertemplate:'週起 %{x}<br>4週均 %{y:.1f} km/週<extra></extra>'}],
+    {...L,yaxis:{title:'km',gridcolor:'#2d3d4f'},xaxis:{type:'category',gridcolor:'#2d3d4f',tickangle:-45}},CFG);
+  // scatter
+  const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier), bad=A.filter(r=>r.outlier);
+  const sz=r=>Math.max(6,Math.min(36,r.km*3.2));
+  const ma=ok.map((_,i)=>{const w=ok.slice(Math.max(0,i-6),i+1);return w.reduce((s,r)=>s+r.pace_sec,0)/w.length});
+  Plotly.react('c_pace',[
+    {type:'scatter',mode:'markers',name:'每趟（點大小＝公里）',x:ok.map(r=>r.date),y:ok.map(r=>r.pace_sec),marker:{size:ok.map(sz),color:ok.map(r=>r.km),colorscale:'Turbo',showscale:false,opacity:.75,line:{width:1,color:'#fff'}},customdata:ok.map(r=>[r.km,r.pace,r.time]),hovertemplate:'%{x}<br>%{customdata[0]} km · %{customdata[1]}/km<br>時間 %{customdata[2]}<extra></extra>'},
+    {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:'#ffd166',dash:'dash'},hoverinfo:'skip'},
+    {type:'scatter',mode:'markers',name:'異常 >10:00（疑似步行）',x:bad.map(r=>r.date),y:bad.map(()=>thr),marker:{symbol:'x',size:10,color:'#fc4c02'},customdata:bad.map(r=>[r.km,r.pace]),hovertemplate:'%{x}<br>%{customdata[0]} km · 原始 %{customdata[1]}/km<extra></extra>'}],
+    {...L,yaxis:{title:'配速（分/公里）',autorange:'reversed',gridcolor:'#2d3d4f',tickvals:[300,330,360,390,420,450,480,540,600],ticktext:['5:00','5:30','6:00','6:30','7:00','7:30','8:00','9:00','10:00+'],range:[thr+20,270]},xaxis:{gridcolor:'#2d3d4f'}},CFG);
+}
+function plan(){
+  const p=D.p; $('caveat').textContent=p.caveat;
+  $('assump').innerHTML=p.assumptions.map(x=>`<li>${x}</li>`).join('');
+  $('racep').innerHTML=p.race_plan.map(x=>`<li>${x}</li>`).join('');
+  const today=new Date(Date.now()+ (new Date().getTimezoneOffset()+480)*60000).toISOString().slice(0,10);
+  let h='',wk='';
+  p.days.forEach(d=>{
+    if(d.week!==wk){wk=d.week;const t=p.weekly_km[wk];h+=`<tr class="wk"><td colspan="6">週起 ${wk}${t!=null?` ・ 本週計畫 ${t} km${wk==='2026-09-28'?'（10/2 起）':''}`:''}</td></tr>`;}
+    const cls=d.date===p.race_date?'race':(d.date===today?'today':(d.km?'':'rest'));
+    h+=`<tr class="${cls}"><td>${d.date.slice(5)}${d.date===today?' ◀今天':''}</td><td>${d.weekday}</td><td>${d.type}</td><td>${d.km?d.km:'—'}</td><td>${d.pace||'—'}</td><td>${d.note}</td></tr>`;
+  });
+  $('plan').innerHTML=h;
+  const cd=Math.ceil((new Date(p.race_date+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5);
+  $('cd').textContent=Math.max(cd,0);
+}
+$('ranges').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#ranges button').forEach(x=>x.classList.toggle('on',x===b));months=+b.dataset.m;render();});
+load();
+</script>
+</body></html>

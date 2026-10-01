@@ -1,0 +1,93 @@
+[
+ {
+  "week": "2026-07-06",
+  "km": 10.75,
+  "runs": 4,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2026-07-13",
+  "km": 12.19,
+  "runs": 6,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2026-07-20",
+  "km": 1.41,
+  "runs": 1,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2026-07-27",
+  "km": 17.66,
+  "runs": 7,
+  "partial": false,
+  "rolling4": 10.5
+ },
+ {
+  "week": "2026-08-03",
+  "km": 11.58,
+  "runs": 5,
+  "partial": false,
+  "rolling4": 10.71
+ },
+ {
+  "week": "2026-08-10",
+  "km": 11.14,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 10.45
+ },
+ {
+  "week": "2026-08-17",
+  "km": 14.03,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 13.6
+ },
+ {
+  "week": "2026-08-24",
+  "km": 16.55,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 13.32
+ },
+ {
+  "week": "2026-08-31",
+  "km": 32.33,
+  "runs": 5,
+  "partial": false,
+  "rolling4": 18.51
+ },
+ {
+  "week": "2026-09-07",
+  "km": 22.6,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 21.38
+ },
+ {
+  "week": "2026-09-14",
+  "km": 16.15,
+  "runs": 4,
+  "partial": false,
+  "rolling4": 21.91
+ },
+ {
+  "week": "2026-09-21",
+  "km": 22.2,
+  "runs": 5,
+  "partial": false,
+  "rolling4": 23.32
+ },
+ {
+  "week": "2026-09-28",
+  "km": 4.18,
+  "runs": 1,
+  "partial": true,
+  "rolling4": 21.37
+ }
+]

@@ -1,0 +1,192 @@
+[
+ {
+  "month": "2025-03",
+  "runs": 3,
+  "km": 8.24,
+  "hours": 1.06,
+  "time": "1:03:25",
+  "pace": "7:41",
+  "pace_sec": 461,
+  "outlier": false
+ },
+ {
+  "month": "2025-04",
+  "runs": 5,
+  "km": 12.68,
+  "hours": 1.53,
+  "time": "1:31:39",
+  "pace": "7:13",
+  "pace_sec": 433,
+  "outlier": false
+ },
+ {
+  "month": "2025-05",
+  "runs": 5,
+  "km": 20.45,
+  "hours": 2.15,
+  "time": "2:08:57",
+  "pace": "6:18",
+  "pace_sec": 378,
+  "outlier": false
+ },
+ {
+  "month": "2025-06",
+  "runs": 0,
+  "km": 0.0,
+  "hours": 0.0,
+  "time": "0:00:00",
+  "pace": "",
+  "pace_sec": null,
+  "outlier": false
+ },
+ {
+  "month": "2025-07",
+  "runs": 13,
+  "km": 24.49,
+  "hours": 7.67,
+  "time": "7:40:28",
+  "pace": "18:48",
+  "pace_sec": 1128,
+  "outlier": true
+ },
+ {
+  "month": "2025-08",
+  "runs": 9,
+  "km": 25.62,
+  "hours": 4.68,
+  "time": "4:41:01",
+  "pace": "10:58",
+  "pace_sec": 658,
+  "outlier": true
+ },
+ {
+  "month": "2025-09",
+  "runs": 7,
+  "km": 28.64,
+  "hours": 3.07,
+  "time": "3:04:23",
+  "pace": "6:26",
+  "pace_sec": 386,
+  "outlier": false
+ },
+ {
+  "month": "2025-10",
+  "runs": 2,
+  "km": 1.09,
+  "hours": 0.1,
+  "time": "0:05:53",
+  "pace": "5:23",
+  "pace_sec": 323,
+  "outlier": false
+ },
+ {
+  "month": "2025-11",
+  "runs": 1,
+  "km": 2.91,
+  "hours": 0.31,
+  "time": "0:18:26",
+  "pace": "6:20",
+  "pace_sec": 380,
+  "outlier": false
+ },
+ {
+  "month": "2025-12",
+  "runs": 2,
+  "km": 3.15,
+  "hours": 0.97,
+  "time": "0:58:14",
+  "pace": "18:29",
+  "pace_sec": 1109,
+  "outlier": true
+ },
+ {
+  "month": "2026-01",
+  "runs": 0,
+  "km": 0.0,
+  "hours": 0.0,
+  "time": "0:00:00",
+  "pace": "",
+  "pace_sec": null,
+  "outlier": false
+ },
+ {
+  "month": "2026-02",
+  "runs": 5,
+  "km": 25.79,
+  "hours": 3.14,
+  "time": "3:08:41",
+  "pace": "7:18",
+  "pace_sec": 438,
+  "outlier": false
+ },
+ {
+  "month": "2026-03",
+  "runs": 9,
+  "km": 43.15,
+  "hours": 4.49,
+  "time": "4:29:29",
+  "pace": "6:14",
+  "pace_sec": 374,
+  "outlier": false
+ },
+ {
+  "month": "2026-04",
+  "runs": 6,
+  "km": 19.14,
+  "hours": 2.13,
+  "time": "2:07:53",
+  "pace": "6:40",
+  "pace_sec": 400,
+  "outlier": false
+ },
+ {
+  "month": "2026-05",
+  "runs": 13,
+  "km": 44.2,
+  "hours": 4.18,
+  "time": "4:10:52",
+  "pace": "5:40",
+  "pace_sec": 340,
+  "outlier": false
+ },
+ {
+  "month": "2026-06",
+  "runs": 18,
+  "km": 47.51,
+  "hours": 6.5,
+  "time": "6:30:03",
+  "pace": "8:12",
+  "pace_sec": 492,
+  "outlier": false
+ },
+ {
+  "month": "2026-07",
+  "runs": 18,
+  "km": 45.41,
+  "hours": 5.79,
+  "time": "5:47:26",
+  "pace": "7:39",
+  "pace_sec": 459,
+  "outlier": false
+ },
+ {
+  "month": "2026-08",
+  "runs": 16,
+  "km": 60.48,
+  "hours": 6.14,
+  "time": "6:08:30",
+  "pace": "6:05",
+  "pace_sec": 365,
+  "outlier": false
+ },
+ {
+  "month": "2026-09",
+  "runs": 18,
+  "km": 97.46,
+  "hours": 10.76,
+  "time": "10:45:25",
+  "pace": "6:37",
+  "pace_sec": 397,
+  "outlier": false
+ }
+]
