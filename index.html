@@ -268,7 +268,7 @@ function cards(){
    [`${nm} 總跑量`,f1(km),'km',`${c.active} 個月有跑步`,D_(km,pv&&pv.km,'n')],
    [`${nm} 跑步次數`,runs,'次',`平均每週 ${f1(runs/(c.days/7))} 次`,D_(runs,pv&&pv.runs,'n')],
    [`${nm} 月均跑量`,f1(c.perMonth),'km／月',`共 ${c.have} 個月`,D_(c.perMonth,pv&&pv.perMonth,'n')],
-   [`${nm} 週均跑量`,f1(c.perWeek),'km／週',`約 ${f1(c.days/7)} 週`,D_(c.perWeek,pv&&pv.perWeek,'n')],
+   [`${nm} 週均跑量`,f1(c.perWeek),'km／週',`${f1(c.days/7)} 週`,D_(c.perWeek,pv&&pv.perWeek,'n')],
    [`${nm} 平均配速`,fmtP(c.pace),'／km','依月彙總・排除 >10:00 月份',D_(c.pace,pv&&pv.pace,'pace')],
    [`${nm} 最長單趟`,lg?f1(lg.km):'—','km',lg?`${lg.date.slice(5).replace('-','/')}${cover?'・單趟資料自 '+fs+' 起':''}`:'此期間無單趟資料','']
   ];
