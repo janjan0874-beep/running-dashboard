@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="dashboard-layout" content="tabs-v3">
-<title>跑步儀表板｜半馬倒數</title>
+<title>跑步儀表板｜半馬與 10K 目標倒數</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--fg:#1f2937;--mut:#6b7280;--line:#e5e7eb;--acc:#f08a4b;--blue:#5b9bd5;--teal:#4db6a4;--ok:#2f9e6e;--bad:#d9534f;--soft:#f3f5f8;
@@ -143,7 +143,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <section class="pane" data-tab="overview">
     <div class="cards" id="cards"></div>
     <div class="panel"><h3>每月跑量<small>km</small></h3><div id="c_mini" class="chart mini"></div></div>
-    <div class="countdown">距離半馬（2026-10-25）還有<b id="cd">—</b>天</div>
+    <div class="countdown"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
     <p class="note" id="rangeNote">所選期間的統計</p>
     <div class="cards more" id="cards2"></div>
     <h2 class="sec2">全時間累計與 PR<small>不受上方期間影響</small></h2>
@@ -172,7 +172,8 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
     <div class="wkchips" id="wkchips"></div>
     <div id="plan"></div>
     <details class="fold"><summary>背景與假設</summary><div class="body"><div class="warn" id="caveat"></div><ul class="plain" id="assump"></ul></div></details>
-    <details class="fold"><summary>比賽日策略（半馬 21.1 km）</summary><div class="body"><ol class="plain" id="racep"></ol><p class="note">完整文字版：<a style="color:var(--blue)" href="plan.md">plan.md</a></p></div></details>
+    <details class="fold" id="fold_test"><summary id="test_title">10K 計時測試策略</summary><div class="body"><ol class="plain" id="testp"></ol></div></details>
+    <details class="fold"><summary id="race_title">比賽日策略（半馬 21.1 km）</summary><div class="body"><ol class="plain" id="racep"></ol><p class="note">完整文字版：<a style="color:var(--blue)" href="plan.md">plan.md</a></p></div></details>
     <details class="fold"><summary>📋 <span id="ck_title">每週檢查</span></summary><div class="body"><ul class="plain" id="ck_items"></ul>
       <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p><p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></div></details>
   </section>
@@ -345,22 +346,24 @@ function render(){
 const todayStr=()=>new Date(Date.now()+(new Date().getTimezoneOffset()+480)*60000).toISOString().slice(0,10);
 let curWeek=null, weekKeys=[], weeksMap={};
 function dayHTML(d,today,p){
-  const cls=d.date===p.race_date?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
+  const cls=d.kind==='race'?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
   const ex=[d.pace?`配速 ${d.pace}`:'',(d.treadmill&&d.treadmill!=='—')?`跑步機 ${d.treadmill}`:''].filter(Boolean).join('・');
   return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="km">${d.km?d.km+' km':''}</span></div>
     <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
 }
 function showWeek(wk,fromUser){
-  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), t=p.weekly_km[wk];
+  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), t=p.weekly_km[wk], ph=(p.week_phase||{})[wk];
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const days=weeksMap[wk];
-  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${t!=null?`本週計畫 ${t} km${wk==='2026-09-28'?'（10/1 起）':''}`:''}</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
+  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${ph?ph+'｜':''}${t!=null?`本週跑步 ${t.toFixed(1)} km${wk==='2026-09-28'?'（10/1 起）':''}`:''}</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
   if(fromUser){const b=document.querySelector('#wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
 function plan(){
   const p=D.p; $('caveat').textContent=p.caveat;
   $('assump').innerHTML=p.assumptions.map(x=>`<li>${x}</li>`).join('');
   $('racep').innerHTML=p.race_plan.map(x=>`<li>${x}</li>`).join('');
+  if(p.test_plan){$('testp').innerHTML=p.test_plan.map(x=>`<li>${x}</li>`).join('');$('test_title').textContent=p.test_title;}
+  if(p.race_title) $('race_title').textContent=p.race_title;
   if(p.checkin){const c=p.checkin;$('ck_title').textContent=c.title;
     $('ck_items').innerHTML=c.items.map(x=>`<li>${x}</li>`).join('');
     $('ck_goals').textContent=c.goals.join('；');$('ck_rules').textContent=c.rules.join('；');}
@@ -370,15 +373,20 @@ function plan(){
   // 今日課表
   const td=p.days.find(d=>d.date===today)||p.days.find(d=>d.date>today)||p.days[p.days.length-1];
   const isToday=td.date===today, tm=(td.treadmill&&td.treadmill!=='—')?td.treadmill:'';
-  $('today').innerHTML=`<div class="todaycard${td.date===p.race_date?' race':''}"><div class="lab">${isToday?'今天':'下一次課表'} ${td.date.slice(5).replace('-','/')} ${td.weekday}</div>
+  $('today').innerHTML=`<div class="todaycard${td.kind==='race'?' race':''}"><div class="lab">${isToday?'今天':'下一次課表'} ${td.date.slice(5).replace('-','/')} ${td.weekday}</div>
     <div class="big">${td.type}${td.km?`<span class="km">${td.km} km</span>`:''}</div>
     ${td.km?`<div class="two"><div><b>🌳 戶外</b><br>${td.pace?'配速 '+td.pace:'輕鬆跑'}</div><div><b>🏃 跑步機</b><br>${tm||'—'}</div></div>`:''}
     <div class="nt">${td.note}</div></div>`;
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
   $('wkchips').innerHTML=weekKeys.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');
   showWeek(td.week);
-  const cd=Math.ceil((new Date(p.race_date+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5);
+  // 倒數：今天（含）之後最近的目標；半馬之前倒數半馬，之後倒數 12/27 的 10K 測試
+  const gs=p.goals||[{date:p.race_date,label:'目標',detail:''}];
+  const g=gs.find(x=>x.date>=today)||gs[gs.length-1];
+  const cd=Math.ceil((new Date(g.date+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5);
+  $('cdlab').textContent=`距離${g.label}（${g.date}）`;
   $('cd').textContent=Math.max(cd,0);
+  const ft=$('fold_test'); if(ft&&p.test_plan) ft.open=(g.date!==gs[0].date)||gs.length===1;
 }
 $('wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showWeek(b.dataset.wk,true);});
 (()=>{let x0=null,y0=null;const el=$('plan');
