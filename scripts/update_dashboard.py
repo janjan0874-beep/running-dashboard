@@ -143,9 +143,13 @@ def main():
     json.dump(p, open(os.path.join(DATA, "plan.json"), "w"), ensure_ascii=False, indent=1)
     md = make_plan.to_md(p)
     open(os.path.join(HERE, "plan.md"), "w").write(md); open(os.path.join(REPO, "plan.md"), "w").write(md)
+    # 網頁：index.html 由 index_template.html（含手機版 RWD 設計）原樣輸出，每日更新不會覆蓋成舊版
+    tpl = os.path.join(HERE, "index_template.html")
+    with open(tpl, encoding="utf-8") as f: html = f.read()
+    with open(os.path.join(REPO, "index.html"), "w", encoding="utf-8") as f: f.write(html)
     # 備份腳本到 repo
     os.makedirs(os.path.join(REPO, "scripts"), exist_ok=True)
-    for f in ("update_dashboard.py", "make_plan.py", "profile.json", "UPDATE.md"):
+    for f in ("update_dashboard.py", "make_plan.py", "profile.json", "UPDATE.md", "index_template.html"):
         src = os.path.join(HERE, f)
         if os.path.exists(src): open(os.path.join(REPO, "scripts", f), "w").write(open(src).read())
     print("資料已更新，資料截至", last, "；更新日", summary["generated"])

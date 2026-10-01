@@ -3,6 +3,7 @@
 網站：https://janjan0874-beep.github.io/running-dashboard/ ｜ Repo：`/workspace/strava/running-dashboard`（遠端 janjan0874-beep/running-dashboard，分支 main）
 
 網站只讀 `data/*.json`，更新資料不需要改 `index.html`。
+**頁面原始碼是 `/workspace/strava/index_template.html`（含手機版 RWD）；`update_dashboard.py` 每次執行會把它複製成 repo 的 `index.html`。要改版請改 template，不要直接改 repo 內的 index.html（會被覆蓋）。**
 
 ## 檔案
 - `/workspace/strava/activities.csv`：單趟紀錄，欄位 `date,km,moving,pace`（日期 YYYY-MM-DD；moving 為 `m:ss` 或 `h:mm:ss`；pace 為 `m:ss`/km）。
