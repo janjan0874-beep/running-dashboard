@@ -42,12 +42,15 @@ main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .panel h3{font-size:.98rem;margin:0 0 2px;line-height:1.35}
 .panel h3 small{font-weight:400;color:var(--mut);font-size:.78rem;margin-left:6px}
 .take{margin:0 0 4px;color:#374151;font-size:12.5px;line-height:1.45;background:var(--soft);border-radius:8px;padding:5px 9px}
+.tip{height:18px;line-height:18px;margin:0;font-size:12px;color:#6b7280;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.tip.idle{color:#b4bbc6}
+.hoverlayer{display:none !important}
 .chart{width:100%;height:240px}
 .chart .nsewdrag,.chart .main-svg{touch-action:pan-y !important}
-.chart.mini{height:clamp(150px,calc(100svh - 470px),230px)}
-.chart.half{height:clamp(170px,calc((100svh - 330px)/2),240px)}
+.chart.mini{height:clamp(150px,calc(100svh - 490px),230px)}
+.chart.half{height:clamp(170px,calc((100svh - 370px)/2),240px)}
 .pane[data-tab=month] .take{display:none}
-.chart.fill{height:clamp(240px,calc(100svh - 330px),560px)}
+.chart.fill{height:clamp(240px,calc(100svh - 350px),560px)}
 .chart.tail{height:260px}
 .countdown{margin-top:8px;background:#fff4ec;border:1px solid #fbd9c0;border-radius:12px;padding:6px 12px;text-align:center;color:#8a4a1c;font-size:14px}
 .countdown b{font-size:1.4rem;color:#e0702a;margin:0 3px}
@@ -112,7 +115,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 .trgrid .sub{margin:0;font-size:11px;color:var(--mut);line-height:1.3}
 .trgrid .panel h3 b{font-size:12px;white-space:nowrap}
 #tr_notes li{font-size:12.5px;line-height:1.5;margin-bottom:4px}
-.chart.tr{height:clamp(120px,calc((100svh - 400px)/2),260px)}
+.chart.tr{height:clamp(120px,calc((100svh - 440px)/2),260px)}
 .chart.trc{height:200px}
 .trtab{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
 .trtab th{color:var(--mut);font-weight:500;text-align:right;padding:3px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -169,8 +172,8 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <button data-tab="month" role="tab"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>月度</button>
   <button data-tab="week" role="tab"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>每週</button>
   <button data-tab="pace" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5l3.5-3.5M10 3h4"/></svg>配速</button>
-  <button data-tab="plan" role="tab"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M8.5 11h7M8.5 15h5"/></svg>課表</button>
   <button data-tab="train" role="tab"><svg viewBox="0 0 24 24" aria-label="啞鈴"><path d="M2.5 9.5v5M5.5 6.5v11M18.5 6.5v11M21.5 9.5v5M5.5 12h13"/></svg>訓練</button>
+  <button data-tab="plan" role="tab"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M8.5 11h7M8.5 15h5"/></svg>課表</button>
 </nav>
 <main>
   <section class="pane" data-tab="overview">
@@ -234,18 +237,52 @@ const CFG_D={responsive:true,displaylogo:false,scrollZoom:false};
 const CFG_M={responsive:true,displaylogo:false,scrollZoom:false,displayModeBar:false,doubleClick:false};
 function plot(id,traces,layout,opt={}){
   const el=$(id); if(!el||!el.offsetWidth) return; // 分頁隱藏時先跳過，切換到該分頁時會重畫
-  if(!isMob()) return Plotly.react(id,traces,layout,CFG_D);
+  tipReset(id);
+  if(!isMob()) return Plotly.react(id,traces,{...layout,hovermode:opt.hover||'closest',hoverlabel:HL},CFG_D).then(()=>tipBind(id));
   const lay={...layout};
   lay.font={color:TXT,size:12};
   lay.margin={l:40,r:opt.y2?34:10,t:opt.legend===false?8:(opt.t||26),b:opt.b||44};
   lay.legend={orientation:'h',x:0,xanchor:'left',y:1.02,yanchor:'bottom',font:{size:11},itemsizing:'constant',tracegroupgap:0};
   lay.dragmode=false; lay.hovermode=opt.hover||'closest';
-  lay.hoverlabel={font:{size:13},namelength:-1};
+  lay.hoverlabel=HL;
   const fix=(ax,extra)=>{const a={...(lay[ax]||{}),...extra};delete a.title;a.fixedrange=true;a.automargin=true;a.tickfont={size:11};return a;};
   lay.xaxis=fix('xaxis',opt.x||{}); lay.yaxis=fix('yaxis',{});
   if(lay.yaxis2) lay.yaxis2=fix('yaxis2',{});
-  return Plotly.react(id,traces,lay,CFG_M);
+  return Plotly.react(id,traces,lay,CFG_M).then(()=>tipBind(id));
 }
+
+// ===== 圖上方讀數列（取代 Plotly 浮動提示框與 X 軸黑色氣泡）=====
+const HL={bgcolor:'rgba(0,0,0,0)',bordercolor:'rgba(0,0,0,0)',font:{color:'rgba(0,0,0,0)',size:1},namelength:0};
+const TIP_IDLE='點圖表查看數值';
+const tipEl=id=>{const c=$(id);const t=c&&c.previousElementSibling;return t&&t.classList.contains('tip')?t:null;};
+function tipSet(id,txt){const t=tipEl(id);if(!t)return;
+  t.classList.toggle('idle',!txt);t.textContent=txt||TIP_IDLE;
+  t.style.fontSize='';let fs=12;while(t.scrollWidth>t.clientWidth+1&&fs>9){fs-=.5;t.style.fontSize=fs+'px';}}
+function tipFmt(expr,d,i){
+  const m=/^(\w+)(?:\[(\d+)\])?(?::\.(\d+)f)?$/.exec(expr); if(!m) return '';
+  let v=d[m[1]]; v=Array.isArray(v)?v[i]:v;
+  if(m[2]!=null&&Array.isArray(v)) v=v[+m[2]];
+  if(v==null) return '';
+  return m[3]!=null?(+v).toFixed(+m[3]):String(v);
+}
+function tipText(points){ // 沿用各 trace 的 hovertemplate（文字與精確數字），多點（雙軸／堆疊）併成一行
+  let head=null,parts=[];
+  [...(points||[])].sort((a,b)=>a.curveNumber-b.curveNumber).forEach(pt=>{const d=pt.data||{},i=pt.pointNumber,tpl=d.hovertemplate; if(!tpl||i==null) return;
+    const segs=tpl.replace(/<extra>.*?<\/extra>/g,'').split('<br>').map(sg=>sg.replace(/%\{([^}]+)\}/g,(_,e)=>tipFmt(e,d,i)).replace(/\s+/g,' ').trim()).filter(Boolean);
+    if(head==null){head=segs.shift();} else if(segs[0]===head) segs.shift();
+    parts.push(...segs);});
+  return head==null?'':[head,...parts].join('・');
+}
+const TIPST={};
+function tipReset(id){const st=TIPST[id]||(TIPST[id]={});st.sel=null;tipSet(id,'');}
+function tipBind(id){const gd=$(id),st=TIPST[id]||(TIPST[id]={}); if(!gd||st.bound||!gd.on) return; st.bound=true;
+  gd.on('plotly_hover',e=>tipSet(id,tipText(e.points)));
+  gd.on('plotly_unhover',()=>tipSet(id,st.sel||''));
+  gd.on('plotly_click',e=>{const t=tipText(e.points); if(!t) return; st.sel=t; tipSet(id,t);
+    const idx=[],sp=[]; (gd.data||[]).forEach((tr,k)=>{if(tr.type==='bar'){idx.push(k);sp.push([e.points[0].pointNumber]);}});
+    if(idx.length){try{Plotly.restyle(gd,{selectedpoints:sp,'unselected.marker.opacity':0.55},idx);}catch(err){}}});
+}
+document.querySelectorAll('.chart').forEach(c=>{const t=document.createElement('div');t.className='tip idle';t.textContent=TIP_IDLE;c.parentNode.insertBefore(t,c);});
 function catTicks(vals,fmt){
   const n=vals.length,step=Math.max(1,Math.ceil(n/6));
   const idx=vals.map((_,i)=>i).filter(i=>(n-1-i)%step===0);
@@ -344,10 +381,10 @@ function render(){
     $('k_mpace').textContent=`最快月份是 ${fast.month}（${fast.pace}/km）；最近一個正常月份為 ${okM[okM.length-1].month}（${okM[okM.length-1].pace}/km）。`;}
   else $('k_mpace').textContent='此期間沒有正常配速月份。';
   {const mini=$('c_mini');
-   if(mini&&mini.offsetWidth){const mob=isMob();
+   if(mini&&mini.offsetWidth){const mob=isMob();tipReset('c_mini');
     Plotly.react('c_mini',[{type:'bar',x:mo,y:M.map(r=>r.km),marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'}],
      {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT,size:11},margin:{l:36,r:8,t:6,b:30},showlegend:false,dragmode:false,
-      xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...catTicks(mo,abbrM),tickangle:0,tickfont:{size:10}},yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10}},hovermode:'x'},CFG_M);}}
+      xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...catTicks(mo,abbrM),tickangle:0,tickfont:{size:10}},yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10}},hovermode:'x',hoverlabel:HL},CFG_M).then(()=>tipBind('c_mini'));}}
   plot('c_month',[
     {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
     {type:'scatter',mode:'lines+markers',x:mo,y:M.map(r=>r.runs),name:'跑步次數',yaxis:'y2',line:{color:C_BLUE,width:3},marker:{size:7},hovertemplate:'%{x}<br>%{y} 次<extra></extra>'}],
@@ -508,7 +545,7 @@ function trainRender(){
   plot('c_tr_b',[
     {type:'bar',name:'跑步',x,y:U.map(u=>u.run/3600),marker:{color:C_BLUE},hovertemplate:hov('跑步')},
     {type:'bar',name:'Workout',x,y:U.map(u=>u.st/3600),marker:{color:C_ORG},hovertemplate:hov('Workout')},
-    {type:'bar',name:'其他',x,y:U.map(u=>u.ot/3600),marker:{color:C_TEAL},hovertemplate:hov('其他（Swim／Stair）')},
+    {type:'bar',name:'其他',x,y:U.map(u=>u.ot/3600),marker:{color:C_TEAL},hovertemplate:hov('其他')},
     {type:'scatter',mode:'text',x,y:tot,text:tot.map(v=>v?f1(v):''),textposition:'top center',textfont:{size:U.length>12?8.5:10.5,color:TXT},showlegend:false,hoverinfo:'skip',cliponaxis:false}],
     {...L,barmode:'stack',bargap:.2,yaxis:{gridcolor:GRID,title:'小時',rangemode:'tozero'},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},
     {hover:'x',b:40,x:catTicks(x,ulab)});
@@ -536,7 +573,7 @@ function trainRender(){
   $('tr_tab_sub').textContent='不受上方期間影響；時間＝elapsed（時:分:秒）。';
 }
 // ===== 分頁 =====
-const TABS=['overview','month','week','pace','plan','train'];
+const TABS=['overview','month','week','pace','train','plan'];
 let curTab=null;
 function tabFromHash(){const m=/tab=([a-z]+)/.exec(location.hash);return m&&TABS.includes(m[1])?m[1]:null;}
 function setTab(t,opts={}){
