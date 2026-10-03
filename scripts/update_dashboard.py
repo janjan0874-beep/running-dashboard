@@ -64,6 +64,81 @@ def recompute_monthly(acts):
         w.writeheader(); w.writerows(out)
     return out
 
+STRENGTH_TYPES = ("Workout", "HIIT")   # 肌力／Hyrox 類：Workout + HIIT；其餘（Swim、Stair-Stepper…）只算入整體運動時數
+
+def load_workouts():
+    """讀 workouts.csv（非跑步活動）；以 url 去重（保留第一筆），依日期＋開始時間排序。"""
+    path = os.path.join(HERE, "workouts.csv")
+    seen, rows, dup = set(), [], 0
+    for r in csv.DictReader(open(path, encoding="utf-8")):
+        if r["url"] in seen:
+            dup += 1; continue
+        seen.add(r["url"])
+        rows.append(dict(
+            date=r["date"], start=r["start_time"], name=r["name"], type=r["type"],
+            elapsed=r["elapsed"], elapsed_sec=to_sec(r["elapsed"]),
+            avg_hr=int(r["avg_hr"]) if r["avg_hr"] else None,
+            max_hr=int(r["max_hr"]) if r["max_hr"] else None,
+            cal=int(r["calories"]) if r["calories"] else 0,
+            km=float(r["distance_km"] or 0), url=r["url"],
+            strength=r["type"] in STRENGTH_TYPES))
+    if dup: print(f"workouts.csv：略過 {dup} 筆重複 url")
+    rows.sort(key=lambda x: (x["date"], x["start"]))
+    return rows
+
+def build_workouts(rows, acts, monthly):
+    """每週（週一起算）／每月彙總，所有數字皆為整數秒、整數次，前端只做加總。"""
+    last_w = dt.date.fromisoformat(rows[-1]["date"]); last_r = dt.date.fromisoformat(acts[-1]["date"])
+    through = max(last_w, last_r)
+    first_w = dt.date.fromisoformat(rows[0]["date"]); first_a = dt.date.fromisoformat(acts[0]["date"])
+    run_week_from = first_a + dt.timedelta(days=(7 - first_a.weekday()) % 7)   # 跑步明細完整的第一個週一
+    mon = lambda d: d - dt.timedelta(days=d.weekday())
+    def blank():
+        return dict(n=0, n_workout=0, n_hiit=0, strength_sec=0, other_n=0, other_sec=0, cal=0, hr_sum=0, hr_n=0)
+    def add(b, r):
+        if r["strength"]:
+            b["n"] += 1; b["n_workout" if r["type"] == "Workout" else "n_hiit"] += 1
+            b["strength_sec"] += r["elapsed_sec"]; b["cal"] += r["cal"]
+            if r["avg_hr"] is not None: b["hr_sum"] += r["avg_hr"]; b["hr_n"] += 1
+        else:
+            b["other_n"] += 1; b["other_sec"] += r["elapsed_sec"]
+    # 週
+    wk = {}
+    w = mon(first_w)
+    while w <= mon(through):
+        wk[w.isoformat()] = blank(); w += dt.timedelta(days=7)
+    run_wk = collections.defaultdict(int)
+    for a in acts:
+        d = dt.date.fromisoformat(a["date"]); run_wk[mon(d).isoformat()] += a["sec"]
+    for r in rows:
+        add(wk[mon(dt.date.fromisoformat(r["date"])).isoformat()], r)
+    weekly = []
+    for k, b in wk.items():
+        end = dt.date.fromisoformat(k) + dt.timedelta(days=6)
+        weekly.append(dict(week=k, complete=end <= through,
+                           run_sec=run_wk.get(k, 0) if dt.date.fromisoformat(k) >= run_week_from else None, **b))
+    # 月
+    mk = {}
+    for m in monthly:
+        mk[m["month"]] = dict(month=m["month"], run_n=int(m["runs"]), run_sec=to_sec(m["moving_time"]), **blank())
+    ym = through.isoformat()[:7]
+    if ym not in mk: mk[ym] = dict(month=ym, run_n=0, run_sec=0, **blank())
+    for r in rows:
+        k = r["date"][:7]
+        if k not in mk: mk[k] = dict(month=k, run_n=0, run_sec=0, **blank())
+        add(mk[k], r)
+    mo = [mk[k] for k in sorted(mk)]
+    tot = collections.Counter(r["type"] for r in rows)
+    return dict(
+        through=through.isoformat(), first_workout=first_w.isoformat(),
+        run_detail_from=first_a.isoformat(), run_week_from=run_week_from.isoformat(),
+        run_through=last_r.isoformat(), workout_through=last_w.isoformat(),
+        target_per_week=2, strength_types=list(STRENGTH_TYPES), type_counts=dict(tot),
+        rows=[dict(date=r["date"], start=r["start"], name=r["name"], type=r["type"], elapsed=r["elapsed"],
+                   elapsed_sec=r["elapsed_sec"], avg_hr=r["avg_hr"], max_hr=r["max_hr"], cal=r["cal"],
+                   strength=r["strength"], url=r["url"]) for r in rows],
+        weekly=weekly, monthly=mo)
+
 def main():
     prof = json.load(open(os.path.join(HERE, "profile.json")))
     thr = prof["pace_outlier_threshold_min"]*60
@@ -132,9 +207,11 @@ def main():
                    aug_to_sep_pct=jump, sep_km=sep["km"] if sep else None, aug_km=aug["km"] if aug else None),
         outlier_threshold=prof["pace_outlier_threshold_min"],
     )
-    for name, obj in [("monthly", mj), ("activities", aj), ("weekly", weekly), ("summary", summary)]:
+    wrows = load_workouts()
+    wj = build_workouts(wrows, acts, monthly)
+    for name, obj in [("monthly", mj), ("activities", aj), ("weekly", weekly), ("summary", summary), ("workouts", wj)]:
         json.dump(obj, open(os.path.join(DATA, name+".json"), "w"), ensure_ascii=False, indent=1)
-    for f in ("monthly.csv", "activities.csv"):
+    for f in ("monthly.csv", "activities.csv", "workouts.csv"):
         open(os.path.join(DATA, f), "w").write(open(os.path.join(HERE, f)).read())
     # 計畫
     sys.path.insert(0, HERE)
@@ -152,7 +229,8 @@ def main():
     for f in ("update_dashboard.py", "make_plan.py", "profile.json", "UPDATE.md", "index_template.html"):
         src = os.path.join(HERE, f)
         if os.path.exists(src): open(os.path.join(REPO, "scripts", f), "w").write(open(src).read())
-    print("資料已更新，資料截至", last, "；更新日", summary["generated"])
+    print("workouts：", len(wrows), "筆，", wj["type_counts"], "，截至", wj["workout_through"])
+    print("資料已更新，跑步資料截至", last, "；更新日", summary["generated"])
     if "--push" in sys.argv:
         run = lambda *c: subprocess.run(c, cwd=REPO, check=True)
         run("git", "add", "-A")

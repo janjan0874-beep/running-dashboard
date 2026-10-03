@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- dashboard-layout: tabs-v3 (由 update_dashboard.py 自 index_template.html 產生，請勿直接改 index.html) -->
+<!-- dashboard-layout: tabs-v4 (由 update_dashboard.py 自 index_template.html 產生，請勿直接改 index.html) -->
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="dashboard-layout" content="tabs-v3">
+<meta name="dashboard-layout" content="tabs-v4">
 <title>跑步儀表板｜半馬與 10K 目標倒數</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <style>
@@ -91,11 +91,34 @@ details.fold[open] summary{border-bottom:1px solid var(--line);margin-bottom:6px
 details.fold .body{padding-bottom:8px}
 footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10px;line-height:1.6}
 /* 底部分頁列 */
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(5,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
 #tabbar button{border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-family:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0}
 #tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #tabbar button.on{color:var(--blue);font-weight:700}
 #tabbar button.on svg{stroke-width:2.2}
+/* 訓練分頁 */
+.trnote{margin:0 0 6px;font-size:11px;color:var(--mut);line-height:1.35}
+.trcards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.trcards .card{grid-column:span 2;padding:5px 8px;border-radius:12px}
+.trcards .card:nth-child(n+4){grid-column:span 3}
+.trcards .card .t{font-size:11px;line-height:1.25;white-space:nowrap}
+.trcards .card .v{font-size:1.2rem;line-height:1.15;margin:0;letter-spacing:-.3px;white-space:nowrap}
+.trcards .card .v i{font-size:.66rem;margin-left:2px}
+.trcards .card .s{display:none;font-size:10px;line-height:1.25}
+.trgrid .panel{padding:7px 10px}
+.trgrid .panel h3{font-size:.9rem;margin:0;display:flex;justify-content:space-between;gap:6px;align-items:baseline;flex-wrap:wrap}
+.trgrid .panel h3 b{color:var(--ok)}
+.trgrid .panel h3 b.low{color:var(--bad)}
+.trgrid .sub{margin:0;font-size:11px;color:var(--mut);line-height:1.3}
+.trgrid .panel h3 b{font-size:12px;white-space:nowrap}
+#tr_notes li{font-size:12.5px;line-height:1.5;margin-bottom:4px}
+.chart.tr{height:clamp(120px,calc((100svh - 400px)/2),260px)}
+.chart.trc{height:200px}
+.trtab{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.trtab th{color:var(--mut);font-weight:500;text-align:right;padding:3px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+.trtab td{padding:5px 2px;border-bottom:1px solid #f0f1f4;text-align:right;white-space:nowrap}
+.trtab th:nth-child(1),.trtab td:nth-child(1),.trtab th:nth-child(2),.trtab td:nth-child(2){text-align:left}
+.trtab tr:last-child td{border-bottom:0}
 @media(max-width:340px){.ranges button{font-size:12px}}
 /* 桌面：分頁列改到頂部 */
 @media(min-width:901px){
@@ -121,6 +144,15 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   .take{font-size:.9rem;padding:8px 12px}
   .countdown{font-size:1rem;padding:10px 20px}
   .day{padding:10px 8px}
+  .trcards{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+  .trcards .card,.trcards .card:nth-child(n+4){grid-column:span 1;padding:14px 16px}
+  .trcards .card .t{font-size:.88rem}.trcards .card .v{font-size:1.9rem}.trcards .card .s{display:block;font-size:.82rem}
+  .trgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .trgrid .panel{padding:16px 18px}
+  .trgrid .panel.wide{grid-column:span 2}
+  .trgrid .panel h3{font-size:1rem}.trgrid .sub{font-size:.82rem}
+  .chart.tr,.chart.trc{height:340px}
+  .trtab{font-size:14px}
 }
 
 </style>
@@ -138,6 +170,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <button data-tab="week" role="tab"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>每週</button>
   <button data-tab="pace" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5l3.5-3.5M10 3h4"/></svg>配速</button>
   <button data-tab="plan" role="tab"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M8.5 11h7M8.5 15h5"/></svg>課表</button>
+  <button data-tab="train" role="tab"><svg viewBox="0 0 24 24" aria-label="啞鈴"><path d="M2.5 9.5v5M5.5 6.5v11M18.5 6.5v11M21.5 9.5v5M5.5 12h13"/></svg>訓練</button>
 </nav>
 <main>
   <section class="pane" data-tab="overview">
@@ -177,8 +210,18 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
     <details class="fold"><summary>📋 <span id="ck_title">每週檢查</span></summary><div class="body"><ul class="plain" id="ck_items"></ul>
       <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p><p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></div></details>
   </section>
+  <section class="pane" data-tab="train">
+    <div class="trcards" id="tr_cards"></div>
+    <div class="trgrid">
+      <div class="panel"><h3><span>A．Workout 夠不夠</span><b id="tr_a_head"></b></h3><div id="c_tr_a" class="chart tr"></div><p class="sub" id="tr_a_sub"></p></div>
+      <div class="panel"><h3><span>B．整體運動時數</span><b id="tr_b_head" style="color:var(--fg)"></b></h3><div id="c_tr_b" class="chart tr"></div><p class="sub" id="tr_b_sub"></p></div>
+      <div class="panel wide"><h3><span>C．Workout 平均心率與熱量<small id="tr_c_unit"></small></span></h3><div id="c_tr_c" class="chart trc"></div><p class="sub" id="tr_c_sub"></p></div>
+      <div class="panel wide"><h3><span>最近 5 次 Workout</span></h3><table class="trtab" id="tr_tab"></table><p class="sub" id="tr_tab_sub"></p></div>
+      <div class="panel wide"><h3><span>資料說明</span></h3><ul class="plain" id="tr_notes" style="font-size:13px"></ul></div>
+    </div>
+  </section>
 </main>
-<footer>資料來源：Strava 匯出（monthly.csv／activities.csv）。圖表以 Plotly.js 繪製。</footer>
+<footer>資料來源：Strava 匯出（monthly.csv／activities.csv／workouts.csv）。圖表以 Plotly.js 繪製。</footer>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -220,8 +263,8 @@ const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
-  const [m,a,w,s,p]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json'].map(g));
-  D={m,a,w,s,p}; $('updated').textContent=s.generated; $('through').textContent=s.data_through;
+  const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
+  D={m,a,w,s,p,t}; $('updated').textContent=s.generated; $('through').textContent=s.data_through;
   $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
 }
 // 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
@@ -286,6 +329,7 @@ function fixedRow(){
   $('fixed').innerHTML=it.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div>${x[3]?`<div class="s">${x[3]}</div>`:''}</div>`).join('');
 }
 function render(){
+  if(curTab==='train'){ if(D.t) trainRender(); return; }
   const info=cards(), co={d:period(months).cur.sd,m:period(months).cur.sm}, thr=D.s.outlier_threshold*60;
   const nm=RN[months];
   const M=D.m.filter(r=>r.month>=co.m);
@@ -393,8 +437,106 @@ $('wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(
   el.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
   el.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
     if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){const i=weekKeys.indexOf(curWeek)+(dx<0?1:-1);if(weekKeys[i])showWeek(weekKeys[i],true);}},{passive:true});})();
+
+// ===== 訓練分頁 =====
+const TIER={Morning:'早上',Lunch:'午間',Afternoon:'下午',Evening:'傍晚',Night:'夜間'};
+const hh=sec=>f1(sec/3600), nz=x=>x==null?'—':x;
+const monOf=iso=>{const d=new Date(isoMs(iso));return new Date(d.getTime()-((d.getUTCDay()+6)%7)*dayMs).toISOString().slice(0,10);};
+const firstMonOnOrAfter=iso=>{const m=monOf(iso);return m===iso?iso:new Date(isoMs(m)+7*dayMs).toISOString().slice(0,10);};
+function splitRound(parts,total){ // 以最大餘數法讓各分項（0.1 小時）加總等於總計
+  const u=parts.map(x=>x*10),fl=u.map(Math.floor);let need=Math.round(total*10)-fl.reduce((a,b)=>a+b,0);
+  const ord=u.map((x,i)=>[x-fl[i],i]).sort((a,b)=>b[0]-a[0]);
+  for(let k=0;k<ord.length&&need>0;k++,need--) fl[ord[k][1]]++;
+  return fl.map(x=>(x/10).toFixed(1));
+}
+function trWindow(n){
+  const T=D.t, em=T.through.slice(0,7), sm=n?addM(em,-(n-1)):T.monthly[0].month;
+  const startWeek=n?firstMonOnOrAfter(sm+'-01'):T.weekly[0].week;
+  const W=T.weekly.filter(w=>w.week>=startWeek);
+  return {sm,em,startWeek,W,done:W.filter(w=>w.complete)};
+}
+function trainRender(){
+  const T=D.t, nm=RN[months], win=trWindow(months), W=win.W, C=win.done;
+  const sum=(a,k)=>a.reduce((s,r)=>s+r[k],0);
+  const n=sum(W,'n'), hiit=sum(W,'n_hiit'), sec=sum(W,'strength_sec'), cal=sum(W,'cal'), hrn=sum(W,'hr_n'), hrs=sum(W,'hr_sum');
+  const cn=sum(C,'n'), ok=C.filter(w=>w.n>=T.target_per_week).length, cur=W.filter(w=>!w.complete);
+  const avgwk=C.length?cn/C.length:0, avghr=hrn?hrs/hrn:null;
+  const card=(t,v,u,s)=>`<div class="card"><div class="t">${t}</div><div class="v">${v}<i>${u}</i></div><div class="s">${s}</div></div>`;
+  $('tr_cards').innerHTML=[
+    card('Workout 次數',n,'次',hiit?`含 HIIT ${hiit} 次`:'type=Workout'),
+    card('Workout 總時數',hh(sec),'小時','以 elapsed 計'),
+    card('平均每週次數',f1(avgwk),'次／週',`${C.length} 個完整週共 ${cn} 次`),
+    card('平均心率',avghr==null?'—':Math.round(avghr),'bpm',`${hrn} 次有心率紀錄`),
+    card('總熱量',cal.toLocaleString('en-US'),'kcal','Workout 加總')
+  ].join('');
+  // 小圖共用設定
+  const weekly=(months===3)&&W.length<=14&&W.every(w=>w.run_sec!=null);
+  // ---- A：每週 Workout 次數
+  const col=W.map(w=>!w.complete?'rgba(244,162,97,.5)':(w.n>=T.target_per_week?'#2f9e6e':'#f4a261'));
+  const showTxt=W.length<=27;
+  $('tr_a_head').textContent=`達標 ${ok}／${C.length} 週`; $('tr_a_head').className=C.length&&ok/C.length<.5?'low':'';
+  $('tr_a_sub').textContent=cur.length?`綠＝達標・橘＝未達標・淡色＝本週進行中（已 ${cur[cur.length-1].n} 次，不計）`:'綠＝達標・橘＝未達標';
+  const maxN=Math.max(T.target_per_week,...W.map(w=>w.n));
+  plot('c_tr_a',[{type:'bar',x:W.map(w=>w.week),y:W.map(w=>w.n),marker:{color:col},text:showTxt?W.map(w=>w.n||''):null,textposition:'outside',textfont:{size:10},cliponaxis:false,
+      customdata:W.map(w=>w.complete?(w.n>=T.target_per_week?'達標':'未達標'):'本週進行中'),
+      hovertemplate:'週起 %{x}<br>%{y} 次・%{customdata}<extra></extra>'}],
+    {...L,showlegend:false,bargap:.25,yaxis:{gridcolor:GRID,dtick:1,range:[0,maxN+1],title:'次'},xaxis:{type:'category',gridcolor:GRID,tickangle:-45},
+     shapes:[{type:'line',xref:'paper',x0:0,x1:1,yref:'y',y0:T.target_per_week,y1:T.target_per_week,line:{color:C_OUT,width:2,dash:'dash'}}],
+     annotations:[{xref:'paper',x:0,xanchor:'left',yref:'y',y:T.target_per_week,yanchor:'bottom',text:`目標 ${T.target_per_week} 次／週`,showarrow:false,font:{size:10.5,color:C_OUT},bgcolor:'rgba(255,255,255,.75)'}]},
+    {legend:false,hover:'x',b:40,x:catTicks(W.map(w=>w.week),abbrW)});
+  // ---- B：整體運動時數（跑步＋Workout＋其他）
+  let U, ulab, bdays, bstart;
+  if(weekly){ U=W.map(w=>({k:w.week,run:w.run_sec,st:w.strength_sec,ot:w.other_sec})); ulab=abbrW; bstart=win.startWeek; }
+  else { const MM=T.monthly.filter(m=>m.month>=win.sm); U=MM.map(m=>({k:m.month,run:m.run_sec,st:m.strength_sec,ot:m.other_sec})); ulab=abbrM; bstart=win.sm+'-01'; }
+  bdays=(isoMs(T.through)-isoMs(bstart))/dayMs+1;
+  const tr=sum(U,'run'), ts=sum(U,'st'), to=sum(U,'ot'), tt=tr+ts+to;
+  const sp=splitRound([tr/3600,ts/3600,to/3600],tt/3600);
+  const perwk=f1(tt/3600/(bdays/7)), md=s=>s.slice(5).replace('-','/');
+  $('tr_b_head').textContent=`共 ${hh(tt)} 小時・${perwk} 小時／週`;
+  $('tr_b_sub').textContent=`跑步明細自 ${md(T.run_detail_from)} 起，更早只有月彙總；跑步資料至 ${md(T.run_through)}`;
+  $('tr_notes').innerHTML=[
+    `目前範圍「${nm}」：A 圖與上方卡片＝${win.startWeek} ～ ${T.through}（${W.length} 週，週一對齊；其中 ${C.length} 個完整週、${cur.length} 個進行中）；B、C 圖＝${bstart} ～ ${T.through}。`,
+    `Workout＝type Workout＋HIIT（肌力／Hyrox 類；此範圍含 HIIT ${hiit} 次）。Swim、Stair-Stepper 不算 Workout，只列入 B 圖的「其他」。Workout 資料自 ${T.first_workout} 起，沒有紀錄的日子不計入。`,
+    `達標＝完整週內 Workout 次數 ≥ ${T.target_per_week}（目標：肩、背、腿，每週 ${T.target_per_week} 次）；平均每週次數＝完整週內的 Workout 次數 ÷ 完整週數。`,
+    `B 圖本範圍：跑步 ${sp[0]} ＋ Workout ${sp[1]} ＋ 其他 ${sp[2]} ＝ ${hh(tt)} 小時；每週 ${perwk} 小時＝總時數 ÷ ${f1(bdays/7)} 週。`,
+    `跑步時數＝移動時間（moving time）；${T.run_detail_from} 前只有月彙總，無法拆到週，所以 B 圖以${weekly?'週（此範圍皆在明細期間內）':'月'}為單位。跑步資料截至 ${T.run_through}，之後沒有紀錄的跑步不計。Workout 與其他＝elapsed。`,
+    `平均每週次數＝${cn} 次 ÷ ${C.length} 週；平均心率有心率紀錄的 ${hrn} 次（Workout 共 ${n} 次）。`,
+    `平均心率＝各次 Workout 平均心率的算術平均（只算有心率紀錄的次數）；熱量＝Workout 的 Cal 加總。`
+  ].map(x=>`<li>${x}</li>`).join('');
+  const x=U.map(u=>u.k), hov=(nme)=>`%{x}<br>${nme} %{y:.1f} 小時<extra></extra>`;
+  const tot=U.map(u=>(u.run+u.st+u.ot)/3600);
+  plot('c_tr_b',[
+    {type:'bar',name:'跑步',x,y:U.map(u=>u.run/3600),marker:{color:C_BLUE},hovertemplate:hov('跑步')},
+    {type:'bar',name:'Workout',x,y:U.map(u=>u.st/3600),marker:{color:C_ORG},hovertemplate:hov('Workout')},
+    {type:'bar',name:'其他',x,y:U.map(u=>u.ot/3600),marker:{color:C_TEAL},hovertemplate:hov('其他（Swim／Stair）')},
+    {type:'scatter',mode:'text',x,y:tot,text:tot.map(v=>v?f1(v):''),textposition:'top center',textfont:{size:U.length>12?8.5:10.5,color:TXT},showlegend:false,hoverinfo:'skip',cliponaxis:false}],
+    {...L,barmode:'stack',bargap:.2,yaxis:{gridcolor:GRID,title:'小時',rangemode:'tozero'},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},
+    {hover:'x',b:40,x:catTicks(x,ulab)});
+  // ---- C：平均心率與每週熱量
+  let V, vlab;
+  if(weekly){V=W.map(w=>({k:w.week,cal:w.cal,hr:w.hr_n?w.hr_sum/w.hr_n:null,n:w.n}));vlab=abbrW;}
+  else{V=T.monthly.filter(m=>m.month>=win.sm).map(m=>({k:m.month,cal:m.cal,hr:m.hr_n?m.hr_sum/m.hr_n:null,n:m.n}));vlab=abbrM;}
+  $('tr_c_unit').textContent=weekly?'每週':'每月';
+  const hv=V.filter(v=>v.hr!=null);
+  $('tr_c_sub').textContent=`長條＝${weekly?'每週':'每月'}總熱量 kcal；折線＝平均心率 bpm（沒有 Workout 的${weekly?'週':'月'}不畫點）`
+    +(hv.length?`；最低 ${Math.round(Math.min(...hv.map(v=>v.hr)))}、最高 ${Math.round(Math.max(...hv.map(v=>v.hr)))} bpm。`:'。');
+  const vx=V.map(v=>v.k);
+  plot('c_tr_c',[
+    {type:'bar',name:'熱量 kcal',x:vx,y:V.map(v=>v.cal),marker:{color:'rgba(244,162,97,.75)'},hovertemplate:'%{x}<br>%{y} kcal<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',name:'平均心率 bpm',x:vx,y:V.map(v=>v.hr==null?null:Math.round(v.hr*10)/10),yaxis:'y2',connectgaps:true,line:{color:C_OUT,width:2.5},marker:{size:7},hovertemplate:'%{x}<br>平均心率 %{y:.1f} bpm<extra></extra>'}],
+    {...L,yaxis:{title:'kcal',gridcolor:GRID,rangemode:'tozero'},yaxis2:{title:'bpm',overlaying:'y',side:'right',showgrid:false,
+      range:hv.length?[Math.floor(Math.min(...hv.map(v=>v.hr))/10)*10-10,Math.ceil(Math.max(...hv.map(v=>v.hr))/10)*10+10]:[100,180]},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},
+    {y2:true,hover:'x',b:40,x:catTicks(vx,vlab)});
+  // ---- 最近 5 次 Workout
+  const last5=T.rows.filter(r=>r.strength).slice(-5).reverse();
+  const nmz=s=>s.replace(/^(Morning|Lunch|Afternoon|Evening|Night)\s*/,(m,a)=>TIER[a]+' ');
+  const dur=sec=>`${Math.floor(sec/3600)}:${String(Math.floor(sec%3600/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+  $('tr_tab').innerHTML=`<tr><th>日期</th><th>名稱</th><th>時間</th><th>平均心率</th><th>最高心率</th><th>Cal</th></tr>`+
+    last5.map(r=>`<tr><td>${r.date.slice(5).replace('-','/')}</td><td>${nmz(r.name)}</td><td>${dur(r.elapsed_sec)}</td><td>${nz(r.avg_hr)}</td><td>${nz(r.max_hr)}</td><td>${r.cal}</td></tr>`).join('');
+  $('tr_tab_sub').textContent='不受上方期間影響；時間＝elapsed（時:分:秒）。';
+}
 // ===== 分頁 =====
-const TABS=['overview','month','week','pace','plan'];
+const TABS=['overview','month','week','pace','plan','train'];
 let curTab=null;
 function tabFromHash(){const m=/tab=([a-z]+)/.exec(location.hash);return m&&TABS.includes(m[1])?m[1]:null;}
 function setTab(t,opts={}){
