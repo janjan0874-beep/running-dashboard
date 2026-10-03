@@ -218,7 +218,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
     <div class="trgrid">
       <div class="panel"><h3><span>A．Workout 夠不夠</span><b id="tr_a_head"></b></h3><div id="c_tr_a" class="chart tr"></div><p class="sub" id="tr_a_sub"></p></div>
       <div class="panel"><h3><span>B．整體運動時數</span><b id="tr_b_head" style="color:var(--fg)"></b></h3><div id="c_tr_b" class="chart tr"></div><p class="sub" id="tr_b_sub"></p></div>
-      <div class="panel wide"><h3><span>C．Workout 平均心率與熱量<small id="tr_c_unit"></small></span></h3><div id="c_tr_c" class="chart trc"></div><p class="sub" id="tr_c_sub"></p></div>
+      <div class="panel wide"><h3><span>C．Workout 平均心率與熱量加總<small id="tr_c_unit"></small></span></h3><div id="c_tr_c" class="chart trc"></div><p class="sub" id="tr_c_sub"></p></div>
       <div class="panel wide"><h3><span>最近 5 次 Workout</span></h3><table class="trtab" id="tr_tab"></table><p class="sub" id="tr_tab_sub"></p></div>
       <div class="panel wide"><h3><span>資料說明</span></h3><ul class="plain" id="tr_notes" style="font-size:13px"></ul></div>
     </div>
@@ -555,11 +555,11 @@ function trainRender(){
   else{V=T.monthly.filter(m=>m.month>=win.sm).map(m=>({k:m.month,cal:m.cal,hr:m.hr_n?m.hr_sum/m.hr_n:null,n:m.n}));vlab=abbrM;}
   $('tr_c_unit').textContent=weekly?'每週':'每月';
   const hv=V.filter(v=>v.hr!=null);
-  $('tr_c_sub').textContent=`長條＝${weekly?'每週':'每月'}總熱量 kcal；折線＝平均心率 bpm（沒有 Workout 的${weekly?'週':'月'}不畫點）`
+  $('tr_c_sub').textContent=`長條＝${weekly?'每週':'每月'}Workout 熱量加總 kcal（不是單次）；折線＝平均心率 bpm（沒有 Workout 的${weekly?'週':'月'}不畫點）`
     +(hv.length?`；最低 ${Math.round(Math.min(...hv.map(v=>v.hr)))}、最高 ${Math.round(Math.max(...hv.map(v=>v.hr)))} bpm。`:'。');
   const vx=V.map(v=>v.k);
   plot('c_tr_c',[
-    {type:'bar',name:'熱量 kcal',x:vx,y:V.map(v=>v.cal),marker:{color:'rgba(244,162,97,.75)'},hovertemplate:'%{x}<br>%{y} kcal<extra></extra>'},
+    {type:'bar',name:'熱量加總 kcal',x:vx,y:V.map(v=>v.cal),marker:{color:'rgba(244,162,97,.75)'},hovertemplate:'%{x}<br>%{y} kcal<extra></extra>'},
     {type:'scatter',mode:'lines+markers',name:'平均心率 bpm',x:vx,y:V.map(v=>v.hr==null?null:Math.round(v.hr*10)/10),yaxis:'y2',connectgaps:true,line:{color:C_OUT,width:2.5},marker:{size:7},hovertemplate:'%{x}<br>平均心率 %{y:.1f} bpm<extra></extra>'}],
     {...L,yaxis:{title:'kcal',gridcolor:GRID,rangemode:'tozero'},yaxis2:{title:'bpm',overlaying:'y',side:'right',showgrid:false,
       range:hv.length?[Math.floor(Math.min(...hv.map(v=>v.hr))/10)*10-10,Math.ceil(Math.max(...hv.map(v=>v.hr))/10)*10+10]:[100,180]},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},
