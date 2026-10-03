@@ -352,7 +352,7 @@ function dayHTML(d,today,p){
     <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
 }
 function showWeek(wk,fromUser){
-  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), ph=(p.week_phase||{})[wk]; const wdays=weeksMap[wk]; const t=wdays.reduce((s,d)=>s+(d.date<today?D.a.filter(r=>r.date===d.date).reduce((x,r)=>x+(+r.km),0):(d.kind==='run'||d.kind==='race'?+d.km:0)),0);
+  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), ph=(p.week_phase||{})[wk]; const wdays=weeksMap[wk]; const pre=D.a.filter(r=>r.date>=wk&&r.date<wdays[0].date).reduce((x,r)=>x+(+r.km),0); const t=pre+wdays.reduce((s,d)=>s+(d.date<today?D.a.filter(r=>r.date===d.date).reduce((x,r)=>x+(+r.km),0):(d.kind==='run'||d.kind==='race'?+d.km:0)),0);
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const days=weeksMap[wk];
   $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${ph?ph+'｜':''}本週跑步 ${t.toFixed(1)} km</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
