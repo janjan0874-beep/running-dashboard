@@ -47,8 +47,7 @@ main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .hoverlayer{display:none !important}
 .chart{width:100%;height:240px}
 .chart .nsewdrag,.chart .main-svg{touch-action:pan-y !important}
-.chart.mini{height:clamp(150px,calc(100svh - 490px),230px)}
-.chart.wk{height:200px}
+.chart.wk{height:clamp(150px,calc(100svh - 490px),230px)}
 .panel h3.wkh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap}
 .panel h3.wkh b{color:#1d5fa3;font-size:.9rem;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chart.half{height:clamp(170px,calc((100svh - 370px)/2),240px)}
@@ -187,8 +186,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   .card .t{font-size:.88rem}.card .v{font-size:1.9rem}.card .s,.d{font-size:.82rem}
   #cards .s{display:block}
   .panel{padding:16px 18px;margin-top:14px}
-  .chart.mini{height:300px}
-  .chart.wk{height:260px}
+  .chart.wk{height:300px}
   .pane[data-tab=month] .take{display:block}
   .chart.half,.chart.fill,.chart.tail{height:360px}
   .take{font-size:.9rem;padding:8px 12px}
@@ -225,9 +223,8 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 <main>
   <section class="pane" data-tab="overview">
     <div class="cards" id="cards"></div>
-    <div class="panel"><h3>每月跑量<small>km</small></h3><div id="c_mini" class="chart mini"></div></div>
-    <div class="countdown"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
     <div class="panel"><h3 class="wkh"><span>每週跑量<small>km・最近 12 週</small></span><b id="wk_now">本週 —</b></h3><div id="c_wk" class="chart wk"></div></div>
+    <div class="countdown"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
     <p class="note" id="rangeNote">所選期間的統計</p>
     <div class="cards more" id="cards2"></div>
     <h2 class="sec2">全時間累計與 PR<small>不受上方期間影響</small></h2>
@@ -467,11 +464,6 @@ function render(){
   if(okM.length){const fast=okM.reduce((a,b)=>b.pace_sec<a.pace_sec?b:a);
     $('k_mpace').textContent=`最快月份是 ${fast.month}（${fast.pace}/km）；最近一個月份為 ${okM[okM.length-1].month}（${okM[okM.length-1].pace}/km）。`;}
   else $('k_mpace').textContent='此期間沒有配速資料。';
-  {const mini=$('c_mini');
-   if(mini&&mini.offsetWidth){const mob=isMob();tipReset('c_mini');
-    Plotly.react('c_mini',[{type:'bar',x:mo,y:M.map(r=>r.km),marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'}],
-     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT,size:11},margin:{l:36,r:8,t:6,b:30},showlegend:false,dragmode:false,
-      xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...catTicks(mo,abbrM),tickangle:0,tickfont:{size:10}},yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10}},hovermode:'x',hoverlabel:HL},CFG_M).then(()=>tipBind('c_mini'));}}
   drawWeekly();
   plot('c_month',[
     {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
