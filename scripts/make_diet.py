@@ -17,14 +17,14 @@ WD = "一二三四五六日"
 F = {
  "rice":    dict(name="白飯（熟）", unit="100 g", c=282, p=27,  f=3,  src="USDA FDC 168878 Rice, white, long-grain, enriched, cooked：碳水 28.2 g、蛋白質 2.7 g、脂肪 0.3 g／100 g"),
  "pasta":   dict(name="義大利麵（熟）", unit="100 g", c=309, p=58, f=9, src="USDA SR 20121 Spaghetti, cooked, enriched, without added salt：碳水 30.9 g、蛋白質 5.8 g、脂肪 0.9 g／100 g"),
- "oats":    dict(name="燕麥（乾重）", unit="100 g", c=663, p=169, f=69, src="USDA FDC 169705 Oats：碳水 66.3 g、蛋白質 16.9 g、脂肪 6.9 g／100 g（乾重）"),
+ "sweetpotato": dict(name="瓜瓜園地瓜（冰烤地瓜）", unit="100 g", c=359, p=11, f=2, src="瓜瓜園冰烤地瓜包裝營養標示（每 100 g）：碳水 35.9 g、蛋白質 1.1 g、脂肪 0.2 g（Pure17Go 350 g 盒裝與優統食品 1 kg 包裝的轉載標示相同）；熱量依 4/4/9 計算。"),
  "banana":  dict(name="香蕉（中型 118 g）", unit="根", c=270, p=13, f=4, src="USDA FDC 173944 Bananas, raw，中型 118 g：碳水 27.0 g、蛋白質 1.3 g、脂肪 0.4 g"),
  "egg":     dict(name="雞蛋（大顆 50 g，水煮）", unit="顆", c=6, p=63, f=53, src="USDA FDC 173424 Egg, whole, cooked, hard-boiled，大顆 50 g：蛋白質 6.3 g、脂肪 5.3 g、碳水 0.6 g"),
  "chicken": dict(name="雞胸肉（熟重，巴掌大）", unit="100 g", c=0, p=310, f=36, src="USDA FDC 171477 Chicken breast, meat only, cooked, roasted：蛋白質 31.0 g、脂肪 3.6 g、碳水 0 g／100 g"),
  "meiji":   dict(name="Meiji High Protein（350 ml）", unit="瓶", c=98, p=300, f=21, src="Meiji High Protein 350 ml：蛋白質 30.0 g（依你提供）；碳水 9.8 g、脂肪 2.1 g（巧克力口味瓶身標示；香蕉、綠茶口味碳水 8.1 g）"),
  "powder":  dict(name="蛋白粉", unit="份", c=0, p=350, f=0, src="蛋白粉 1 份：蛋白質 35.0 g（依你提供）；品牌未知，碳水與脂肪未計入"),
 }
-OATS_G = {"rest": 40, "str": 40, "easy": 60, "long": 80, "quality": 80, "prelong": 80, "race": 80, "load": 100}
+SP_G = {"rest": 100, "str": 100, "easy": 120, "long": 150, "quality": 150, "prelong": 150, "race": 150, "load": 180}   # 早餐地瓜克數
 CARB_GKG = {"rest": 3, "str": 3, "easy": 4, "long": 5, "quality": 5, "prelong": 5, "race": 5, "load": 8}
 TIER_LABEL = {"rest": "休息日", "str": "肌力日", "easy": "輕鬆跑日", "long": "長跑日", "quality": "強度課日",
               "prelong": "長跑前一天", "race": "比賽日", "load": "肝醣超補日"}
@@ -100,7 +100,7 @@ def build():
             meals.append(dict(slot="比賽中", items=[], text_items=["能量膠 × 2（10 km、16 km 各 1 包，配水）"],
                               tips=["能量膠沒有指定品牌，碳水未計入今日總量；用 10/11、10/18 演練過的同一款。"]))
         else:
-            meals.append(dict(slot="早餐", items=[item("powder", 1), item("egg", 2), item("oats", OATS_G[tier])], tips=[]))
+            meals.append(dict(slot="早餐", items=[item("powder", 1), item("egg", 2), item("sweetpotato", SP_G[tier])], tips=[]))
         # 訓練前後（Meiji 第 1 瓶在訓練後）
         tr_items, tr_tips = [], []
         if ds == HALF_RACE:
@@ -178,7 +178,7 @@ def build():
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
                    tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train,
                    targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT), kcal=g1(total_k),
-                                protein_note=f"固定 138.6 g＋主食與香蕉 {g1(prot_extra)} g",
+                                protein_note=f"固定 138.6 g＋主食、地瓜與香蕉 {g1(prot_extra)} g",
                                 carbs_gkg=CARB_GKG[tier], protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT/10/WEIGHT:.2f}"),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
         # 每日訊息可直接引用的一段文字
@@ -200,14 +200,14 @@ def build():
         weight=WEIGHT, body_fat=BODY_FAT, body_fat_goal=BODY_FAT_GOAL, deficit=DEFICIT, start=START, end=END,
         summary=f"體重 {WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%；每日熱量赤字目標 {DEFICIT} kcal。",
         rules=[f"碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日 4 g/kg（284 g）；長跑日、強度課日、10K 測試日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
-               "蛋白質：固定 138.6 g＝Meiji 30 g × 2 瓶（60.0）＋蛋白粉 1 份（35.0）＋雞蛋 × 2（12.6）＋雞胸肉 100 g（31.0），再加上白飯、義大利麵、燕麥、香蕉的蛋白質。",
+               "蛋白質：固定 138.6 g＝Meiji 30 g × 2 瓶（60.0）＋蛋白粉 1 份（35.0）＋雞蛋 × 2（12.6）＋雞胸肉 100 g（31.0），再加上白飯、義大利麵、地瓜、香蕉的蛋白質。",
                f"脂肪：0.8 g/kg（57 g）；肝醣超補日 40 g。熱量＝碳水 × 4＋蛋白質 × 4＋脂肪 × 9。"],
         footnotes=[
             "每公斤體重的碳水、蛋白質、脂肪建議依據：ACSM／美國營養與飲食學會／加拿大營養師協會 2016 聯合立場聲明（Thomas et al., Med Sci Sports Exerc 48:543）與 ISSN 立場聲明（Jäger et al. 2017 蛋白質與運動；Kerksick et al. 2017 營養時機）。",
             "麻辣燙的湯、油與青菜沒有計入（份量與用油每家不同），請不要喝湯；表中只計白飯、雞胸肉等有明確數值的食物。",
             "蛋白粉品牌未知，只計蛋白質 35.0 g；能量膠品牌未知，碳水未計入。Meiji 碳水與脂肪以巧克力口味瓶身標示計。",
             "身高、年齡、性別未提供，所以不計算也不顯示 TDEE；熱量赤字 183 kcal／天是目標值，請以每週日的體重、體脂、腰圍趨勢檢查。",
-        ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "oats", "banana", "egg", "chicken", "meiji", "powder")],
+        ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "sweetpotato", "banana", "egg", "chicken", "meiji", "powder")],
     )
     return dict(meta=meta, days=out)
 
