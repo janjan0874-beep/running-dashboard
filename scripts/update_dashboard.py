@@ -220,13 +220,16 @@ def main():
     json.dump(p, open(os.path.join(DATA, "plan.json"), "w"), ensure_ascii=False, indent=1)
     md = make_plan.to_md(p)
     open(os.path.join(HERE, "plan.md"), "w").write(md); open(os.path.join(REPO, "plan.md"), "w").write(md)
+    # 飲食：依課表逐日產生 data/diet.json（以日期為鍵，每日訊息可引用 days[日期].text）
+    import make_diet
+    json.dump(make_diet.build(), open(os.path.join(DATA, "diet.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     # 網頁：index.html 由 index_template.html（含手機版 RWD 設計）原樣輸出，每日更新不會覆蓋成舊版
     tpl = os.path.join(HERE, "index_template.html")
     with open(tpl, encoding="utf-8") as f: html = f.read()
     with open(os.path.join(REPO, "index.html"), "w", encoding="utf-8") as f: f.write(html)
     # 備份腳本到 repo
     os.makedirs(os.path.join(REPO, "scripts"), exist_ok=True)
-    for f in ("update_dashboard.py", "make_plan.py", "profile.json", "UPDATE.md", "index_template.html"):
+    for f in ("update_dashboard.py", "make_plan.py", "make_diet.py", "profile.json", "UPDATE.md", "index_template.html"):
         src = os.path.join(HERE, f)
         if os.path.exists(src): open(os.path.join(REPO, "scripts", f), "w").write(open(src).read())
     print("workouts：", len(wrows), "筆，", wj["type_counts"], "，截至", wj["workout_through"])

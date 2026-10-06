@@ -24,7 +24,7 @@ header .note{margin:0;font-size:11.5px;text-align:right;line-height:1.3}
 .ranges{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 0 8px}
 .ranges button{background:#fff;color:var(--fg);border:1px solid #d5dae1;border-radius:999px;height:34px;padding:0 2px;font-size:13.5px;cursor:pointer;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;font-family:inherit}
 .ranges button.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
-body[data-tab=plan] .ranges{display:none}
+body[data-tab=plan] .ranges,body[data-tab=diet] .ranges{display:none}
 main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .pane{display:none}
 .pane.on{display:block}
@@ -88,13 +88,50 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .day.today{background:#fff3e6;border:1px solid #f2b98a}
 .day.race{background:#fdecea;border:1px solid #f1b5b0}
 .badge{display:inline-block;background:#e0702a;color:#fff;border-radius:999px;font-size:.7rem;padding:0 8px;margin-left:8px;font-weight:600;vertical-align:1px}
+/* 飲食 */
+.dcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-top:10px}
+.dcard.today{background:#fffaf4;border-color:#f2b98a}
+.dcard .lab{font-size:12.5px;color:#a8581f;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.dcard .tier{display:inline-block;background:#eef4fb;color:#2f6aa8;border-radius:999px;font-size:12px;padding:1px 9px;font-weight:600;white-space:nowrap}
+.dcard.today .tier{background:#fde6d3;color:#a8581f}
+.dcard .trn{font-size:13px;color:#4b5563;line-height:1.5;margin:6px 0 2px}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}
+.tgrid>div{background:#f3f6fa;border-radius:10px;padding:7px 4px;text-align:center}
+.dcard.today .tgrid>div{background:#fff;border:1px solid #f6dcc6}
+.tgrid b{display:block;font-size:16px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--fg)}
+.tgrid span{font-size:11px;color:var(--mut)}
+.tnote{font-size:11.5px;color:var(--mut);margin:2px 0 4px;line-height:1.45}
+.meal{margin-top:12px}
+.meal h4{margin:0 0 4px;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.meal h4 small{font-weight:500;color:var(--mut);font-size:11.5px;white-space:nowrap}
+.dtab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;table-layout:fixed}
+.dtab col.c1{width:37%}.dtab col.c2{width:15%}.dtab col.cn{width:16%}
+.dtab th{font-weight:500;color:var(--mut);font-size:11px;text-align:right;padding:2px 3px 4px}
+.dtab th:first-child,.dtab td:first-child{text-align:left}
+.dtab td{padding:7px 3px;border-top:1px solid #eef0f3;text-align:right;vertical-align:top;line-height:1.35}
+.dtab td:first-child{padding-left:0}.dtab td:last-child,.dtab th:last-child{padding-right:0}
+.dtab td em{display:block;font-style:normal;color:var(--mut);font-size:11.5px}
+.dtab tr.sub td{font-weight:700;border-top:1px solid #dfe3e8}
+.mtips{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:#4b5563;line-height:1.5}
+.mtips li{margin-bottom:2px}
+.budget{margin-top:12px;background:#f1f8f5;border:1px solid #cfe9dd;border-radius:12px;padding:10px 12px}
+.budget h4{margin:0 0 2px;font-size:14px}
+.budget .tgrid>div{background:#fff;border:0}
+.budget .ex{font-size:13px;line-height:1.5;margin-top:6px}
+.dnote{margin-top:10px;background:#fff7e0;border:1px solid #f3dc9a;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.5}
+.dmini{font-size:12.5px;color:#4b5563;line-height:1.55;margin-top:6px}
+.dmini b{color:var(--fg);font-weight:600}
+.dcard details{margin-top:8px}
+.dcard details summary{font-size:13px;color:var(--blue);cursor:pointer;padding:4px 0}
+.dweek h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin:14px 0 0;font-size:1rem}
+.dweek h3 span{font-size:.8rem;font-weight:500;color:var(--mut)}
 details.fold{margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:0 12px}
 details.fold summary{padding:10px 0;font-weight:700;font-size:.95rem;cursor:pointer}
 details.fold[open] summary{border-bottom:1px solid var(--line);margin-bottom:6px}
 details.fold .body{padding-bottom:8px}
 footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10px;line-height:1.6}
 /* 底部分頁列 */
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(7,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
 #tabbar button{border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-family:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0}
 #tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #tabbar button.on{color:var(--blue);font-weight:700}
@@ -174,6 +211,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <button data-tab="pace" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5l3.5-3.5M10 3h4"/></svg>配速</button>
   <button data-tab="train" role="tab"><svg viewBox="0 0 24 24" aria-label="啞鈴"><path d="M2.5 9.5v5M5.5 6.5v11M18.5 6.5v11M21.5 9.5v5M5.5 12h13"/></svg>訓練</button>
   <button data-tab="plan" role="tab"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M8.5 11h7M8.5 15h5"/></svg>課表</button>
+  <button data-tab="diet" role="tab"><svg viewBox="0 0 24 24" aria-label="🍽️ 刀叉"><path d="M5 3v5a2.5 2.5 0 0 0 5 0V3M7.5 3v18M17.5 21V3c-2.2 1.3-3.5 4.2-3.5 8 0 .8.6 1.5 1.5 1.5h2"/></svg>飲食</button>
 </nav>
 <main>
   <section class="pane" data-tab="overview">
@@ -213,6 +251,13 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
     <details class="fold"><summary>📋 <span id="ck_title">每週檢查</span></summary><div class="body"><ul class="plain" id="ck_items"></ul>
       <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p><p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></div></details>
   </section>
+  <section class="pane" data-tab="diet">
+    <div id="d_today"></div>
+    <div class="wkchips" id="d_wkchips"></div>
+    <div id="d_week"></div>
+    <details class="fold"><summary>計算依據與註解</summary><div class="body"><p class="note" id="d_sum" style="margin:4px 0 6px"></p><ul class="plain" id="d_rules"></ul><ul class="plain" id="d_foot" style="font-size:12.5px;color:#4b5563"></ul></div></details>
+  </section>
+
   <section class="pane" data-tab="train">
     <div class="trcards" id="tr_cards"></div>
     <div class="trgrid">
@@ -310,7 +355,7 @@ const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
   const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
-  D={m,a,w,s,p,t}; $('updated').textContent=s.generated; $('through').textContent=s.data_through;
+  D={m,a,w,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
   $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
 }
 // 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
@@ -376,6 +421,7 @@ function fixedRow(){
 }
 function render(){
   if(curTab==='train'){ if(D.t) trainRender(); return; }
+  if(curTab==='diet'){ if(D.d) dietRender(); return; }
   const info=cards(), co={d:period(months).cur.sd,m:period(months).cur.sm}, thr=D.s.outlier_threshold*60;
   const nm=RN[months];
   const M=D.m.filter(r=>r.month>=co.m);
@@ -586,8 +632,59 @@ function trainRender(){
     last5.map(r=>`<tr><td>${r.date.slice(5).replace('-','/')}</td><td>${nmz(r.name)}</td><td>${dur(r.elapsed_sec)}</td><td>${nz(r.avg_hr)}</td><td>${nz(r.max_hr)}</td><td>${r.cal}</td></tr>`).join('');
   $('tr_tab_sub').textContent='不受上方期間影響；時間＝elapsed（時:分:秒）。';
 }
+// ===== 飲食分頁（data/diet.json，由 make_diet.py 依課表產生）=====
+let dWeek=null;
+const dNm=s=>{const i=s.indexOf('（');return i<0?[s,'']:[s.slice(0,i),s.slice(i+1,-1)];};
+function dTargets(t,cls){return `<div class="tgrid ${cls||''}"><div><b>${t.carbs}</b><span>碳水 g</span></div><div><b>${t.protein}</b><span>蛋白質 g</span></div><div><b>${t.fat}</b><span>脂肪 g</span></div><div><b>${t.kcal}</b><span>kcal</span></div></div>`;}
+function dMeal(m){
+  const rows=m.items.map(i=>{const [n,sub]=dNm(i.name);const em=[sub,i.when].filter(Boolean).join('・');
+    const v=k=>(i.na||[]).includes(k)?'<span title="未計入">—</span>':i[k];
+    return `<tr><td>${n}${em?`<em>${em}</em>`:''}</td><td>${i.amount}</td><td>${v('carbs')}</td><td>${i.protein}</td><td>${v('fat')}</td></tr>`;}).join('');
+  const extra=(m.text_items||[]).map(x=>`<tr><td colspan="5">${x}</td></tr>`).join('');
+  const st=m.subtotal;
+  return `<div class="meal"><h4>${m.slot}${m.title?`｜${m.title}`:''}<small>${m.items.length?st.kcal+' kcal':''}</small></h4>
+    <table class="dtab"><colgroup><col class="c1"><col class="c2"><col class="cn"><col class="cn"><col class="cn"></colgroup><thead><tr><th>食物</th><th>份量</th><th>碳水</th><th>蛋白質</th><th>脂肪</th></tr></thead><tbody>${rows}${extra}
+    ${m.items.length>1?`<tr class="sub"><td>小計</td><td></td><td>${st.carbs}</td><td>${st.protein}</td><td>${st.fat}</td></tr>`:''}</tbody></table>
+    ${m.tips.length?`<ul class="mtips">${m.tips.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>`;
+}
+function dBudget(b){return `<div class="budget"><h4>晚餐（自由）｜剩餘預算</h4>${dTargets(b)}
+  <div class="ex"><b>參考：</b>${b.example.text}</div><ul class="mtips">${b.tips.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;}
+function dFull(d){
+  const pre=d.meals.filter(m=>m.slot!=='睡前'), late=d.meals.filter(m=>m.slot==='睡前');
+  return pre.map(dMeal).join('')+dBudget(d.dinner)+late.map(dMeal).join('')+(d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:'');
+}
+function dHead(d,lab){return `<div class="lab"><span>${lab}</span><span class="tier">${d.tier_label}</span></div>
+  <div class="trn">${d.training}</div>${dTargets(d.targets)}<div class="tnote">蛋白質：${d.targets.protein_note}（${d.targets.protein_gkg} g/kg）</div>`;}
+function dCard(d,today){
+  const isT=d.date===today, ln=m=>`<b>${m.slot}</b> ${m.title?m.title.replace('配白飯','')+'：':''}${m.items.map(i=>dNm(i.name)[0].replace(' High Protein','')+' '+i.amount).concat(m.text_items||[]).join('、')}`;
+  const ms=d.meals.filter(m=>m.items.length||(m.text_items||[]).length), mini=ms.filter(m=>m.slot!=='睡前').map(ln)
+    .concat([`<b>晚餐（自由）</b> 剩 碳水 ${d.dinner.carbs} g・蛋白質 ${d.dinner.protein} g・脂肪 ${d.dinner.fat} g・${d.dinner.kcal} kcal`]).concat(ms.filter(m=>m.slot==='睡前').map(ln)).join('<br>');
+  return `<div class="dcard${isT?' today':''}">${dHead(d,`${d.date.slice(5).replace('-','/')} ${d.weekday}${isT?' <span class="badge">今天</span>':''}`)}
+    <div class="dmini">${mini}</div>
+    ${d.sunday?`<div class="dnote">週日：量體重、體脂、腰圍</div>`:''}
+    <details><summary>看完整餐表</summary>${dFull(d)}</details></div>`;
+}
+function dShowWeek(wk,fromUser){
+  const days=Object.values(D.d.days).filter(d=>d.week===wk); if(!days.length) return; dWeek=wk; const today=todayStr();
+  document.querySelectorAll('#d_wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
+  $('d_week').innerHTML=`<div class="dweek"><h3>週起 ${wk.slice(5).replace('-','/')}<span>每天一張卡，點「看完整餐表」展開</span></h3>${days.map(d=>dCard(d,today)).join('')}</div>`;
+  if(fromUser){const b=document.querySelector('#d_wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
+}
+function dietRender(){
+  const X=D.d, today=todayStr(), all=Object.values(X.days).sort((a,b)=>a.date<b.date?-1:1);
+  const td=X.days[today]||all.find(d=>d.date>today)||all[all.length-1], isT=td.date===today;
+  $('d_today').innerHTML=`<div class="dcard today">${dHead(td,`${isT?'今天':'下一天'} ${td.date.slice(5).replace('-','/')} ${td.weekday}`)}${dFull(td)}</div>`;
+  const wks=[...new Set(all.map(d=>d.week))];
+  const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
+  if($('d_wkchips').dataset.n!==String(wks.length)){$('d_wkchips').innerHTML=wks.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');$('d_wkchips').dataset.n=wks.length;}
+  dShowWeek(dWeek&&wks.includes(dWeek)?dWeek:td.week);
+  $('d_sum').textContent=X.meta.summary;
+  $('d_rules').innerHTML=X.meta.rules.map(x=>`<li>${x}</li>`).join('');
+  $('d_foot').innerHTML=X.meta.footnotes.map(x=>`<li>${x}</li>`).join('');
+}
+$('d_wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)dShowWeek(b.dataset.wk,true);});
 // ===== 分頁 =====
-const TABS=['overview','month','week','pace','train','plan'];
+const TABS=['overview','month','week','pace','train','plan','diet'];
 let curTab=null;
 function tabFromHash(){const m=/tab=([a-z]+)/.exec(location.hash);return m&&TABS.includes(m[1])?m[1]:null;}
 function setTab(t,opts={}){

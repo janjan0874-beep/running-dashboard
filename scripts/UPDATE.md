@@ -11,6 +11,7 @@
 - `/workspace/strava/workouts.csv`：非跑步活動（Workout／HIIT／Swim／Stair-Stepper…），欄位 `date,start_time,name,type,elapsed,moving,avg_hr,max_hr,calories,distance_km,url`（elapsed／moving 為 `h:mm:ss`；沒有心率的活動 avg_hr、max_hr 留空）。**去重以 `url` 為鍵**。
 - `/workspace/strava/profile.json`：全時間基準（`as_of` 當天為 150 次／510.9 km／232740 秒）、PR、比賽日、異常配速門檻（10:00/km）。`as_of` 之後 activities.csv 新增的跑步會自動累加進「全時間」卡片。**PR 如有刷新請手動改這裡。**
 - `/workspace/strava/make_plan.py`：訓練計畫內容（逐日、假設、比賽日策略）。
+- `/workspace/strava/make_diet.py`：飲食計畫（讀 `make_plan.build()` 的逐日訓練產生，課表一改飲食自動同步）→ `data/diet.json`。
 - `/workspace/strava/update_dashboard.py`：主程式。
 
 ## 每日例行步驟
@@ -31,7 +32,7 @@
 - 訓練計畫若要調整（例如受傷），直接修改 `make_plan.py` 的 `DAYS` 後重跑上面指令。
 
 ## 版面（分頁式）
-- 目前是 6 分頁 app 式版面（順序：總覽／月度／每週／配速／訓練／課表，課表在最後；課表分頁含 10K 測試策略與半馬賽日策略兩個折疊區），來源 `index_template.html`（layout meta：tabs-v4）；支援 `#tab=plan`、`#tab=train` 網址與 localStorage 記住分頁／區間。測試：`/workspace/pwenv/bin/python test_tabs.py 390 700`（手機，截圖 `tab_*.png`）與 `... test_tabs.py 1280 900`（桌面，截圖 `dtab_*.png`）；測試會檢查訓練分頁的圖表 A、B 在第一屏、無 JS 錯誤、四個範圍按鈕下 KPI 都不同。`python3 verify_train.py` 直接由 CSV 獨立重算各範圍的訓練數字，可與網頁對照。舊版備份：`index_template.pre_train.html`（5 分頁）、`index_template.pre_tabs.html`。
+- 目前是 7 分頁 app 式版面（順序：總覽／月度／每週／配速／訓練／課表／飲食，2026-10-06 新增飲食分頁；課表分頁含 10K 測試策略與半馬賽日策略兩個折疊區），來源 `index_template.html`（layout meta：tabs-v4）；支援 `#tab=plan`、`#tab=train` 網址與 localStorage 記住分頁／區間。測試：`/workspace/pwenv/bin/python test_tabs.py 390 700`（手機，截圖 `tab_*.png`）與 `... test_tabs.py 1280 900`（桌面，截圖 `dtab_*.png`）；測試會檢查訓練分頁的圖表 A、B 在第一屏、無 JS 錯誤、四個範圍按鈕下 KPI 都不同。`python3 verify_train.py` 直接由 CSV 獨立重算各範圍的訓練數字，可與網頁對照。舊版備份：`index_template.pre_train.html`（5 分頁）、`index_template.pre_tabs.html`。
 
 - **圖表提示改為圖上方讀數列（2026-10-03）**：Plotly 浮動提示框與 X 軸黑色氣泡已隱藏（CSS `.hoverlayer{display:none}` ＋ `hoverlabel` 透明），所有 `plot()` 圖與總覽迷你圖在圖正上方各有一行固定高度（18px）淡灰讀數列 `.tip`，點／滑到哪一點就顯示該點完整數值（沿用各 trace 的 `hovertemplate`，雙軸／堆疊圖併成一行），未選取顯示「點圖表查看數值」；點選後長條外其餘淡化。新增圖表只要用 `plot()`（或 `.chart` 容器＋`tipBind(id)`）並寫 `hovertemplate` 即可。測試：`/workspace/pwenv/bin/python test_tip.py 390 700`（截圖 `tip_*.png`）。舊版備份 `index_template.pre_tip.html`。
 - **點長條標亮修正（2026-10-06）**：點選長條時，標亮的那一根改用「點到的 x 值」在各長條 trace 中找索引（原本用 `e.points[0].pointNumber`，hovermode 'x' 時第一個點可能是 4 週滾動平均折線，其陣列從第 4 週才開始，造成每週圖標亮偏移 3 根）。測試：`/workspace/pwenv/bin/python test_barclick.py 390 700`（逐圖點長條中心，斷言讀數列與標亮都是同一根；自帶 8768 埠伺服器）。備份 `index_template.pre_barsel.html`。
@@ -62,3 +63,14 @@
 - 每次跑步都要有跑步機版本（0% 坡度）。腳癢發作就停。
 - 實際跑步資料仍附加到 `activities.csv`；計畫要依實際狀況（受傷、疲勞）調整時，只改今天之後的日子。
 - 檢查：`python3 update_dashboard.py` → `/workspace/pwenv/bin/python test_tabs.py 390 700` → 確認再 `--push`。
+
+## 「飲食」分頁（第 7 分頁，刀叉圖示；2026-10-06 新增）
+- 來源：`make_diet.py` → `data/diet.json`（`update_dashboard.py` 每次執行都會重產，每日 8:00 例行流程不需額外步驟）。範圍 2026-10-06～2026-12-31。
+- **diet.json 格式**：`{"meta": {...}, "days": {"YYYY-MM-DD": {...}}}`。每日訊息直接引用 `days["2026-10-06"]["text"]`（一段完整繁中摘要：當日目標、早餐、午餐、訓練前後、晚餐剩餘預算＋參考、睡前、週日提醒）。其他欄位：`tier`／`tier_label`、`training`、`targets`（carbs／protein／fat／kcal 字串，0.1 精度）、`meals[]`（slot、items[name, when, amount, carbs, protein, fat, kcal]、subtotal、tips）、`dinner`（剩餘預算＋example）、`notes`、`sunday`。
+- 使用者資料（常數在 `make_diet.py` 頂端）：71 kg、體脂 17.5%、12/31 目標 15%、赤字目標 183 kcal／天。`profile.json` 沒有身高／年齡／性別 → 不顯示 TDEE（不要自己補）。
+- 碳水分級（`classify()`）：肝醣超補 10/23、10/24 → 8 g/kg（568 g，脂肪 40 g）；kind=race（10/25 半馬、12/27 10K）→ 5 g/kg；課表類型含「長跑」→ 長跑日 5 g/kg；含 節奏／間歇／目標配速／測試／配速模擬 → 強度課日 5 g/kg；隔天跑 ≥14 km → 長跑前一天 5 g/kg；其他跑步日 4 g/kg；肌力日、休息日 3 g/kg。同一天有多項時取最高級。
+- 蛋白質＝固定 138.6 g（Meiji 30 g×2、蛋白粉 35 g、雞蛋 2 顆 12.6 g、雞胸肉 100 g 31.0 g）＋白飯／義大利麵／燕麥／香蕉的蛋白質。脂肪 57 g（0.8 g/kg）。熱量＝4/4/9。
+- 餐次：早餐固定（蛋白粉＋雞蛋 2 顆＋燕麥，燕麥 40／60／80／100 g 依分級）；午餐固定麻辣燙（不加辣）＋雞胸肉 100 g＋白飯（白飯克數＝剩餘碳水的一半，取 10 g 整數；超補日分三份含下午加餐）；訓練前後：跑步日香蕉 1 根（跑前 45 分鐘）＋Meiji（訓練後），跑步＋肌力同日兩瓶分別在跑後、肌力後；非訓練日 Meiji 為下午點心；不足 2 瓶的補在睡前；晚餐自由＝當日目標扣掉其他餐的剩餘預算，參考例休息／肌力日用白飯、其他日用義大利麵。10/25 早餐（起跑前 3 小時）碳水 142 g＋比賽中能量膠 × 2（品牌未知，碳水不計）。
+- 食物數值（USDA FDC，已核對）：白飯 28.2/2.7/0.3（168878）、義大利麵 30.9/5.8/0.9（SR 20121）、燕麥乾 66.3/16.9/6.9（169705）、香蕉中型 118 g 27.0/1.3/0.4（173944）、雞蛋大顆水煮 0.6/6.3/5.3（173424）、雞胸肉熟 0/31.0/3.6（171477）；Meiji 蛋白質 30.0（使用者提供）、碳水 9.8、脂肪 2.1（巧克力口味瓶身）；蛋白粉只計蛋白質 35.0（網頁顯示「—」）。
+- `build()` 內有 assert：各餐加總＋晚餐預算必須剛好等於當日目標，且晚餐碳水／脂肪預算不可為負。
+- 測試：`test_tabs.py` 已加入飲食分頁檢查（今天卡片 ≥3 個餐表、晚餐預算、週卡片、7 個分頁都在 390px 內）；截圖 `/workspace/pwenv/bin/python shot_diet.py [網址] [前綴]` → `diet_390x700.png`、`diet_full.png`。備份：`index_template.pre_diet.html`、`update_dashboard.pre_diet.py`、`UPDATE.pre_diet.md`、`test_tabs.pre_diet.py`。
