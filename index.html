@@ -100,6 +100,10 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dcard.today .tgrid>div{background:#fff;border:1px solid #f6dcc6}
 .tgrid b{display:block;font-size:16px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--fg)}
 .tgrid span{font-size:11px;color:var(--mut)}
+.energy{margin:8px 0 2px;background:#f6f7f9;border-radius:10px;padding:7px 10px;font-size:13px;line-height:1.55}
+.dcard.today .energy{background:#fff}
+.energy .tg{font-weight:700;color:#a8581f}
+.energy .exp{font-size:11.5px;color:var(--mut)}
 .tnote{font-size:11.5px;color:var(--mut);margin:2px 0 4px;line-height:1.45}
 .meal{margin-top:12px}
 .meal h4{margin:0 0 4px;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
@@ -653,15 +657,18 @@ function dFull(d){
   const pre=d.meals.filter(m=>m.slot!=='睡前'), late=d.meals.filter(m=>m.slot==='睡前');
   return pre.map(dMeal).join('')+dBudget(d.dinner)+late.map(dMeal).join('')+(d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:'');
 }
-function dHead(d,lab){return `<div class="lab"><span>${lab}</span><span class="tier">${d.tier_label}</span></div>
-  <div class="trn">${d.training}</div>${dTargets(d.targets)}<div class="tnote">蛋白質：${d.targets.protein_note}（${d.targets.protein_gkg} g/kg）</div>`;}
+function dHead(d,lab){const e=d.energy||{},t=d.targets;
+  return `<div class="lab"><span>${lab}</span><span class="tier">${d.tier_label}</span></div>
+  <div class="trn">${d.training}</div>
+  ${e.burn_text?`<div class="energy"><div>🔥 ${e.burn_text}</div><div class="tg">🎯 ${e.target_text}</div>${e.exercise_parts&&e.exercise_parts.length?`<div class="exp">運動：${e.exercise_parts.join('；')}</div>`:''}</div>`:''}
+  ${dTargets(t)}<div class="tnote">每公斤：碳水 ${t.carbs_gkg}・蛋白質 ${t.protein_gkg}・脂肪 ${t.fat_gkg} g/kg｜蛋白質＝${t.protein_note}</div>`;}
 function dCard(d,today){
   const isT=d.date===today, ln=m=>`<b>${m.slot}</b> ${m.title?m.title.replace('配白飯','')+'：':''}${m.items.map(i=>dNm(i.name)[0].replace(' High Protein','')+' '+i.amount).concat(m.text_items||[]).join('、')}`;
   const ms=d.meals.filter(m=>m.items.length||(m.text_items||[]).length), mini=ms.filter(m=>m.slot!=='睡前').map(ln)
     .concat([`<b>晚餐（自由）</b> 剩 碳水 ${d.dinner.carbs} g・蛋白質 ${d.dinner.protein} g・脂肪 ${d.dinner.fat} g・${d.dinner.kcal} kcal`]).concat(ms.filter(m=>m.slot==='睡前').map(ln)).join('<br>');
   return `<div class="dcard${isT?' today':''}">${dHead(d,`${d.date.slice(5).replace('-','/')} ${d.weekday}${isT?' <span class="badge">今天</span>':''}`)}
     <div class="dmini">${mini}</div>
-    ${d.sunday?`<div class="dnote">週日：量體重、體脂、腰圍</div>`:''}
+    ${d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:''}
     <details><summary>看完整餐表</summary>${dFull(d)}</details></div>`;
 }
 function dShowWeek(wk,fromUser){

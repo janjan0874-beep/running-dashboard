@@ -1,9 +1,29 @@
 {
   "as_of": "2026-09-30",
-  "alltime_baseline": {"runs": 150, "km": 510.9, "seconds": 232740, "note": "Strava 全時間統計（截至 as_of）"},
+  "alltime_baseline": {
+    "runs": 150,
+    "km": 510.9,
+    "seconds": 232740,
+    "note": "Strava 全時間統計（截至 as_of）"
+  },
   "alltime_avg_pace": "7:36",
   "first_run": "2025-03-20",
-  "prs": {"1K": "3:46", "1 英里": "6:15", "5K": "26:01", "10K": "55:05"},
+  "prs": {
+    "1K": "3:46",
+    "1 英里": "6:15",
+    "5K": "26:01",
+    "10K": "55:05"
+  },
   "race_date": "2026-10-25",
-  "pace_outlier_threshold_min": 10.0
+  "pace_outlier_threshold_min": 10.0,
+  "body": {
+    "height_cm": 176,
+    "age": 32,
+    "sex": "male",
+    "weight_kg": 71.0,
+    "body_fat_pct": 17.5,
+    "body_fat_goal_pct": 15.0,
+    "as_of": "2026-10-06",
+    "note": "飲食分頁用（make_diet.py）：BMR 採 Mifflin-St Jeor"
+  }
 }

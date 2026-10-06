@@ -2,14 +2,22 @@
 """每日飲食計畫：讀 make_plan.py 的逐日訓練，產生 data/diet.json（以日期為鍵）。
 update_dashboard.py 每次執行都會呼叫 build()，所以課表改了，飲食會自動跟著改。
 所有克數以 0.1 g 為單位計算（內部用「十分之一克」整數，避免浮點誤差），熱量一律 4/4/9。"""
-import json, datetime as dt
+import json, os, re, datetime as dt
 import make_plan
 
-# ---- 使用者資料（2026-10-06 提供）
-WEIGHT = 71.0          # kg
-BODY_FAT = 17.5        # %
-BODY_FAT_GOAL = 15.0   # %，12/31 前
+# ---- 使用者資料：profile.json 的 body（2026-10-06：176 cm、32 歲、男、71 kg、體脂 17.5%）
+_B = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile.json")))["body"]
+WEIGHT = float(_B["weight_kg"]); HEIGHT = float(_B["height_cm"]); AGE = int(_B["age"]); SEX = _B["sex"]
+BODY_FAT = float(_B["body_fat_pct"]); BODY_FAT_GOAL = float(_B["body_fat_goal_pct"])
 DEFICIT = 183          # kcal/天（目標赤字）
+MAINTENANCE = {"2026-10-23": "肝醣超補", "2026-10-24": "肝醣超補", "2026-10-25": "比賽日"}   # 這 3 天吃到維持熱量（不減 183）
+# Mifflin-St Jeor（1990）：男 10W + 6.25H − 5A + 5；女 −161
+BMR = 10 * WEIGHT + 6.25 * HEIGHT - 5 * AGE + (5 if SEX == "male" else -161)
+ACTIVITY = 1.2                     # 久坐係數（運動另外加）
+RUN_KCAL_PER_KG_KM = 1.0           # 跑步淨消耗 1 kcal/kg/km
+MET_STRENGTH, MET_HYROX = 5.0, 8.0 # Compendium of Physical Activities
+STR_MIN_DEFAULT = 45
+FAT_FLOOR = 0.6                    # g/kg
 START, END = "2026-10-06", "2026-12-31"
 WD = "一二三四五六日"
 
@@ -28,8 +36,6 @@ SP_G = {"rest": 100, "str": 100, "easy": 120, "long": 150, "quality": 150, "prel
 CARB_GKG = {"rest": 3, "str": 3, "easy": 4, "long": 5, "quality": 5, "prelong": 5, "race": 5, "load": 8}
 TIER_LABEL = {"rest": "休息日", "str": "肌力日", "easy": "輕鬆跑日", "long": "長跑日", "quality": "強度課日",
               "prelong": "長跑前一天", "race": "比賽日", "load": "肝醣超補日"}
-FAT_G = 57          # 0.8 g/kg × 71 kg = 56.8 → 57 g
-FAT_G_LOAD = 40
 LOAD_DAYS = {"2026-10-23", "2026-10-24"}
 HALF_RACE = "2026-10-25"
 RACE_BREAKFAST_C = 1420   # 142 g（2 g/kg），起跑前 3 小時
@@ -66,12 +72,27 @@ def classify(entries, tomorrow):
     if d in LOAD_DAYS: return "load"
     if any(e["kind"] == "race" for e in entries): return "race"
     runs = [e for e in entries if e["kind"] == "run"]
-    if any("長跑" in e["type"] for e in runs): return "long"
+    if any("長跑" in e["type"] and e["km"] >= 10 for e in runs): return "long"   # 10 km 以下的輕鬆長跑用 4 g/kg
     if any(k in e["type"] for e in runs for k in ("節奏", "間歇", "目標配速", "測試", "配速模擬")): return "quality"
     if any(e["kind"] == "run" and e["km"] >= 14 for e in tomorrow): return "prelong"
     if runs: return "easy"
     if any(e["kind"] == "str" for e in entries): return "str"
     return "rest"
+
+def exercise(ents):
+    """回傳（運動消耗，十分之一 kcal；明細文字 list）。"""
+    tot, parts = 0, []
+    for e in ents:
+        if e["kind"] in ("run", "race"):
+            k = hu(RUN_KCAL_PER_KG_KM * WEIGHT * e["km"] * 10); tot += k
+            parts.append(f"跑步 {e['km']:g} km × {RUN_KCAL_PER_KG_KM * WEIGHT:g} = {g1(k)}")
+        elif e["kind"] == "str" or "Hyrox" in e["type"] or "HIIT" in e["type"]:
+            met = MET_HYROX if ("Hyrox" in e["type"] or "HIIT" in e["type"]) else MET_STRENGTH
+            m = re.search(r"(\d+)\s*分鐘", e["note"]); mins = int(m.group(1)) if m else STR_MIN_DEFAULT
+            k = hu((met - 1) * WEIGHT * mins / 60 * 10); tot += k
+            nm = "Hyrox／HIIT" if met == MET_HYROX else "肌力"
+            parts.append(f"{nm} {mins} 分鐘：（MET {met:.1f} − 1）× {WEIGHT:g} × {mins}／60 = {g1(k)}")
+    return tot, parts
 
 def build():
     plan = make_plan.build()
@@ -79,6 +100,7 @@ def build():
     for e in plan["days"]:
         byd.setdefault(e["date"], []).append(e)
     out = {}
+    BMR_T = hu(BMR * 10); BASE_T = hu(BMR * ACTIVITY * 10); FLOOR_T = hu(FAT_FLOOR * WEIGHT * 10)
     d = dt.date.fromisoformat(START)
     while d.isoformat() <= END:
         ds = d.isoformat(); ents = byd.get(ds, [])
@@ -88,9 +110,14 @@ def build():
         tier = classify(ents, tmr)
         runs = [e for e in ents if e["kind"] in ("run", "race")]; strs = [e for e in ents if e["kind"] == "str"]
         has_run, has_str = bool(runs), bool(strs)
-        C = hu(CARB_GKG[tier] * WEIGHT * 10); FAT = (FAT_G_LOAD if tier == "load" else FAT_G) * 10
+        # ---- 熱量：TDEE＝BMR × 1.2＋運動；目標＝TDEE − 183（10/23–10/25 維持）
+        EX_T, ex_parts = exercise(ents)
+        TDEE_T = BASE_T + EX_T
+        maint = ds in MAINTENANCE
+        TK = TDEE_T if maint else TDEE_T - DEFICIT * 10
+        C_TIER = hu(CARB_GKG[tier] * WEIGHT * 10)
+        # ---- 固定餐點
         meals = []
-        # 早餐
         if ds == HALF_RACE:
             base = [item("powder", 1), item("egg", 2), item("banana", 2)]
             bc = sum(i["c"] for i in base)
@@ -101,61 +128,85 @@ def build():
                               tips=["能量膠沒有指定品牌，碳水未計入今日總量；用 10/11、10/18 演練過的同一款。"]))
         else:
             meals.append(dict(slot="早餐", items=[item("powder", 1), item("egg", 2), item("sweetpotato", SP_G[tier])], tips=[]))
-        # 訓練前後（Meiji 第 1 瓶在訓練後）
-        tr_items, tr_tips = [], []
+        tr_items = []
         if ds == HALF_RACE:
-            tr_items.append(item("meiji", 1, "賽後 30 分鐘內"))
-            slot_tr = "賽後"
+            tr_items.append(item("meiji", 1, "賽後 30 分鐘內")); slot_tr = "賽後"
         elif has_run or has_str:
             if has_run: tr_items.append(item("banana", 1, "跑前 45 分鐘"))
             if has_run and has_str:
-                tr_items.append(item("meiji", 1, "跑後 30 分鐘內"))
-                tr_items.append(item("meiji", 1, "肌力後 30 分鐘內"))
+                tr_items.append(item("meiji", 1, "跑後 30 分鐘內")); tr_items.append(item("meiji", 1, "肌力後 30 分鐘內"))
             else:
                 tr_items.append(item("meiji", 1, "訓練後 30 分鐘內"))
             slot_tr = "訓練前後"
         else:
-            tr_items.append(item("meiji", 1, "下午點心"))
-            slot_tr = "下午點心"
-        n_meiji = sum(1 for i in tr_items if i["key"] == "meiji")
-        late = [item("meiji", 1, "睡前")] if n_meiji < 2 else []
-        # 加餐（只在肝醣超補日）
-        snack = [item("banana", 2)] if tier == "load" else []
-        # 已固定的碳水 → 剩下的分給午餐白飯、（加餐白飯）、晚餐
-        fixed = [i for m in meals for i in m["items"]] + tr_items + late + snack
+            tr_items.append(item("meiji", 1, "下午點心")); slot_tr = "下午點心"
+        late = [item("meiji", 1, "睡前")] if sum(1 for i in tr_items if i["key"] == "meiji") < 2 else []
+        snack_fixed = [item("banana", 2)] if tier == "load" else []
         lunch_fixed = [item("chicken", 100, "放進麻辣燙")]
-        R = C - sums(fixed + lunch_fixed)[0]
+        fixed = [i for m in meals for i in m["items"]] + tr_items + late + snack_fixed + lunch_fixed
+        fc, fp, ff = sums(fixed)
         parts = 3 if tier == "load" else 2
-        lunch_rice = round10(R / parts / F["rice"]["c"] * 100)
-        lunch = lunch_fixed + [item("rice", lunch_rice)]
+        rice0 = round10((C_TIER - fc) / parts / F["rice"]["c"] * 100)   # 依碳水分級的午餐（與加餐）白飯
+        ex_key = "rice" if tier in ("rest", "str") else "pasta"
+        def ex_for(dc):
+            return item(ex_key, max(0, hu(dc / F[ex_key]["c"] * 100)))
+        def rice_items(lr, sr):
+            return [item("rice", lr)] + ([item("rice", sr)] if tier == "load" else [])
+        # ---- 解：碳水照分級，脂肪補到剛好等於目標熱量；脂肪低於 0.6 g/kg 時改減碳水（午餐白飯／晚餐）
+        lr = sr = rice0
+        rc, rp, rf = sums(rice_items(lr, sr))
+        dc = C_TIER - fc - rc
+        ep = ex_for(dc)["p"]
+        rem = TK - 4 * C_TIER - 4 * (fp + rp + ep)
+        cands = [f for f in range(rem // 9 - 4, rem // 9 + 5) if (rem - 9 * f) % 4 == 0]
+        FAT_T = min(cands, key=lambda f: abs(rem - 9 * f))
+        pk = (rem - 9 * FAT_T) // 4          # 0.1 g 等級的熱量尾數，由晚餐蛋白質預算吸收
+        floor_hit = FAT_T < FLOOR_T
+        if floor_hit:
+            pk = 0
+            while True:
+                rc, rp, rf = sums(rice_items(lr, sr))
+                ep = 0
+                for _ in range(5):
+                    dc = (TK - 9 * FLOOR_T - 4 * (fc + rc) - 4 * (fp + rp + ep)) // 4
+                    ep = ex_for(max(dc, 0))["p"]
+                lunch_c = item("rice", lr)["c"]
+                if (dc < 0 or dc < lunch_c - 280) and lr >= 10:
+                    if tier == "load" and sr > lr: sr -= 10
+                    else: lr -= 10
+                    continue
+                break
+            rem = TK - 4 * (fc + rc + dc) - 4 * (fp + rp + ep)
+            FAT_T = min(f for f in range(FLOOR_T, FLOOR_T + 4) if (rem - 9 * f) % 4 == 0)
+            dc += (rem - 9 * FAT_T) // 4     # 尾數由晚餐碳水吸收
+            assert dc >= 0, (ds, dc)
+        C = fc + rc + dc
+        lunch = lunch_fixed + [item("rice", lr)]
         meals.append(dict(slot="午餐", title="麻辣燙（不加辣）配白飯", items=lunch,
                           tips=["雞胸肉 100 g（或等量瘦肉：里肌、魚片、蝦）和青菜放進麻辣燙。",
                                 "炸物（豆皮、炸豆包、油條）與加工丸子、餃類少拿。",
                                 "湯不要喝（湯裡有油）。"]))
-        if snack:
-            snack.append(item("rice", lunch_rice))
-            meals.append(dict(slot="加餐（下午）", items=snack, tips=["肝醣超補：碳水分散到多餐，選低纖維食物。"]))
+        if tier == "load":
+            meals.append(dict(slot="加餐（下午）", items=snack_fixed + [item("rice", sr)], tips=["肝醣超補：碳水分散到多餐，選低纖維食物。"]))
         meals.append(dict(slot=slot_tr, items=tr_items, tips=(["訓練前後依實際訓練時間調整；香蕉在跑前 45 分鐘吃。"] if has_run and ds != HALF_RACE else [])))
         if late:
             meals.append(dict(slot="睡前", items=late, tips=[]))
-        # 晚餐（自由）：剩餘預算
+        # ---- 晚餐（自由）：剩餘預算
         used = [i for m in meals for i in m["items"]]
         uc, up, uf = sums(used)
-        dc, dfat = C - uc, FAT - uf
-        ex_key = "rice" if tier in ("rest", "str") else "pasta"
-        ex_g = max(0, hu(dc / F[ex_key]["c"] * 100))
-        ex = item(ex_key, ex_g)
-        dp = ex["p"]
-        other_fat = max(0, dfat - ex["f"])
+        ex = ex_for(dc)
+        dp = ep + pk
+        dfat = FAT_T - uf
         P = up + dp
-        total_k = kcal_t(C, P, FAT)
+        assert uc + dc == C and 4 * C + 4 * P + 9 * FAT_T == TK, (ds, 4 * C + 4 * P + 9 * FAT_T, TK)
+        assert dc >= 0 and dfat >= 0 and dp >= 0, (ds, dc, dfat, dp)
+        other_fat = max(0, dfat - ex["f"])
         dinner = dict(carbs=g1(dc), protein=g1(dp), fat=g1(dfat), kcal=g1(kcal_t(dc, dp, dfat)),
-                      example=dict(food=ex["name"], grams=ex_g, carbs=g1(ex["c"]), protein=g1(ex["p"]), fat=g1(ex["f"]),
+                      example=dict(food=ex["name"], grams=int(ex["amount"].split()[0]), carbs=g1(ex["c"]), protein=g1(ex["p"]), fat=g1(ex["f"]),
                                    other_fat=g1(other_fat),
-                                   text=f"{ex['name'].replace('（熟）','')} {ex_g} g（碳水 {g1(ex['c'])} g、蛋白質 {g1(ex['p'])} g、脂肪 {g1(ex['f'])} g）＋青菜＋烹調油／醬汁／配料脂肪 {g1(other_fat)} g"),
+                                   text=f"{ex['name'].replace('（熟）','')} {ex['amount']}（碳水 {g1(ex['c'])} g、蛋白質 {g1(ex['p'])} g、脂肪 {g1(ex['f'])} g）＋青菜＋烹調油／醬汁／配料脂肪 {g1(other_fat)} g"),
                       tips=["晚餐自由選，控制在上面的剩餘預算內。",
                             "蛋白質已由早餐、午餐與 2 瓶 Meiji 吃夠；晚餐加肉、魚或豆腐，請從脂肪預算扣。"])
-        # 輸出格式
         def fmt_items(items):
             return [dict(name=i["name"], when=i["when"], amount=i["amount"], na=(["carbs", "fat"] if i["key"] == "powder" else []), carbs=g1(i["c"]), protein=g1(i["p"]), fat=g1(i["f"]),
                          kcal=g1(kcal_t(i["c"], i["p"], i["f"]))) for i in items]
@@ -166,47 +217,60 @@ def build():
                            subtotal=dict(carbs=g1(c), protein=g1(p), fat=g1(f), kcal=g1(kcal_t(c, p, f))), tips=m["tips"]))
         train = "＋".join((f"跑步 {e['km']:g} km（{e['type']}）" if e["kind"] in ("run", "race") else
                           ("肌力（" + e["type"] + "）" if e["kind"] == "str" else e["type"])) for e in ents)
-        prot_base = 1386
-        prot_extra = P - prot_base
         notes = []
+        if maint:
+            notes.append(f"{MAINTENANCE[ds]}：今天吃到維持熱量 {g1(TDEE_T)} kcal（不減 {DEFICIT}）。")
+        if floor_hit:
+            msg = f"今天目標熱量放不下碳水 {CARB_GKG[tier]} g/kg（{g1(C_TIER)} g）：脂肪已降到下限 {g1(FLOOR_T)} g（{FAT_FLOOR:g} g/kg），碳水減為 {g1(C)} g"
+            ch = []
+            if lr != rice0: ch.append(f"午餐白飯 {rice0} g → {lr} g")
+            if tier == "load" and sr != rice0: ch.append(f"加餐白飯 {rice0} g → {sr} g")
+            ch.append(f"晚餐碳水預算 {g1(dc)} g")
+            notes.append(msg + "（" + "、".join(ch) + "）。")
         if d.weekday() == 6:
             notes.append("週日：早上起床、如廁後空腹量體重、體脂、腰圍，記錄後回報。")
         if tier == "prelong":
-            notes.append("明天長跑：今天碳水 5 g/kg，晚餐以白飯或義大利麵為主，少油、少纖維。")
+            notes.append("明天長跑：晚餐以白飯或義大利麵為主，少油、少纖維。")
         if tier == "load":
-            notes.append("肝醣超補（10/23、10/24）：碳水 8 g/kg、脂肪 40 g；少油、少纖維，多喝水。")
+            notes.append("肝醣超補（10/23、10/24）：少油、少纖維，多喝水。")
+        energy = dict(bmr=g1(BMR_T), base=g1(BASE_T), exercise=g1(EX_T), exercise_parts=ex_parts, tdee=g1(TDEE_T),
+                      target=g1(TK), deficit=0 if maint else DEFICIT, maintenance=maint,
+                      burn_text=f"消耗 {g1(TDEE_T)} kcal（基礎代謝 {BMR:g} × {ACTIVITY:g} ＋ 運動 {g1(EX_T)}）",
+                      target_text=(f"目標 {g1(TK)} kcal（維持，不減 {DEFICIT}）" if maint else f"目標 {g1(TK)} kcal（−{DEFICIT}）"))
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
-                   tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train,
-                   targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT), kcal=g1(total_k),
-                                protein_note=f"固定 138.6 g＋主食、地瓜與香蕉 {g1(prot_extra)} g",
-                                carbs_gkg=CARB_GKG[tier], protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT/10/WEIGHT:.2f}"),
+                   tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train, energy=energy,
+                   targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT_T), kcal=g1(TK),
+                                protein_note=f"固定 138.6 g＋主食、地瓜與香蕉 {g1(P - 1386)} g",
+                                carbs_gkg=f"{C/10/WEIGHT:.2f}", protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT_T/10/WEIGHT:.2f}",
+                                carbs_reduced=floor_hit),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
-        # 每日訊息可直接引用的一段文字
         def short(m):
             parts_ = [f"{i['name'].split('（')[0]} {i['amount']}" + (f"（{i['when']}）" if i["when"] and i["when"] != m["slot"] else "") for i in m["items"]] + m.get("text_items", [])
             return f"{m['slot']}：" + (m["title"] + "（" if m["title"] else "") + "、".join(parts_) + ("）" if m["title"] else "")
-        day["text"] = (f"{ds[5:].replace('-', '/')}（{day['weekday']}）飲食｜{day['tier_label']}｜今日目標：碳水 {g1(C)} g、蛋白質 {g1(P)} g、脂肪 {g1(FAT)} g、熱量 {g1(total_k)} kcal。"
+        day["text"] = (f"{ds[5:].replace('-', '/')}（{day['weekday']}）飲食｜{day['tier_label']}｜{energy['burn_text']}；{energy['target_text']}｜今日：碳水 {g1(C)} g、蛋白質 {g1(P)} g、脂肪 {g1(FAT_T)} g。"
                        + "；".join([short(m) for m in mo if m["slot"] != "睡前"]
                                    + [f"晚餐（自由）剩餘：碳水 {dinner['carbs']} g、蛋白質 {dinner['protein']} g、脂肪 {dinner['fat']} g、{dinner['kcal']} kcal（例：{dinner['example']['text']}）"]
                                    + [short(m) for m in mo if m["slot"] == "睡前"]) + "。"
                        + "".join(notes))
-        # 自我檢查：逐項加總＋晚餐預算＝當日目標
-        ac, ap, af = sums(used)
-        assert ac + dc == C and af + dfat == FAT and ap + dp == P, ds
-        assert dc >= 0 and dfat >= 0, (ds, dc, dfat)
         out[ds] = day
         d += dt.timedelta(days=1)
     meta = dict(
-        weight=WEIGHT, body_fat=BODY_FAT, body_fat_goal=BODY_FAT_GOAL, deficit=DEFICIT, start=START, end=END,
-        summary=f"體重 {WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%；每日熱量赤字目標 {DEFICIT} kcal。",
-        rules=[f"碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日 4 g/kg（284 g）；長跑日、強度課日、10K 測試日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
+        weight=WEIGHT, height=HEIGHT, age=AGE, sex=SEX, body_fat=BODY_FAT, body_fat_goal=BODY_FAT_GOAL, deficit=DEFICIT, bmr=g1(BMR_T), start=START, end=END,
+        summary=f"176 cm、32 歲、男、{WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%。基礎代謝 {BMR:g} kcal；每日消耗＝{BMR:g} × {ACTIVITY:g}＋當天課表運動；目標＝消耗 − {DEFICIT} kcal（10/23–10/25 吃到維持）。",
+        rules=[f"基礎代謝（Mifflin-St Jeor，男）：10 × {WEIGHT:g} ＋ 6.25 × {HEIGHT:g} − 5 × {AGE} ＋ 5 ＝ {BMR:g} kcal；× {ACTIVITY:g}（日常活動）＝ {g1(BASE_T)} kcal。",
+               f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT 用 MET {MET_HYROX:.1f}；休息日 0。",
+               f"每日目標＝消耗 − {DEFICIT} kcal；10/23、10/24（肝醣超補）與 10/25（比賽日）吃到維持熱量。",
+               "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
                "蛋白質：固定 138.6 g＝Meiji 30 g × 2 瓶（60.0）＋蛋白粉 1 份（35.0）＋雞蛋 × 2（12.6）＋雞胸肉 100 g（31.0），再加上白飯、義大利麵、地瓜、香蕉的蛋白質。",
-               f"脂肪：0.8 g/kg（57 g）；肝醣超補日 40 g。熱量＝碳水 × 4＋蛋白質 × 4＋脂肪 × 9。"],
+               f"脂肪：補到碳水 × 4＋蛋白質 × 4＋脂肪 × 9 剛好等於目標熱量；下限 {FAT_FLOOR:g} g/kg（{g1(FLOOR_T)} g）。需要低於下限時改減碳水（先減午餐白飯與晚餐），卡片上會註明。"],
         footnotes=[
+            "基礎代謝：Mifflin MD, St Jeor ST, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr 1990;51:241–247。",
+            "運動 MET：Compendium of Physical Activities（Ainsworth BE et al. 2011；Herrmann SD et al. 2024 成人版）；肌力 MET 5.0、Hyrox／HIIT MET 8.0，淨消耗＝（MET − 1）× 體重 × 小時。",
+            "跑步淨消耗 1 kcal/kg/km：跑步每公里的淨能量消耗與速度大致無關，約等於體重（kg）kcal（Margaria et al. 1963；ACSM Guidelines 跑步代謝公式）。",
             "每公斤體重的碳水、蛋白質、脂肪建議依據：ACSM／美國營養與飲食學會／加拿大營養師協會 2016 聯合立場聲明（Thomas et al., Med Sci Sports Exerc 48:543）與 ISSN 立場聲明（Jäger et al. 2017 蛋白質與運動；Kerksick et al. 2017 營養時機）。",
             "麻辣燙的湯、油與青菜沒有計入（份量與用油每家不同），請不要喝湯；表中只計白飯、雞胸肉等有明確數值的食物。",
             "蛋白粉品牌未知，只計蛋白質 35.0 g；能量膠品牌未知，碳水未計入。Meiji 碳水與脂肪以巧克力口味瓶身標示計。",
-            "身高、年齡、性別未提供，所以不計算也不顯示 TDEE；熱量赤字 183 kcal／天是目標值，請以每週日的體重、體脂、腰圍趨勢檢查。",
+            "消耗是公式估算值，請以每週日的體重、體脂、腰圍趨勢檢查：連續 2 週體重沒有下降就再調整。",
         ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "sweetpotato", "banana", "egg", "chicken", "meiji", "powder")],
     )
     return dict(meta=meta, days=out)
