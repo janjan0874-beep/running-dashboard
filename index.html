@@ -679,7 +679,7 @@ function dMeal(m){
     ${m.tips.length?`<ul class="mtips">${m.tips.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>`;
 }
 function dBudget(b){const fx=b.fixed_items||[];return `<div class="budget"><h4>晚餐（自由）｜剩餘預算</h4>${fx.length?`<table class="dtab"><colgroup><col class="c1"><col class="c2"><col class="cn"><col class="cn"><col class="cn"></colgroup><thead><tr><th>固定</th><th>份量</th><th>碳水</th><th>蛋白質</th><th>脂肪</th></tr></thead><tbody>${dRows(fx)}</tbody></table>`:''}${dTargets(b)}
-  <div class="ex"><b>參考：</b>${pB(b.example.text)}</div><ul class="mtips">${b.tips.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;}
+  <div class="ex"><b>參考：</b>${pB(b.example.text)}</div>${b.example.snack_text?`<div class="ex"><b>另加碳水點心：</b>${pB(b.example.snack_text)}</div>`:''}<ul class="mtips">${b.tips.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;}
 function dFull(d){
   const pre=d.meals.filter(m=>m.slot!=='睡前'), late=d.meals.filter(m=>m.slot==='睡前');
   return pre.map(dMeal).join('')+dBudget(d.dinner)+late.map(dMeal).join('')+(d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:'');
