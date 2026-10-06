@@ -197,10 +197,10 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   </section>
 
   <section class="pane" data-tab="pace">
-    <div class="panel"><h3>每趟配速<small>點大小＝距離</small></h3><div id="c_pace" class="chart fill"></div><p class="take" id="k_pace" style="margin-top:6px"></p></div>
+    <div class="panel"><h3>每趟配速趨勢<small>點大小＝距離</small></h3><div id="c_pace" class="chart fill"></div><p class="take" id="k_pace" style="margin-top:6px"></p></div>
     <p class="note" id="n_pace"></p>
     <div class="panel"><h3>每月平均配速<small>分/公里</small></h3><div id="k_mpace" class="take"></div><div id="c_mpace" class="chart tail"></div>
-      <p class="note">超過 <span id="thr">10:00</span>/km 的月份多半是步行或混合活動，以 ✕ 標示並壓在上限，不納入平均配速。</p></div>
+      <p class="note">橘線為 3 個月移動平均。慢於 <span id="thr">10:00</span>/km 的月份（多為步行或混合活動）不列入。</p></div>
   </section>
 
   <section class="pane" data-tab="plan">
@@ -293,6 +293,12 @@ function catTicks(vals,fmt){
 }
 const abbrM=m=>m.slice(2,4)+'/'+m.slice(5,7), abbrW=w=>w.slice(5,7)+'/'+w.slice(8,10);
 const fmtP=s=>(s&&isFinite(s))?`${Math.floor(Math.round(s)/60)}:${String(Math.round(s)%60).padStart(2,'0')}`:'—';
+function paceAxis(vals){ // 只依保留的點決定範圍（上＝快），刻度每 30 或 60 秒
+  const v=vals.filter(x=>x!=null&&isFinite(x)); if(!v.length) return {autorange:'reversed'};
+  const lo=Math.min(...v),hi=Math.max(...v),st=(hi-lo)>150?60:30,a=Math.floor((lo-8)/st)*st,b=Math.ceil((hi+8)/st)*st,tv=[];
+  for(let t=a;t<=b;t+=st) tv.push(t);
+  return {range:[b,a],tickvals:tv,ticktext:tv.map(fmtP)};
+}
 const f1=x=>(Math.round(x*10)/10).toFixed(1);
 const hms=t=>t.split(':').reduce((a,b)=>a*60+ +b,0);
 const addM=(ym,k)=>{let y=+ym.slice(0,4),m=+ym.slice(5,7)-1+k;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+'-'+String(m+1).padStart(2,'0');};
@@ -381,8 +387,8 @@ function render(){
   $('k_time').textContent=`${nm}累計 ${f1(hrs)} 小時，平均每月 ${f1(hrs/M.length)} 小時。`;
   const okM=M.filter(r=>!r.outlier&&r.pace_sec);
   if(okM.length){const fast=okM.reduce((a,b)=>b.pace_sec<a.pace_sec?b:a);
-    $('k_mpace').textContent=`最快月份是 ${fast.month}（${fast.pace}/km）；最近一個正常月份為 ${okM[okM.length-1].month}（${okM[okM.length-1].pace}/km）。`;}
-  else $('k_mpace').textContent='此期間沒有正常配速月份。';
+    $('k_mpace').textContent=`最快月份是 ${fast.month}（${fast.pace}/km）；最近一個月份為 ${okM[okM.length-1].month}（${okM[okM.length-1].pace}/km）。`;}
+  else $('k_mpace').textContent='此期間沒有配速資料。';
   {const mini=$('c_mini');
    if(mini&&mini.offsetWidth){const mob=isMob();tipReset('c_mini');
     Plotly.react('c_mini',[{type:'bar',x:mo,y:M.map(r=>r.km),marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'}],
@@ -394,12 +400,15 @@ function render(){
     {...L,yaxis:{title:'km',gridcolor:GRID},yaxis2:{title:'次數',overlaying:'y',side:'right',showgrid:false,rangemode:'tozero'},xaxis:{type:'category',gridcolor:GRID}},{y2:true,hover:'x',x:catTicks(mo,abbrM)});
   plot('c_time',[{type:'bar',x:mo,y:M.map(r=>r.hours),name:'移動時間（小時）',marker:{color:C_TEAL},customdata:M.map(r=>r.time),hovertemplate:'%{x}<br>%{customdata}（%{y:.1f} 小時）<extra></extra>'}],
     {...L,yaxis:{title:'小時',gridcolor:GRID},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM),legend:false});
-  const P=M.filter(r=>r.pace_sec), cap=r=>Math.min(r.pace_sec,thr);
+  // 每月配速：慢於門檻的月份（outlier）完全不畫、不納入趨勢線；x 軸仍保留所有月份，線段跨過空缺
+  const mp=M.map(r=>(!r.outlier&&r.pace_sec)?r.pace_sec:null);
+  const mpAll=D.m.map(r=>(!r.outlier&&r.pace_sec)?r.pace_sec:null);   // 3 個月移動平均以全部月份計算再切到範圍
+  const m3=mpAll.map((v,i)=>{if(v==null)return null;const w=mpAll.slice(Math.max(0,i-2),i+1).filter(x=>x!=null);return w.reduce((a,b)=>a+b,0)/w.length;}).slice(D.m.length-M.length);
+  const mpR=paceAxis(mp.concat(m3));
   plot('c_mpace',[
-    {type:'scatter',mode:'lines',x:P.map(r=>r.month),y:P.map(cap),line:{color:'#c3cad4',width:1.5},hoverinfo:'skip',showlegend:false},
-    {type:'scatter',mode:'markers',name:'正常月份',x:P.filter(r=>!r.outlier).map(r=>r.month),y:P.filter(r=>!r.outlier).map(r=>r.pace_sec),marker:{size:10,color:C_BLUE},text:P.filter(r=>!r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
-    {type:'scatter',mode:'markers',name:'異常（壓在上限）',x:P.filter(r=>r.outlier).map(r=>r.month),y:P.filter(r=>r.outlier).map(cap),marker:{size:11,color:'rgba(0,0,0,0)',line:{color:C_OUT,width:2},symbol:'x-open'},text:P.filter(r=>r.outlier).map(r=>r.pace),hovertemplate:'%{x}<br>原始 %{text}/km（疑似步行/混合）<extra></extra>'}],
-    {...L,yaxis:{title:'配速',autorange:'reversed',gridcolor:GRID,...(isMob()?{tickvals:[300,360,420,480,600],ticktext:['5:00','6:00','7:00','8:00','10+']}:{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM)});
+    {type:'scatter',mode:'markers',name:'每月平均',x:mo,y:mp,marker:{size:8,color:'#9cc3ea'},text:M.map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
+    {type:'scatter',mode:'lines',name:'3 個月移動平均',x:mo,y:m3,connectgaps:true,line:{color:C_ORG,width:3},customdata:m3.map(fmtP),hovertemplate:'%{x}<br>3個月均 %{customdata}/km<extra></extra>'}],
+    {...L,yaxis:{title:'配速',autorange:false,gridcolor:GRID,...mpR},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM)});
   // weekly：範圍內的週（週資料自 7/6 起，最多顯示 13 週）
   const wkStart=co.d.slice(0,10);
   let W=D.w.filter(r=>r.week>=wkStart||(isoMs(r.week)+6*dayMs)>=isoMs(wkStart)).slice(-13);
@@ -411,21 +420,23 @@ function render(){
     {type:'scatter',mode:'lines+markers',x:W.filter(r=>r.rolling4!=null).map(r=>r.week),y:W.filter(r=>r.rolling4!=null).map(r=>r.rolling4),name:'4 週滾動平均',line:{color:C_BLUE,width:3},hovertemplate:'週起 %{x}<br>4週均 %{y:.1f} km/週<extra></extra>'}],
     {...L,yaxis:{title:'km',gridcolor:GRID},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},{hover:'x',x:catTicks(W.map(r=>r.week),abbrW)});
   // 每趟
-  const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier), bad=A.filter(r=>r.outlier);
+  const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier);  // outlier（慢於門檻）完全不顯示、不計入平均與趨勢
   const first=D.a[0].date, fshort=+first.slice(5,7)+'/'+ +first.slice(8,10);
   const partialData=info.c.runs>A.length;
-  $('n_pace').textContent='配速軸向上＝較快。虛線為 7 趟移動平均（已排除異常值）；✕＝超過 10:00/km 的疑似步行。'+(partialData?`單趟資料自 ${fshort} 起（較早月份只有月彙總），此處顯示全部單趟。`:'');
+  $('n_pace').textContent=`配速軸向上＝較快。橘線為 7 趟移動平均；慢於 ${fmtP(thr)}/km 的紀錄（多為步行）不列入。`+(partialData?`單趟資料自 ${fshort} 起（較早月份只有月彙總），此處顯示全部單趟。`:'');
   if(ok.length){const tk=ok.reduce((s,r)=>s+r.km,0),ts=ok.reduce((s,r)=>s+r.pace_sec*r.km,0);
     const l7=ok.slice(-7),a7=l7.reduce((s,r)=>s+r.pace_sec,0)/l7.length;
-    $('k_pace').textContent=`${partialData?`單趟資料自 ${fshort} 起，`:`${nm}`}共 ${A.length} 趟，平均 ${fmtP(ts/tk)}/km；最近 ${l7.length} 趟平均 ${fmtP(a7)}/km。`;}
+    $('k_pace').textContent=`${partialData?`單趟資料自 ${fshort} 起，`:`${nm}`}共 ${ok.length} 趟，平均 ${fmtP(ts/tk)}/km；最近 ${l7.length} 趟平均 ${fmtP(a7)}/km。`;}
   else $('k_pace').textContent='此期間沒有單趟資料。';
   const sz=r=>Math.max(6,Math.min(34,r.km*3.2));
-  const ma=ok.map((_,i)=>{const w=ok.slice(Math.max(0,i-6),i+1);return w.reduce((s,r)=>s+r.pace_sec,0)/w.length});
+  // 7 趟移動平均：以全部（已排除 outlier）的單趟計算再切到範圍，範圍起點也有完整視窗；不足 3 趟不畫
+  const okAll=D.a.filter(r=>!r.outlier), maAll=okAll.map((_,i)=>{const w=okAll.slice(Math.max(0,i-6),i+1);return w.length<3?null:w.reduce((s,r)=>s+r.pace_sec,0)/w.length});
+  const ma=maAll.slice(okAll.length-ok.length);
+  const pR=paceAxis(ok.map(r=>r.pace_sec).concat(ma));
   plot('c_pace',[
-    {type:'scatter',mode:'markers',name:'每趟（點大小＝公里）',x:ok.map(r=>r.date),y:ok.map(r=>r.pace_sec),marker:{size:ok.map(sz),color:ok.map(r=>r.km),colorscale:[[0,'#cfe3f6'],[.5,'#7fb5e6'],[1,'#3f7fc4']],showscale:false,opacity:.8,line:{width:1,color:'#fff'}},customdata:ok.map(r=>[r.km,r.pace,r.time]),hovertemplate:'%{x}<br>%{customdata[0]} km · %{customdata[1]}/km<br>時間 %{customdata[2]}<extra></extra>'},
-    {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:C_ORG,dash:'dash',width:2.5},hoverinfo:'skip'},
-    {type:'scatter',mode:'markers',name:'異常 >10:00',x:bad.map(r=>r.date),y:bad.map(()=>thr),marker:{symbol:'x',size:10,color:C_OUT},customdata:bad.map(r=>[r.km,r.pace]),hovertemplate:'%{x}<br>%{customdata[0]} km · 原始 %{customdata[1]}/km<extra></extra>'}],
-    {...L,yaxis:{title:'配速（分/公里）',autorange:'reversed',gridcolor:GRID,...(isMob()?{tickvals:[300,360,420,480,540,600],ticktext:['5:00','6:00','7:00','8:00','9:00','10+']}:{tickvals:[300,330,360,390,420,450,480,540,600],ticktext:['5:00','5:30','6:00','6:30','7:00','7:30','8:00','9:00','10:00+']}),range:[thr+20,270]},xaxis:{gridcolor:GRID}},{x:{nticks:5,tickformat:'%m/%d',tickangle:-45}});
+    {type:'scatter',mode:'markers',name:'每趟',x:ok.map(r=>r.date),y:ok.map(r=>r.pace_sec),marker:{size:ok.map(sz),color:'rgba(106,167,224,.45)',line:{width:1,color:'#fff'}},customdata:ok.map(r=>[r.km,r.pace,r.time]),hovertemplate:'%{x}<br>%{customdata[0]} km · %{customdata[1]}/km<br>時間 %{customdata[2]}<extra></extra>'},
+    {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:C_ORG,width:3.5},customdata:ma.map(fmtP),hovertemplate:'%{x}<br>7趟均 %{customdata}/km<extra></extra>'}],
+    {...L,yaxis:{title:'配速（分/公里）',autorange:false,gridcolor:GRID,...pR},xaxis:{gridcolor:GRID}},{x:{nticks:5,tickformat:'%m/%d',tickangle:-45}});
 }
 const todayStr=()=>new Date(Date.now()+(new Date().getTimezoneOffset()+480)*60000).toISOString().slice(0,10);
 let curWeek=null, weekKeys=[], weeksMap={};
