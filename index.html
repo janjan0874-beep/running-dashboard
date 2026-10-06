@@ -129,6 +129,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dcard details summary{font-size:13px;color:var(--blue);cursor:pointer;padding:4px 0}
 .dweek h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin:14px 0 0;font-size:1rem}
 .dweek h3 span{font-size:.8rem;font-weight:500;color:var(--mut)}
+.dgoal{background:#eef6f1;border:1px solid #cfe9dd;color:#1f5f43;border-radius:12px;padding:8px 12px;font-size:13.5px;line-height:1.5;font-weight:600;margin-bottom:2px}
 .wgap{margin-top:6px;background:#eef6f1;border:1px solid #cfe9dd;color:#226b4a;border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600}
 details.fold{margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:0 12px}
 details.fold summary{padding:10px 0;font-weight:700;font-size:.95rem;cursor:pointer}
@@ -257,6 +258,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
       <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p><p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></div></details>
   </section>
   <section class="pane" data-tab="diet">
+    <div class="dgoal" id="d_goal"></div>
     <div id="d_today"></div>
     <div class="wkchips" id="d_wkchips"></div>
     <div id="d_week"></div>
@@ -688,6 +690,7 @@ function dietRender(){
   if($('d_wkchips').dataset.n!==String(wks.length)){$('d_wkchips').innerHTML=wks.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');$('d_wkchips').dataset.n=wks.length;}
   dShowWeek(dWeek&&wks.includes(dWeek)?dWeek:td.week);
   $('d_sum').textContent=X.meta.summary;
+  const gl=X.meta.goal; $('d_goal').innerHTML=gl?`🎯 ${gl.text}`:''; $('d_goal').style.display=gl?'':'none';
   $('d_rules').innerHTML=X.meta.rules.map(x=>`<li>${x}</li>`).join('');
   $('d_foot').innerHTML=X.meta.footnotes.map(x=>`<li>${x}</li>`).join('');
 }

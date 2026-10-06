@@ -9,7 +9,12 @@ import make_plan
 _B = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile.json")))["body"]
 WEIGHT = float(_B["weight_kg"]); HEIGHT = float(_B["height_cm"]); AGE = int(_B["age"]); SEX = _B["sex"]
 BODY_FAT = float(_B["body_fat_pct"]); BODY_FAT_GOAL = float(_B["body_fat_goal_pct"])
-DEFICIT = 183          # kcal/天（目標赤字）
+DEFICIT = 183          # kcal/天：10/6–10/25 一般日、12/27 10K 測試日的缺口
+# 12/31 前減脂目標：2.09 kg × 7700 kcal＝16093 kcal（10/6–12/31 合計）。10/26 起的一般日用同一個缺口 D，
+# 由 build() 依其他日子的實際缺口自動反推（課表一改，每日 8:00 重建時 D 會自動重算），D 上限 400。
+FAT_LOSS_KG, KCAL_PER_KG = 2.09, 7700
+GOAL_T = int(FAT_LOSS_KG * KCAL_PER_KG * 10 + 0.5)       # 160930（十分之一 kcal）
+D_START, D_CAP = "2026-10-26", 400.0
 # 特殊日（2026-10-06 使用者決定）：
 #  10/23、10/24 肝醣超補：目標＝碳水 568 g＋當天蛋白質＋脂肪 40 g（計畫性盈餘，不設缺口）
 #  10/25 比賽日：目標＝碳水 355 g＋蛋白質＋脂肪 57 g（不設缺口、不設上限）
@@ -100,6 +105,27 @@ def exercise(ents):
     return tot, parts
 
 def build():
+    """兩段式：先用 183 算出 D 以外的日子的缺口，再反推 10/26 起一般日的統一缺口 D，重算一次。"""
+    first = _build(DEFICIT * 10)
+    days = first["days"]
+    flex = [k for k, x in days.items() if x["energy"]["flex"]]
+    fixed_gap = sum(x["energy"]["gap_t"] for k, x in days.items() if k not in flex)
+    need = GOAL_T - fixed_gap
+    d_t = int(need / len(flex) + 0.5) if flex else 0
+    capped = d_t > hu(D_CAP * 10)
+    if capped: d_t = hu(D_CAP * 10)
+    p = _build(d_t)
+    total = sum(x["energy"]["gap_t"] for x in p["days"].values())
+    pre = sum(x["energy"]["gap_t"] for k, x in p["days"].items() if k <= "2026-10-25")
+    assert all(p["days"][k]["energy"]["gap_t"] == d_t for k in flex)
+    short = GOAL_T - total
+    p["meta"]["goal"] = dict(goal=g1(GOAL_T), total=g1(total), through_1025=g1(pre), d=g1(d_t), flex_days=len(flex),
+                             fixed_gap=g1(fixed_gap), capped=capped, shortfall=g1(short) if capped else "0.0",
+                             text=f"12/31 前總熱量缺口目標 {g1(GOAL_T).replace('.0', '')} kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}），目前計畫合計 {g1(total)} kcal"
+                                  + (f"；10/26 起一般日每天缺口 {g1(d_t)} kcal" if not capped else f"；每天缺口已到上限 {D_CAP:g} kcal，仍差 {g1(short)} kcal"))
+    return p
+
+def _build(late_def_t):
     plan = make_plan.build()
     byd = {}
     for e in plan["days"]:
@@ -158,7 +184,7 @@ def build():
         # ---- 解
         lr = sr = rice0
         rc, rp, rf = sums(rice_items(lr, sr))
-        pk = 0; mode = "normal"; adj = None
+        pk = 0; mode = "normal"; adj = None; flex = False; day_def = 0
         def solve_fixed(Ff, lr, low):
             """脂肪固定在 Ff（下限或上限），晚餐碳水補到剛好；晚餐與午餐白飯碳水差超過 30 g 時以 10 g 白飯調整午餐。"""
             for guard in range(300):
@@ -184,7 +210,9 @@ def build():
             ep = ex_for(dc)["p"]
             TK = 4 * C_TIER + 4 * (fp + rp + ep) + 9 * FAT_T
         else:
-            TK = TDEE_T - DEFICIT * 10
+            flex = ds >= D_START and not (tier == "race")          # 12/27 10K 測試日維持 183
+            day_def = late_def_t if flex else DEFICIT * 10
+            TK = TDEE_T - day_def
             dc = C_TIER - fc - rc
             ep = ex_for(dc)["p"]
             rem = TK - 4 * C_TIER - 4 * (fp + rp + ep)
@@ -256,11 +284,11 @@ def build():
             notes.append("明天長跑：晚餐以白飯或義大利麵為主，少油、少纖維。")
         if tier == "load":
             notes.append("肝醣超補（10/23、10/24）：少油、少纖維，多喝水。")
-        if mode == "normal": tt = f"目標 {g1(TK)} kcal（−{DEFICIT}）"
+        if mode == "normal": tt = f"目標 {g1(TK)} kcal（−{g1(day_def).replace('.0', '') if day_def % 10 == 0 else g1(day_def)}）"
         elif GAP >= 0: tt = f"目標 {g1(TK)} kcal（缺口 {g1(GAP)} kcal）"
         else: tt = f"目標 {g1(TK)} kcal（盈餘 {g1(-GAP)} kcal）"
         energy = dict(bmr=g1(BMR_T), base=g1(BASE_T), exercise=g1(EX_T), exercise_parts=ex_parts, tdee=g1(TDEE_T),
-                      target=g1(TK), gap=g1(GAP), gap_t=GAP, mode=mode, fat_adjust=adj or "",
+                      target=g1(TK), gap=g1(GAP), gap_t=GAP, mode=mode, fat_adjust=adj or "", flex=flex,
                       burn_text=f"消耗 {g1(TDEE_T)} kcal（基礎代謝 {BMR:g} × {ACTIVITY:g} ＋ 運動 {g1(EX_T)}）",
                       target_text=tt)
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
@@ -289,10 +317,10 @@ def build():
                 for k, v in weeks.items()}
     meta = dict(
         weeks=week_gap, weight=WEIGHT, height=HEIGHT, age=AGE, sex=SEX, body_fat=BODY_FAT, body_fat_goal=BODY_FAT_GOAL, deficit=DEFICIT, bmr=g1(BMR_T), start=START, end=END,
-        summary=f"176 cm、32 歲、男、{WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%。基礎代謝 {BMR:g} kcal；每日消耗＝{BMR:g} × {ACTIVITY:g}＋當天課表運動；目標＝消耗 − {DEFICIT} kcal（特殊日見下）。",
+        summary=f"176 cm、32 歲、男、{WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%。基礎代謝 {BMR:g} kcal；每日消耗＝{BMR:g} × {ACTIVITY:g}＋當天課表運動；目標＝消耗 − 缺口（10/6–10/25 一般日 {DEFICIT} kcal；10/26 起一般日 {g1(late_def_t)} kcal；特殊日見下）。",
         rules=[f"基礎代謝（Mifflin-St Jeor，男）：10 × {WEIGHT:g} ＋ 6.25 × {HEIGHT:g} − 5 × {AGE} ＋ 5 ＝ {BMR:g} kcal；× {ACTIVITY:g}（日常活動）＝ {g1(BASE_T)} kcal。",
                f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT 用 MET {MET_HYROX:.1f}；休息日 0。",
-               f"每日目標＝消耗 − {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天＝碳水 355 g＋蛋白質＋脂肪 {g1(hu(FAT_FLOOR * WEIGHT * 10))} g，缺口為實際結果。週標題顯示本週缺口合計（每日消耗 − 目標）。",
+               f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）；12/27 10K 測試日 {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天＝碳水 355 g＋蛋白質＋脂肪 {g1(hu(FAT_FLOOR * WEIGHT * 10))} g，缺口為實際結果。週標題顯示本週缺口合計（每日消耗 − 目標）。",
                "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
                "蛋白質：固定 138.6 g＝Meiji 30 g × 2 瓶（60.0）＋蛋白粉 1 份（35.0）＋雞蛋 × 2（12.6）＋雞胸肉 100 g（31.0），再加上白飯、義大利麵、地瓜、香蕉的蛋白質。",
                f"脂肪：補到碳水 × 4＋蛋白質 × 4＋脂肪 × 9 剛好等於目標熱量；下限 {FAT_FLOOR:.1f} g/kg（{g1(FLOOR_T)} g）、上限 {FAT_CAP:.1f} g/kg（{g1(CAP_T)} g）。低於下限時改減碳水，高於上限時多的熱量放進碳水（晚餐與午餐白飯），卡片上會註明。"],
