@@ -352,10 +352,10 @@ function drawWeekly(){
   const tk=catTicks(x,w=>w===cur?'本週':abbrW(w));
   const shapes=tgt!=null?[{type:'line',xref:'x',yref:'y',x0:x.length-1.45,x1:x.length-0.55,y0:+tgt,y1:+tgt,line:{color:C_WKNOW,width:2,dash:'dot'}}]:[];
   const annotations=tgt!=null?[{xref:'x',yref:'y',x:x.length-0.55,y:+tgt,xanchor:'right',yanchor:'bottom',text:`目標 ${(+tgt).toFixed(1)}`,showarrow:false,font:{size:9.5,color:C_WKNOW}}]:[];
-  const lab=W.map(r=>r.week===cur?r.km.toFixed(1):'');   // 本週在長條上標數字（週初 0 km 時長條看不到，仍顯示 0.0）
+  const lab=W.map(r=>r.km.toFixed(1));   // 每根長條上方標該週實際公里數（小字）；本週深藍，週初 0 km 時長條看不到，仍顯示 0.0
   const ymax=Math.max(...y,tgt||0)*1.12||10;
   tipReset('c_wk');
-  Plotly.react('c_wk',[{type:'bar',x,y,marker:{color:W.map(r=>r.week===cur?C_WKNOW:C_WK)},text:lab,textposition:'outside',cliponaxis:false,textfont:{size:10.5,color:C_WKNOW},customdata:cd,hovertemplate:'%{customdata}<extra></extra>'}],
+  Plotly.react('c_wk',[{type:'bar',x,y,marker:{color:W.map(r=>r.week===cur?C_WKNOW:C_WK)},text:lab,textposition:'outside',textangle:0,constraintext:'none',cliponaxis:false,textfont:{size:9.5,color:W.map(r=>r.week===cur?C_WKNOW:'#6b7280')},customdata:cd,hovertemplate:'%{customdata}<extra></extra>'}],
     {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT,size:11},margin:{l:36,r:8,t:6,b:30},showlegend:false,dragmode:false,shapes,annotations,
      xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...tk,tickangle:0,tickfont:{size:10}},
      yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10},range:[0,ymax]},hovermode:'x',hoverlabel:HL},isMob()?CFG_M:{...CFG_D,displayModeBar:false}).then(()=>tipBind('c_wk'));
