@@ -22,7 +22,7 @@ D_START, D_CAP = "2026-10-26", 400.0
 FAT_LOAD, FAT_RACE = 40.0, 57.0
 # Mifflin-St Jeor（1990）：男 10W + 6.25H − 5A + 5；女 −161
 BMR = 10 * WEIGHT + 6.25 * HEIGHT - 5 * AGE + (5 if SEX == "male" else -161)
-ACTIVITY = 1.2                     # 久坐係數（運動另外加）
+ACTIVITY = float(_B.get("activity_factor", 1.2))   # 日常活動係數（運動另外加）；2026-10-06 依 Pixel Watch 校正為 1.3（profile.json）
 RUN_KCAL_PER_KG_KM = 1.0           # 跑步淨消耗 1 kcal/kg/km
 MET_STRENGTH, MET_HYROX = 5.0, 8.0 # Compendium of Physical Activities
 STR_MIN_DEFAULT = 45
@@ -141,7 +141,7 @@ def _build(late_def_t):
         tier = classify(ents, tmr)
         runs = [e for e in ents if e["kind"] in ("run", "race")]; strs = [e for e in ents if e["kind"] == "str"]
         has_run, has_str = bool(runs), bool(strs)
-        # ---- 熱量：TDEE＝BMR × 1.2＋運動
+        # ---- 熱量：TDEE＝BMR × ACTIVITY（1.3）＋運動
         EX_T, ex_parts = exercise(ents)
         TDEE_T = BASE_T + EX_T
         C_TIER = hu(CARB_GKG[tier] * WEIGHT * 10)
@@ -332,6 +332,7 @@ def _build(late_def_t):
             "麻辣燙的湯、油與青菜沒有計入（份量與用油每家不同），請不要喝湯；表中只計白飯、雞胸肉等有明確數值的食物。",
             "蛋白粉品牌未知，只計蛋白質 35.0 g；能量膠品牌未知，碳水未計入。Meiji 碳水與脂肪以巧克力口味瓶身標示計。",
             "消耗是公式估算值，請以每週日的體重、體脂、腰圍趨勢檢查：連續 2 週體重沒有下降就再調整。",
+            f"活動係數 {ACTIVITY:g} 依 Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天校正（手錶會高估，未完全採用）。" if _B.get("watch_calibration") else "",
         ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "sweetpotato", "banana", "egg", "chicken", "meiji", "powder")],
     )
     return dict(meta=meta, days=out)
