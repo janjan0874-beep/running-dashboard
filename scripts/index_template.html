@@ -48,6 +48,9 @@ main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .chart{width:100%;height:240px}
 .chart .nsewdrag,.chart .main-svg{touch-action:pan-y !important}
 .chart.mini{height:clamp(150px,calc(100svh - 490px),230px)}
+.chart.wk{height:200px}
+.panel h3.wkh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap}
+.panel h3.wkh b{color:#1d5fa3;font-size:.9rem;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chart.half{height:clamp(170px,calc((100svh - 370px)/2),240px)}
 .pane[data-tab=month] .take{display:none}
 .chart.fill{height:clamp(240px,calc(100svh - 350px),560px)}
@@ -185,6 +188,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   #cards .s{display:block}
   .panel{padding:16px 18px;margin-top:14px}
   .chart.mini{height:300px}
+  .chart.wk{height:260px}
   .pane[data-tab=month] .take{display:block}
   .chart.half,.chart.fill,.chart.tail{height:360px}
   .take{font-size:.9rem;padding:8px 12px}
@@ -223,6 +227,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
     <div class="cards" id="cards"></div>
     <div class="panel"><h3>每月跑量<small>km</small></h3><div id="c_mini" class="chart mini"></div></div>
     <div class="countdown"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
+    <div class="panel"><h3 class="wkh"><span>每週跑量<small>km・最近 12 週</small></span><b id="wk_now">本週 —</b></h3><div id="c_wk" class="chart wk"></div></div>
     <p class="note" id="rangeNote">所選期間的統計</p>
     <div class="cards more" id="cards2"></div>
     <h2 class="sec2">全時間累計與 PR<small>不受上方期間影響</small></h2>
@@ -332,6 +337,32 @@ function tipBind(id){const gd=$(id),st=TIPST[id]||(TIPST[id]={}); if(!gd||st.bou
     if(idx.length){try{Plotly.restyle(gd,{selectedpoints:sp,'unselected.marker.opacity':0.55},idx);}catch(err){}}});
 }
 document.querySelectorAll('.chart').forEach(c=>{const t=document.createElement('div');t.className='tip idle';t.textContent=TIP_IDLE;c.parentNode.insertBefore(t,c);});
+// 總覽：每週跑量（只用 weekly.json 的 Strava 實際跑步；最近 12 週，不受上方期間按鈕影響；本週深藍＋虛線＝課表週目標）
+const C_WK='#6aa7e0',C_WKNOW='#1d5fa3';
+function drawWeekly(){
+  const el=$('c_wk'); if(!el||!el.offsetWidth||!D.w) return;
+  const md=d=>+d.slice(5,7)+'/'+ +d.slice(8,10), addD=(iso,n)=>{const t=new Date(iso+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);};
+  const g=D.s.generated, gd=new Date(g+'T00:00:00Z'), cur=addD(g,-((gd.getUTCDay()+6)%7));   // 更新日所在週的週一
+  let W=D.w.map(r=>({...r}));
+  if(!W.some(r=>r.week===cur)&&W.length&&W[W.length-1].week<cur) W.push({week:cur,km:0,runs:0,partial:true});
+  W=W.filter(r=>r.week<=cur).slice(-12);
+  const tgt=(D.p&&D.p.weekly_km||{})[cur], now=W.find(r=>r.week===cur), thr=D.s.data_through;
+  $('wk_now').textContent=`本週 ${(now?now.km:0).toFixed(1)}`+(tgt!=null?`／${(+tgt).toFixed(1)} km`:' km');
+  const x=W.map(r=>r.week), y=W.map(r=>r.km);
+  const cd=W.map(r=>r.week===cur
+    ?`本週 ${md(r.week)}–${md(addD(r.week,6))}・${r.km.toFixed(1)} km`+(tgt!=null?`／目標 ${(+tgt).toFixed(1)} km`:'')+`・${r.runs} 次（資料截至 ${md(thr)}）`
+    :`${md(r.week)}–${md(addD(r.week,6))}・${r.km.toFixed(1)} km・${r.runs} 次`);
+  const tk=catTicks(x,w=>w===cur?'本週':abbrW(w));
+  const shapes=tgt!=null?[{type:'line',xref:'x',yref:'y',x0:x.length-1.45,x1:x.length-0.55,y0:+tgt,y1:+tgt,line:{color:C_WKNOW,width:2,dash:'dot'}}]:[];
+  const annotations=tgt!=null?[{xref:'x',yref:'y',x:x.length-0.55,y:+tgt,xanchor:'right',yanchor:'bottom',text:`目標 ${(+tgt).toFixed(1)}`,showarrow:false,font:{size:9.5,color:C_WKNOW}}]:[];
+  const lab=W.map(r=>r.week===cur?r.km.toFixed(1):'');   // 本週在長條上標數字（週初 0 km 時長條看不到，仍顯示 0.0）
+  const ymax=Math.max(...y,tgt||0)*1.12||10;
+  tipReset('c_wk');
+  Plotly.react('c_wk',[{type:'bar',x,y,marker:{color:W.map(r=>r.week===cur?C_WKNOW:C_WK)},text:lab,textposition:'outside',cliponaxis:false,textfont:{size:10.5,color:C_WKNOW},customdata:cd,hovertemplate:'%{customdata}<extra></extra>'}],
+    {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT,size:11},margin:{l:36,r:8,t:6,b:30},showlegend:false,dragmode:false,shapes,annotations,
+     xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...tk,tickangle:0,tickfont:{size:10}},
+     yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10},range:[0,ymax]},hovermode:'x',hoverlabel:HL},isMob()?CFG_M:{...CFG_D,displayModeBar:false}).then(()=>tipBind('c_wk'));
+}
 function catTicks(vals,fmt){
   const n=vals.length,step=Math.max(1,Math.ceil(n/6));
   const idx=vals.map((_,i)=>i).filter(i=>(n-1-i)%step===0);
@@ -355,8 +386,8 @@ const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
-  const [m,a,s,p,t]=await Promise.all(['monthly.json','activities.json','summary.json','plan.json','workouts.json'].map(g));
-  D={m,a,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
+  const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
+  D={m,a,w,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
   $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
 }
 // 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
@@ -441,6 +472,7 @@ function render(){
     Plotly.react('c_mini',[{type:'bar',x:mo,y:M.map(r=>r.km),marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'}],
      {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:TXT,size:11},margin:{l:36,r:8,t:6,b:30},showlegend:false,dragmode:false,
       xaxis:{type:'category',gridcolor:GRID,fixedrange:true,automargin:true,...catTicks(mo,abbrM),tickangle:0,tickfont:{size:10}},yaxis:{gridcolor:GRID,fixedrange:true,automargin:true,tickfont:{size:10}},hovermode:'x',hoverlabel:HL},CFG_M).then(()=>tipBind('c_mini'));}}
+  drawWeekly();
   plot('c_month',[
     {type:'bar',x:mo,y:M.map(r=>r.km),name:'公里',marker:{color:C_ORG},hovertemplate:'%{x}<br>%{y:.1f} km<extra></extra>'},
     {type:'scatter',mode:'lines+markers',x:mo,y:M.map(r=>r.runs),name:'跑步次數',yaxis:'y2',line:{color:C_BLUE,width:3},marker:{size:7},hovertemplate:'%{x}<br>%{y} 次<extra></extra>'}],

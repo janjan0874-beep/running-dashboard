@@ -163,13 +163,14 @@ def main():
     if first != wk0: wk0 += dt.timedelta(days=7)
     weekly = []
     w = wk0
-    while w <= last:
+    wlim = max(last, dt.date.today())   # 延伸到更新日所在的週（本週即使還沒有跑步紀錄也有一列，km＝0）
+    while w <= wlim:
         end = w + dt.timedelta(days=6)
         sel = [a for a in acts if w.isoformat() <= a["date"] <= end.isoformat()]
         t_end = min(end, last)
         s28 = start28 = t_end - dt.timedelta(days=27)
         roll = None
-        if start28 >= first:
+        if start28 >= first and w <= last:
             roll = round(sum(a["km"] for a in acts if start28.isoformat() <= a["date"] <= t_end.isoformat())/4, 2)
         weekly.append(dict(week=w.isoformat(), km=round(sum(a["km"] for a in sel), 2), runs=len(sel),
                            partial=end > last, rolling4=roll))
