@@ -97,6 +97,15 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 /* 飲食 */
 .dcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-top:10px}
 .dcard.today{background:#fffaf4;border-color:#f2b98a}
+.dcard .drow{display:flex;justify-content:space-between;align-items:baseline;gap:2px 10px;flex-wrap:wrap}
+.dcard .dd{font-size:15.5px;font-weight:700;color:var(--fg);white-space:nowrap}
+.dcard .dd em{font-style:normal;font-weight:500;color:var(--mut);font-size:13px;margin-left:5px}
+.dcard .dd .badge{margin-left:6px}
+.dcard .dk{font-size:12px;color:var(--mut);white-space:nowrap}
+.dcard .dk b{font-size:16.5px;color:var(--fg);font-weight:700;font-variant-numeric:tabular-nums;margin:0 2px 0 4px}
+.dcard .dk i{font-style:normal;color:#c9ced6;margin:0 6px}
+.dcard.today .dk b{color:#a8581f}
+.dcard .dtr{font-size:13px;color:#4b5563;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dcard .lab{font-size:12.5px;color:#a8581f;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .dcard .tier{display:inline-block;background:#eef4fb;color:#2f6aa8;border-radius:999px;font-size:12px;padding:1px 9px;font-weight:600;white-space:nowrap}
 .dcard.today .tier{background:#fde6d3;color:#a8581f}
@@ -259,7 +268,6 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   </section>
   <section class="pane" data-tab="diet">
     <div class="dgoal" id="d_goal"></div>
-    <div id="d_today"></div>
     <div class="wkchips" id="d_wkchips"></div>
     <div id="d_week"></div>
     <details class="fold"><summary>計算依據與註解</summary><div class="body"><p class="note" id="d_sum" style="margin:4px 0 6px"></p><ul class="plain" id="d_rules"></ul><ul class="plain" id="d_foot" style="font-size:12.5px;color:#4b5563"></ul></div></details>
@@ -678,13 +686,20 @@ function dHead(d,lab){const e=d.energy||{},t=d.targets;
   ${e.burn_text?`<div class="energy"><div>🔥 ${e.burn_text}</div><div class="tg">🎯 ${e.target_text}</div>${e.exercise_parts&&e.exercise_parts.length?`<div class="exp">運動：${e.exercise_parts.join('；')}</div>`:''}</div>`:''}
   ${dTargets(t)}<div class="tnote">每公斤：碳水 ${t.carbs_gkg}・蛋白質 ${t.protein_gkg}・脂肪 ${t.fat_gkg} g/kg｜蛋白質＝${t.protein_note}</div>`;}
 function dCard(d,today){
+  // 收合時一行看懂：日期｜目標 kcal｜午餐白飯 g，下一行訓練；其餘（消耗、三大營養素、各餐、備註、完整餐表）都在「看完整餐表」裡
   const isT=d.date===today, ln=m=>`<b>${m.slot}</b> ${m.title?m.title.replace('配白飯','')+'：':''}${m.items.map(i=>dNm(i.name)[0].replace(' High Protein','')+' '+i.amount).concat(m.text_items||[]).join('、')}`;
   const ms=d.meals.filter(m=>m.items.length||(m.text_items||[]).length), mini=ms.filter(m=>m.slot!=='睡前').map(ln)
     .concat([`<b>晚餐（自由）</b> 剩 碳水 ${d.dinner.carbs} g・蛋白質 ${d.dinner.protein} g・脂肪 ${d.dinner.fat} g・${d.dinner.kcal} kcal`]).concat(ms.filter(m=>m.slot==='睡前').map(ln)).join('<br>');
-  return `<div class="dcard${isT?' today':''}">${dHead(d,`${d.date.slice(5).replace('-','/')} ${d.weekday}${isT?' <span class="badge">今天</span>':''}`)}
+  const rice=(d.meals.find(m=>m.slot==='午餐')||{items:[]}).items.find(i=>i.name.includes('白飯'));
+  const rg=rice?parseFloat(rice.amount):null, kc=d.energy&&d.energy.target;
+  return `<div class="dcard${isT?' today':''}" data-date="${d.date}">
+    <div class="drow"><span class="dd">${+d.date.slice(5,7)}/${+d.date.slice(8,10)}<em>${d.weekday}</em>${isT?'<span class="badge">今天</span>':''}</span>
+      <span class="dk">${kc?`目標<b data-k="kcal">${kc}</b>kcal`:''}${rg!=null?`<i>｜</i>白飯<b data-k="rice">${rg}</b>g`:''}</span></div>
+    <div class="dtr">${d.training}</div>
+    <details><summary>看完整餐表</summary>${dHead(d,'當日明細')}
     <div class="dmini">${mini}</div>
     ${d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:''}
-    <details><summary>看完整餐表</summary>${dFull(d)}</details></div>`;
+    ${dFull(d)}</details></div>`;
 }
 function dShowWeek(wk,fromUser){
   const days=Object.values(D.d.days).filter(d=>d.week===wk); if(!days.length) return; dWeek=wk; const today=todayStr();
@@ -696,7 +711,6 @@ function dShowWeek(wk,fromUser){
 function dietRender(){
   const X=D.d, today=todayStr(), all=Object.values(X.days).sort((a,b)=>a.date<b.date?-1:1);
   const td=X.days[today]||all.find(d=>d.date>today)||all[all.length-1], isT=td.date===today;
-  $('d_today').innerHTML=`<div class="dcard today">${dHead(td,`${isT?'今天':'下一天'} ${td.date.slice(5).replace('-','/')} ${td.weekday}`)}${dFull(td)}</div>`;
   const wks=[...new Set(all.map(d=>d.week))];
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
   if($('d_wkchips').dataset.n!==String(wks.length)){$('d_wkchips').innerHTML=wks.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');$('d_wkchips').dataset.n=wks.length;}
