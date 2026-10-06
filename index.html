@@ -106,7 +106,14 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dcard .dk i{font-style:normal;color:#c9ced6;margin:0 6px}
 .dcard.today .dk b{color:#a8581f}
 .dcard .dk .dn i{margin:0 5px}.dcard .dk .dn b{font-size:14.5px;margin:0 0 0 3px}  /* 晚餐剩餘 kcal（取代午餐白飯 g；縮小以維持一行） */
-.dcard .dtr{font-size:13px;color:#4b5563;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dcard .dtr{font-size:13px;color:#4b5563;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex}
+.dcard .dtr .dtt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dcard .dtr .dek{flex:none;color:#1f7a4f;font-weight:600}.dcard .dtr .dek:not(:empty){margin-left:8px}  /* 打勾：收合時第二行右側顯示已吃 kcal */
+.ck{display:flex;gap:6px;align-items:flex-start;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ck input{width:22px;height:22px;margin:-2px 0 0;flex:none;accent-color:#1f7a4f;cursor:pointer}
+.ck.ckl{margin-top:8px;font-size:13px;font-weight:600;align-items:center;padding:4px 0}
+.dprog{margin:6px 0 2px;background:#eef6f1;border:1px solid #cfe9dd;border-radius:10px;padding:6px 10px;font-size:13px;line-height:1.5;color:#1f5f43;font-weight:600}
+.dprog b{color:var(--fg)}.dprog i{font-style:normal;color:#9cc7b1;margin:0 5px}.dprog .ok{color:#1f7a4f}
 .dcard .lab{font-size:12.5px;color:#a8581f;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .dcard .tier{display:inline-block;background:#eef4fb;color:#2f6aa8;border-radius:999px;font-size:12px;padding:1px 9px;font-weight:600;white-space:nowrap}
 .dcard.today .tier{background:#fde6d3;color:#a8581f}
@@ -665,12 +672,30 @@ let dWeek=null;
 const dNm=s=>{const i=s.indexOf('（');return i<0?[s,'']:[s.slice(0,i),s.slice(i+1,-1)];};
 const pB=s=>String(s).replace(/蛋白質(\s*)(\d+(?:\.\d+)?)/g,'蛋白質$1<b>$2</b>');  // 蛋白質數字加粗（2026-10-06 使用者要求，只加粗）
 const pRule=s=>s.startsWith('蛋白質：')?s.replace(/(固定 )([\d.]+)/,'$1<b>$2</b>').replace(/(Meiji )(\d+)( g)/,'$1<b>$2</b>$3').replace(/（([\d.]+)(?=[；）])/g,'（<b>$1</b>'):pB(s);
+// 打勾（2026-10-06 使用者：「食物可以每天做成像check box如果有吃到我會打勾」）：localStorage 每台裝置各自保存，key＝dietEaten:日期:食物 id（id 由 make_diet.py 產生，不用陣列位置）
+const CK='dietEaten:', ckGet=(dt,id)=>{try{return localStorage.getItem(CK+dt+':'+id)==='1';}catch(e){return false;}};
+const ckSet=(dt,id,v)=>{try{v?localStorage.setItem(CK+dt+':'+id,'1'):localStorage.removeItem(CK+dt+':'+id);}catch(e){}};
+const t10=s=>Math.round(parseFloat(s)*10)||0, f10=n=>(n/10).toFixed(1);
+const ckBox=(dt,id)=>`<input type="checkbox" data-id="${id}"${ckGet(dt,id)?' checked':''} aria-label="已吃">`;
+function dSnack(d){const sn=d.dinner.example&&d.dinner.example.snack;return sn?{k:4*t10(sn.carbs)+4*t10(sn.protein)+9*t10(sn.fat),p:t10(sn.protein)}:null;}
+function dItems(d){   // 可打勾的食物（十分之一 kcal／g）：各餐食物、晚餐 Meiji、晚餐自由餐（剩餘預算，扣掉另列的加餐）、另加碳水點心
+  const out=[]; d.meals.forEach(m=>m.items.forEach(i=>out.push({id:i.id,k:t10(i.kcal),p:t10(i.protein)})));
+  (d.dinner.fixed_items||[]).forEach(i=>out.push({id:i.id,k:t10(i.kcal),p:t10(i.protein)}));
+  const sn=dSnack(d); out.push({id:'dinner-free',k:t10(d.dinner.kcal)-(sn?sn.k:0),p:t10(d.dinner.protein)-(sn?sn.p:0)});
+  if(sn) out.push({id:'dinner-snack',k:sn.k,p:sn.p});
+  return out;}
+function dProg(d){let n=0,k=0,p=0;const it=dItems(d);it.forEach(x=>{if(ckGet(d.date,x.id)){n++;k+=x.k;p+=x.p;}});return {n,tot:it.length,k,p};}
+function dProgHtml(d){const g=dProg(d),T=t10(d.targets.kcal),df=T-g.k;
+  return `已吃 ${g.n}/${g.tot}<i>｜</i>已吃 ${f10(g.k)} / ${d.targets.kcal} kcal（${df>0?`還差 ${f10(df)}`:df===0?'<span class="ok">剛好達標</span>':`超過 ${f10(-df)}`}）<i>｜</i>蛋白質 <b>${f10(g.p)} / ${d.targets.protein} g</b>`;}
+const dEk=d=>{const g=dProg(d);return g.n?`已吃 ${f10(g.k)} kcal`:'';};
+function dUpd(c){const d=D.d.days[c.dataset.date];if(!d) return;const p=c.querySelector('.dprog');if(p) p.innerHTML=dProgHtml(d);const e=c.querySelector('.dek');if(e) e.textContent=dEk(d);}
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches||!t.matches('#d_week input[data-id]')) return;const c=t.closest('.dcard');if(!c) return;ckSet(c.dataset.date,t.dataset.id,t.checked);dUpd(c);});
 function dTargets(t,cls){return `<div class="tgrid ${cls||''}"><div><b>${t.carbs}</b><span>碳水 g</span></div><div><b>${t.protein}</b><span>蛋白質 g</span></div><div><b>${t.fat}</b><span>脂肪 g</span></div><div><b>${t.kcal}</b><span>kcal</span></div></div>`;}
-function dRows(items){return items.map(i=>{const [n,sub]=dNm(i.name);const em=[sub,i.when].filter(Boolean).join('・');
+function dRows(items,dt){return items.map(i=>{const [n,sub]=dNm(i.name);const em=[sub,i.when].filter(Boolean).join('・');
     const v=k=>(i.na||[]).includes(k)?'<span title="未計入">—</span>':i[k];
-    return `<tr><td>${n}${em?`<em>${em}</em>`:''}</td><td>${i.amount}</td><td>${v('carbs')}</td><td><b>${i.protein}</b></td><td>${v('fat')}</td></tr>`;}).join('');}
-function dMeal(m){
-  const rows=dRows(m.items);
+    return `<tr><td><label class="ck">${ckBox(dt,i.id)}<span>${n}${em?`<em>${em}</em>`:''}</span></label></td><td>${i.amount}</td><td>${v('carbs')}</td><td><b>${i.protein}</b></td><td>${v('fat')}</td></tr>`;}).join('');}
+function dMeal(m,dt){
+  const rows=dRows(m.items,dt);
   const extra=(m.text_items||[]).map(x=>`<tr><td colspan="5">${x}</td></tr>`).join('');
   const st=m.subtotal;
   return `<div class="meal"><h4>${m.slot}${m.title?`｜${m.title}`:''}<small>${m.items.length?st.kcal+' kcal':''}</small></h4>
@@ -678,11 +703,12 @@ function dMeal(m){
     ${m.items.length>1?`<tr class="sub"><td>小計</td><td></td><td>${st.carbs}</td><td><b>${st.protein}</b></td><td>${st.fat}</td></tr>`:''}</tbody></table>
     ${m.tips.length?`<ul class="mtips">${m.tips.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>`;
 }
-function dBudget(b){const fx=b.fixed_items||[];return `<div class="budget"><h4>晚餐（自由）｜剩餘預算</h4>${fx.length?`<table class="dtab"><colgroup><col class="c1"><col class="c2"><col class="cn"><col class="cn"><col class="cn"></colgroup><thead><tr><th>固定</th><th>份量</th><th>碳水</th><th>蛋白質</th><th>脂肪</th></tr></thead><tbody>${dRows(fx)}</tbody></table>`:''}${dTargets(b)}
-  <div class="ex"><b>參考：</b>${pB(b.example.text)}</div>${b.example.snack_text?`<div class="ex"><b>另加碳水點心：</b>${pB(b.example.snack_text)}</div>`:''}<ul class="mtips">${b.tips.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;}
+function dBudget(b,dt,d){const fx=b.fixed_items||[],sn=dSnack(d);return `<div class="budget"><h4>晚餐（自由）｜剩餘預算</h4>${fx.length?`<table class="dtab"><colgroup><col class="c1"><col class="c2"><col class="cn"><col class="cn"><col class="cn"></colgroup><thead><tr><th>固定</th><th>份量</th><th>碳水</th><th>蛋白質</th><th>脂肪</th></tr></thead><tbody>${dRows(fx,dt)}</tbody></table>`:''}${dTargets(b)}
+  <label class="ck ckl">${ckBox(dt,'dinner-free')}<span>已吃晚餐自由餐（${f10(t10(b.kcal)-(sn?sn.k:0))} kcal）</span></label>
+  <div class="ex"><b>參考：</b>${pB(b.example.text)}</div>${b.example.snack_text?`<div class="ex"><b>另加碳水點心：</b>${pB(b.example.snack_text)}</div><label class="ck ckl">${ckBox(dt,'dinner-snack')}<span>已吃另加碳水點心（${f10(sn.k)} kcal）</span></label>`:''}<ul class="mtips">${b.tips.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;}
 function dFull(d){
   const pre=d.meals.filter(m=>m.slot!=='睡前'), late=d.meals.filter(m=>m.slot==='睡前');
-  return pre.map(dMeal).join('')+dBudget(d.dinner)+late.map(dMeal).join('')+(d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:'');
+  return pre.map(m=>dMeal(m,d.date)).join('')+dBudget(d.dinner,d.date,d)+late.map(m=>dMeal(m,d.date)).join('')+(d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:'');
 }
 function dHead(d,lab){const e=d.energy||{},t=d.targets;
   return `<div class="lab"><span>${lab}</span><span class="tier">${d.tier_label}</span></div>
@@ -698,8 +724,8 @@ function dCard(d,today){
   return `<div class="dcard${isT?' today':''}" data-date="${d.date}">
     <div class="drow"><span class="dd">${+d.date.slice(5,7)}/${+d.date.slice(8,10)}<em>${d.weekday}</em>${isT?'<span class="badge">今天</span>':''}</span>
       <span class="dk">${kc?`目標<b data-k="kcal">${kc}</b>kcal`:''}${dk!=null?`<span class="dn"><i>｜</i>晚餐<b data-k="dinner">${dk}</b></span>`:''}</span></div>
-    <div class="dtr">${d.training}</div>
-    <details><summary>看完整餐表</summary>${dHead(d,'當日明細')}
+    <div class="dtr"><span class="dtt">${d.training}</span><span class="dek">${dEk(d)}</span></div>
+    <details><summary>看完整餐表</summary><div class="dprog">${dProgHtml(d)}</div>${dHead(d,'當日明細')}
     <div class="dmini">${mini}</div>
     ${d.notes.length?`<div class="dnote">${d.notes.join('<br>')}</div>`:''}
     ${dFull(d)}</details></div>`;

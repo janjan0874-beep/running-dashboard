@@ -78,6 +78,7 @@ def _meat(key, std, extra=()):   # 肉／魚每次 −10 g 的份量層級
 # 晚餐參考例（DISHES）：variants＝固定部分（由大到小，放不進晚餐脂肪預算就用下一個），base＝補足晚餐碳水的主食（熟重上限 MAX_BASE_G），
 # 主食到上限還不夠的碳水另列「加餐碳水」白吐司。肉／魚／餐點的蛋白質算進晚餐蛋白質預算。
 MAX_BASE_G = 400
+SLOT_ID = {"早餐": "bf", "早餐（起跑前 3 小時）": "bf", "午餐": "lunch", "加餐（下午）": "snack", "訓練前後": "pre", "晚餐": "dinner"}   # 打勾紀錄的餐次代號
 SZ_MIN_RICE_G = 50
 DISHES = {
  "燒肉（梅花豬）配白飯": dict(v=_meat("pork", 150), base="rice"),
@@ -446,11 +447,16 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         assert uc + dc == C and 4 * C + 4 * P + 9 * FAT_T == TK, (ds, 4 * C + 4 * P + 9 * FAT_T, TK)
         assert dc >= 0 and dfat >= 0 and dp >= 0, (ds, dc, dfat, dp)
         other_fat = max(0, dfat - ex["f"])
-        def fmt_items(items):
-            return [dict(name=i["name"], when=i["when"], amount=i["amount"], na=(["carbs", "fat"] if i["key"] == "powder" else []), carbs=g1(i["c"]), protein=g1(i["p"]), fat=g1(i["f"]),
+        def fmt_items(items, slot):
+            # id：打勾紀錄用的穩定代號（餐次代號＋食物 key），不用陣列位置；同一餐重複的食物加 -2、-3
+            code = SLOT_ID.get(slot, slot); seen = {}
+            def iid(k):
+                seen[k] = seen.get(k, 0) + 1
+                return f"{code}-{k}" + (f"-{seen[k]}" if seen[k] > 1 else "")
+            return [dict(id=iid(i["key"]), name=i["name"], when=i["when"], amount=i["amount"], na=(["carbs", "fat"] if i["key"] == "powder" else []), carbs=g1(i["c"]), protein=g1(i["p"]), fat=g1(i["f"]),
                          kcal=g1(kcal_t(i["c"], i["p"], i["f"]))) for i in items]
         dfc, dfp, dff = sums(dinner_fixed)
-        dinner = dict(fixed_items=fmt_items(dinner_fixed), fixed_subtotal=dict(carbs=g1(dfc), protein=g1(dfp), fat=g1(dff), kcal=g1(kcal_t(dfc, dfp, dff))),
+        dinner = dict(fixed_items=fmt_items(dinner_fixed, "晚餐"), fixed_subtotal=dict(carbs=g1(dfc), protein=g1(dfp), fat=g1(dff), kcal=g1(kcal_t(dfc, dfp, dff))),
                       carbs=g1(dc), protein=g1(dp), fat=g1(dfat), kcal=g1(kcal_t(dc, dp, dfat)),
                       example=(dict(food=ex["name"], grams=int(ex["amount"].split()[0]), carbs=g1(ex["c"]), protein=g1(ex["p"]), fat=g1(ex["f"]),
                                    other_fat=g1(other_fat),
@@ -466,7 +472,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         mo = []
         for m in meals:
             c, p, f = sums(m["items"])
-            mo.append(dict(slot=m["slot"], title=m.get("title", ""), items=fmt_items(m["items"]), text_items=m.get("text_items", []),
+            mo.append(dict(slot=m["slot"], title=m.get("title", ""), items=fmt_items(m["items"], m["slot"]), text_items=m.get("text_items", []),
                            subtotal=dict(carbs=g1(c), protein=g1(p), fat=g1(f), kcal=g1(kcal_t(c, p, f))), tips=m["tips"]))
         train = "＋".join((f"跑步 {e['km']:g} km（{e['type']}）" if e["kind"] in ("run", "race") else
                           ("肌力（" + e["type"] + "）" if e["kind"] == "str" else e["type"])) for e in ents)
