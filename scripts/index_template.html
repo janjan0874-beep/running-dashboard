@@ -279,7 +279,10 @@ function tipBind(id){const gd=$(id),st=TIPST[id]||(TIPST[id]={}); if(!gd||st.bou
   gd.on('plotly_hover',e=>tipSet(id,tipText(e.points)));
   gd.on('plotly_unhover',()=>tipSet(id,st.sel||''));
   gd.on('plotly_click',e=>{const t=tipText(e.points); if(!t) return; st.sel=t; tipSet(id,t);
-    const idx=[],sp=[]; (gd.data||[]).forEach((tr,k)=>{if(tr.type==='bar'){idx.push(k);sp.push([e.points[0].pointNumber]);}});
+    // 標亮被點的那一根：以點到的 x 值（類別）在各長條 trace 中找索引；不能直接用 e.points[0].pointNumber，
+    // 因為 hovermode 'x' 時第一個點可能是折線（例如 4 週滾動平均只從第 4 週開始，索引會偏移）。
+    const hit=[...e.points].sort((a,b)=>((b.data||{}).type==='bar')-((a.data||{}).type==='bar'))[0], xv=String(hit.x);
+    const idx=[],sp=[]; (gd.data||[]).forEach((tr,k)=>{if(tr.type==='bar'){const j=(tr.x||[]).findIndex(v=>String(v)===xv);idx.push(k);sp.push(j>=0?[j]:[]);}});
     if(idx.length){try{Plotly.restyle(gd,{selectedpoints:sp,'unselected.marker.opacity':0.55},idx);}catch(err){}}});
 }
 document.querySelectorAll('.chart').forEach(c=>{const t=document.createElement('div');t.className='tip idle';t.textContent=TIP_IDLE;c.parentNode.insertBefore(t,c);});

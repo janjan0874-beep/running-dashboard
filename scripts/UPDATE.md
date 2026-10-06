@@ -34,6 +34,8 @@
 - 目前是 6 分頁 app 式版面（順序：總覽／月度／每週／配速／訓練／課表，課表在最後；課表分頁含 10K 測試策略與半馬賽日策略兩個折疊區），來源 `index_template.html`（layout meta：tabs-v4）；支援 `#tab=plan`、`#tab=train` 網址與 localStorage 記住分頁／區間。測試：`/workspace/pwenv/bin/python test_tabs.py 390 700`（手機，截圖 `tab_*.png`）與 `... test_tabs.py 1280 900`（桌面，截圖 `dtab_*.png`）；測試會檢查訓練分頁的圖表 A、B 在第一屏、無 JS 錯誤、四個範圍按鈕下 KPI 都不同。`python3 verify_train.py` 直接由 CSV 獨立重算各範圍的訓練數字，可與網頁對照。舊版備份：`index_template.pre_train.html`（5 分頁）、`index_template.pre_tabs.html`。
 
 - **圖表提示改為圖上方讀數列（2026-10-03）**：Plotly 浮動提示框與 X 軸黑色氣泡已隱藏（CSS `.hoverlayer{display:none}` ＋ `hoverlabel` 透明），所有 `plot()` 圖與總覽迷你圖在圖正上方各有一行固定高度（18px）淡灰讀數列 `.tip`，點／滑到哪一點就顯示該點完整數值（沿用各 trace 的 `hovertemplate`，雙軸／堆疊圖併成一行），未選取顯示「點圖表查看數值」；點選後長條外其餘淡化。新增圖表只要用 `plot()`（或 `.chart` 容器＋`tipBind(id)`）並寫 `hovertemplate` 即可。測試：`/workspace/pwenv/bin/python test_tip.py 390 700`（截圖 `tip_*.png`）。舊版備份 `index_template.pre_tip.html`。
+- **點長條標亮修正（2026-10-06）**：點選長條時，標亮的那一根改用「點到的 x 值」在各長條 trace 中找索引（原本用 `e.points[0].pointNumber`，hovermode 'x' 時第一個點可能是 4 週滾動平均折線，其陣列從第 4 週才開始，造成每週圖標亮偏移 3 根）。測試：`/workspace/pwenv/bin/python test_barclick.py 390 700`（逐圖點長條中心，斷言讀數列與標亮都是同一根；自帶 8768 埠伺服器）。備份 `index_template.pre_barsel.html`。
+- 8765 埠若被其他程式占用，`test_tabs.py` 可自行起伺服器後帶第三個參數網址：`python3 -m http.server 8767 -d _site &` → `test_tabs.py 390 700 http://localhost:8767/index.html`。
 
 ## 「訓練」分頁（第 5 分頁，啞鈴圖示）
 - 資料來源：`workouts.csv` → `data/workouts.json`（`rows` 逐筆、`weekly` 週一起算的每週彙總、`monthly` 每月彙總；全部是整數次／整數秒，網頁只做加總）。
