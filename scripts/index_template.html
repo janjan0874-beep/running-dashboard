@@ -129,6 +129,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dcard details summary{font-size:13px;color:var(--blue);cursor:pointer;padding:4px 0}
 .dweek h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin:14px 0 0;font-size:1rem}
 .dweek h3 span{font-size:.8rem;font-weight:500;color:var(--mut)}
+.wgap{margin-top:6px;background:#eef6f1;border:1px solid #cfe9dd;color:#226b4a;border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600}
 details.fold{margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:0 12px}
 details.fold summary{padding:10px 0;font-weight:700;font-size:.95rem;cursor:pointer}
 details.fold[open] summary{border-bottom:1px solid var(--line);margin-bottom:6px}
@@ -674,7 +675,8 @@ function dCard(d,today){
 function dShowWeek(wk,fromUser){
   const days=Object.values(D.d.days).filter(d=>d.week===wk); if(!days.length) return; dWeek=wk; const today=todayStr();
   document.querySelectorAll('#d_wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
-  $('d_week').innerHTML=`<div class="dweek"><h3>週起 ${wk.slice(5).replace('-','/')}<span>每天一張卡，點「看完整餐表」展開</span></h3>${days.map(d=>dCard(d,today)).join('')}</div>`;
+  const wg=(D.d.meta.weeks||{})[wk];
+  $('d_week').innerHTML=`<div class="dweek"><h3>週起 ${wk.slice(5).replace('-','/')}<span>點「看完整餐表」展開</span></h3>${wg?`<div class="wgap">${wg.text}</div>`:''}${days.map(d=>dCard(d,today)).join('')}</div>`;
   if(fromUser){const b=document.querySelector('#d_wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
 function dietRender(){
