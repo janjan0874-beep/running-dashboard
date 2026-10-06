@@ -137,8 +137,8 @@ details.fold[open] summary{border-bottom:1px solid var(--line);margin-bottom:6px
 details.fold .body{padding-bottom:8px}
 footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10px;line-height:1.6}
 /* 底部分頁列 */
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(7,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
-#tabbar button{border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-family:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(16,24,40,.06)}
+#tabbar button{border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12.5px;font-family:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0}
 #tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #tabbar button.on{color:var(--blue);font-weight:700}
 #tabbar button.on svg{stroke-width:2.2}
@@ -213,7 +213,6 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 <nav id="tabbar" role="tablist" aria-label="分頁">
   <button data-tab="overview" role="tab"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>總覽</button>
   <button data-tab="month" role="tab"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>月度</button>
-  <button data-tab="week" role="tab"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>每週</button>
   <button data-tab="pace" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5l3.5-3.5M10 3h4"/></svg>配速</button>
   <button data-tab="train" role="tab"><svg viewBox="0 0 24 24" aria-label="啞鈴"><path d="M2.5 9.5v5M5.5 6.5v11M18.5 6.5v11M21.5 9.5v5M5.5 12h13"/></svg>訓練</button>
   <button data-tab="plan" role="tab"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M8.5 11h7M8.5 15h5"/></svg>課表</button>
@@ -233,11 +232,6 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <section class="pane" data-tab="month">
     <div class="panel"><h3>每月跑量與次數<small>長條＝km；折線＝次數</small></h3><div id="c_month" class="chart half"></div><p class="take" id="k_month"></p></div>
     <div class="panel"><h3>每月移動時間<small>小時</small></h3><div id="c_time" class="chart half"></div><p class="take" id="k_time"></p></div>
-  </section>
-
-  <section class="pane" data-tab="week">
-    <div class="panel"><h3>每週跑量與 4 週滾動平均</h3><div id="c_week" class="chart fill"></div><p class="take" id="k_week" style="margin-top:6px"></p></div>
-    <p class="note" id="n_week"></p>
   </section>
 
   <section class="pane" data-tab="pace">
@@ -361,8 +355,8 @@ const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
-  const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
-  D={m,a,w,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
+  const [m,a,s,p,t]=await Promise.all(['monthly.json','activities.json','summary.json','plan.json','workouts.json'].map(g));
+  D={m,a,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
   $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
 }
 // 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
@@ -462,16 +456,6 @@ function render(){
     {type:'scatter',mode:'markers',name:'每月平均',x:mo,y:mp,marker:{size:8,color:'#9cc3ea'},text:M.map(r=>r.pace),hovertemplate:'%{x}<br>%{text}/km<extra></extra>'},
     {type:'scatter',mode:'lines',name:'3 個月移動平均',x:mo,y:m3,connectgaps:true,line:{color:C_ORG,width:3},customdata:m3.map(fmtP),hovertemplate:'%{x}<br>3個月均 %{customdata}/km<extra></extra>'}],
     {...L,yaxis:{title:'配速',autorange:false,gridcolor:GRID,...mpR},xaxis:{type:'category',gridcolor:GRID}},{x:catTicks(mo,abbrM)});
-  // weekly：範圍內的週（週資料自 7/6 起，最多顯示 13 週）
-  const wkStart=co.d.slice(0,10);
-  let W=D.w.filter(r=>r.week>=wkStart||(isoMs(r.week)+6*dayMs)>=isoMs(wkStart)).slice(-13);
-  if(W.length){const lw=W[W.length-1],rl=[...W].reverse().find(r=>r.rolling4!=null);
-    $('k_week').textContent=`最近一週（${abbrW(lw.week)} 起）${f1(lw.km)} km${lw.partial?'（未滿一週）':''}${rl?`；4 週滾動平均 ${f1(rl.rolling4)} km/週`:''}。`;}
-  $('n_week').textContent='滾動平均＝當週及前 3 週的總公里 ÷ 4。'+(months===3?`顯示 ${nm}內的 ${W.length} 週。`:`每週明細只有 ${D.w[0].week.slice(5).replace('-','/')} 之後的資料，故最多顯示 ${W.length} 週。`)+'未滿一週以淡色標示。';
-  plot('c_week',[
-    {type:'bar',x:W.map(r=>r.week),y:W.map(r=>r.km),name:'每週公里',marker:{color:W.map(r=>r.partial?'rgba(244,162,97,.45)':C_ORG)},text:W.map(r=>r.partial?'（未滿一週）':''),hovertemplate:'週起 %{x}<br>%{y:.1f} km %{text}<extra></extra>'},
-    {type:'scatter',mode:'lines+markers',x:W.filter(r=>r.rolling4!=null).map(r=>r.week),y:W.filter(r=>r.rolling4!=null).map(r=>r.rolling4),name:'4 週滾動平均',line:{color:C_BLUE,width:3},hovertemplate:'週起 %{x}<br>4週均 %{y:.1f} km/週<extra></extra>'}],
-    {...L,yaxis:{title:'km',gridcolor:GRID},xaxis:{type:'category',gridcolor:GRID,tickangle:-45}},{hover:'x',x:catTicks(W.map(r=>r.week),abbrW)});
   // 每趟
   const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier);  // outlier（慢於門檻）完全不顯示、不計入平均與趨勢
   const first=D.a[0].date, fshort=+first.slice(5,7)+'/'+ +first.slice(8,10);
@@ -696,9 +680,10 @@ function dietRender(){
 }
 $('d_wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)dShowWeek(b.dataset.wk,true);});
 // ===== 分頁 =====
-const TABS=['overview','month','week','pace','train','plan','diet'];
+const TABS=['overview','month','pace','train','plan','diet'];  // 每週分頁已於 2026-10-06 移除；#tab=week 會回到總覽
 let curTab=null;
-function tabFromHash(){const m=/tab=([a-z]+)/.exec(location.hash);return m&&TABS.includes(m[1])?m[1]:null;}
+// 網址有 #tab=… 但不是現有分頁（例如舊的 #tab=week、#tab=weekly）→ 回到總覽；沒有 #tab 才用上次記住的分頁
+function tabFromHash(){const m=/tab=([a-z]*)/.exec(location.hash);if(!m)return null;return TABS.includes(m[1])?m[1]:'overview';}
 function setTab(t,opts={}){
   if(!TABS.includes(t)) t='overview';
   const changed=t!==curTab; curTab=t;
@@ -715,7 +700,7 @@ function setTab(t,opts={}){
   }));
 }
 document.getElementById('tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.tab);});
-window.addEventListener('hashchange',()=>{const t=tabFromHash();if(t&&t!==curTab)setTab(t,{fromHash:true});});
+window.addEventListener('hashchange',()=>{const t=tabFromHash();if(t&&t!==curTab)setTab(t,{fromHash:true});if(t&&location.hash!=='#tab='+curTab)history.replaceState(null,'','#tab='+curTab);});
 window.addEventListener('resize',()=>{document.querySelectorAll('.pane.on .chart').forEach(c=>{if(c.data&&c.offsetWidth){try{Plotly.Plots.resize(c);}catch(e){}}});});
 $('ranges').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   document.querySelectorAll('#ranges button').forEach(x=>x.classList.toggle('on',x===b));months=+b.dataset.m;try{localStorage.setItem('dash_range',months);}catch(e){}render();});
