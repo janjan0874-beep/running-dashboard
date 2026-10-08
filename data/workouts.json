@@ -1,17 +1,17 @@
 {
- "through": "2026-10-04",
+ "through": "2026-10-08",
  "first_workout": "2025-03-22",
  "run_detail_from": "2026-07-03",
  "run_week_from": "2026-07-06",
- "run_through": "2026-10-04",
- "workout_through": "2026-10-03",
+ "run_through": "2026-10-07",
+ "workout_through": "2026-10-08",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
   "HIIT"
  ],
  "type_counts": {
-  "Workout": 206,
+  "Workout": 207,
   "HIIT": 1,
   "Swim": 2,
   "Stair-Stepper": 1
@@ -2746,6 +2746,19 @@
    "cal": 701,
    "strength": true,
    "url": "https://www.strava.com/activities/20430290116"
+  },
+  {
+   "date": "2026-10-08",
+   "start": "08:04",
+   "name": "Morning Activity",
+   "type": "Workout",
+   "elapsed": "0:46:35",
+   "elapsed_sec": 2795,
+   "avg_hr": 104,
+   "max_hr": 132,
+   "cal": 147,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20496583807"
   }
  ],
  "weekly": [
@@ -3882,6 +3895,20 @@
    "cal": 701,
    "hr_sum": 152,
    "hr_n": 1
+  },
+  {
+   "week": "2026-10-05",
+   "complete": false,
+   "run_sec": 2323,
+   "n": 1,
+   "n_workout": 1,
+   "n_hiit": 0,
+   "strength_sec": 2795,
+   "other_n": 0,
+   "other_sec": 0,
+   "cal": 147,
+   "hr_sum": 104,
+   "hr_n": 1
   }
  ],
  "monthly": [
@@ -4153,17 +4180,17 @@
   },
   {
    "month": "2026-10",
-   "run_n": 1,
-   "run_sec": 4444,
-   "n": 1,
-   "n_workout": 1,
+   "run_n": 3,
+   "run_sec": 6767,
+   "n": 2,
+   "n_workout": 2,
    "n_hiit": 0,
-   "strength_sec": 4093,
+   "strength_sec": 6888,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 701,
-   "hr_sum": 152,
-   "hr_n": 1
+   "cal": 848,
+   "hr_sum": 256,
+   "hr_n": 2
   }
  ]
 }
