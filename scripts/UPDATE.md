@@ -16,6 +16,8 @@
 
 ## 每日例行步驟
 1. 取得新活動（Strava 匯出、API 或手動），**附加**到 `activities.csv` 末端（同日多趟各一行；已存在的日期不要重複加）。
+   - **Strava 取得方式（2026-10-08 確認）**：沒有 Strava API／token，一律用 box 瀏覽器裡已登入的 Strava（使用者以 Google 帳號登入，athlete 172102231）。列表：`https://www.strava.com/athlete/training`（My Activities：Sport／Date／Title／Time／Distance…，最新在上，連結含活動 id）；單筆：`https://www.strava.com/activities/<id>` 取 Moving Time、Pace、開始時間、Elapsed Time、心率（Avg／Max）、Calories。跑步寫 `activities.csv`（moving 用活動頁的 Moving Time，列表的 Time 可能是 elapsed）；Workout 等寫 `workouts.csv`。若瀏覽器顯示登入頁＝登入失效，需請使用者重新登入，不要用其他方式取 token。
+   - 若 8:00 例行流程中斷過（例如 10/7、10/8），先看 `data_through`（`running-dashboard/data/summary.json`），把之後每一天的活動補齊再跑。注意：`activities.csv` 是新的在上（第一筆資料列＝最新），檔尾是 2026-07 的舊資料，不代表資料過期；repo 在 `/workspace/strava/running-dashboard`（`/workspace/strava` 本身不是 git checkout）。
 1b. **非跑步活動**（Workout、HIIT、Swim、Stair-Stepper…）附加到 `workouts.csv`（欄位如上）。新增前先檢查 `url` 是否已存在（`grep -c <activity id> workouts.csv`）；程式讀檔時也會以 `url` 去重（保留第一筆、略過其餘並印出筆數），但仍請不要重複加。日期不必排序，程式會依日期＋開始時間排序。
 2. 執行：
    ```bash
@@ -109,3 +111,11 @@
 - `build()` 內有 assert：各餐加總＋晚餐預算必須剛好等於當日碳水，且 4C＋4P＋9F 必須剛好等於目標熱量（十分之一 kcal），晚餐碳水／蛋白質／脂肪預算不可為負。備份：`make_diet.pre_tdee.py`、`profile.pre_tdee.json`、`index_template.pre_tdee.html`、`UPDATE.pre_tdee.md`。
 - **飲食分頁版面（2026-10-06）**：依使用者要求移除最上方「今天」完整卡片（與下方日卡重複），頂端只留 12/31 總缺口目標列；下方日卡預設全部收合（今天那張只有橘色底＋「今天」標籤，不自動展開）。收合時一眼看懂：第一行 日期・星期｜目標 X kcal｜晚餐 Y kcal（晚餐自由餐剩餘；2026-10-06 第四版前是午餐白飯 g），第二行訓練（過長以…截斷）；消耗、三大營養素、各餐、備註與完整餐表都在「看完整餐表」裡。程式 `dCard()`。備份 `*.pre_notop.*`。
 - 測試：`test_tabs.py` 已加入飲食分頁檢查（沒有頂端今天卡片、日卡全部收合、每張卡目標 kcal／晚餐 kcal 與 diet.json 相同且日期列不換行、今天卡片 ≥3 個餐表、晚餐預算、週卡片、6 個分頁依序且都在 390px 內、`#tab=week`／`#tab=weekly` 回總覽、無 JS 錯誤；手機版另存分頁列截圖 `tabbar_390x700.png`）；截圖 `/workspace/pwenv/bin/python shot_diet.py [網址] [前綴]` → `diet_390x700.png`、`diet_full.png`。備份：`index_template.pre_diet.html`、`update_dashboard.pre_diet.py`、`UPDATE.pre_diet.md`、`test_tabs.pre_diet.py`。
+- **飲食分頁簡化版（2026-10-08 上線，取代上面「飲食分頁版面」「食物打勾」中的 UI 說明；資料與計算邏輯、diet.json、8:00 訊息完全不變）**：使用者「整個飲食太花俏」「不用每天放一堆解釋」「顏色要統一」。備份 `index_template.pre_minimal.html`（舊版 UI）、`index_template.minimal_wip_1006.html`（10/6 未上線草稿）、`test_tabs.pre_minimal2.py`、`test_check.pre_minimal2.py`、`UPDATE.pre_minimal2.md`。
+  - 版面：週切換 chips（`#d_wkchips`）→ 每天一張 `details.dday`（`dDay()`）→ 最下方「飲食大方向」（`#d_gen`，固定 5 行：熱量缺口／**蛋白質**／早午餐固定＋晚餐自由／平日 −100、週末 +250／10/23–10/24 補碳；數字取 `meta.deficit`、`meta.goal`）。
+  - 收合列一行：日期 週X（今天加藍字「今天」）｜目標 X kcal（＝`targets.kcal`）｜有打勾才出現「已吃 Y」（`.deat`）。今天預設展開（今天不在範圍時展開下一天），其他收合。
+  - 展開：一行摘要 `已吃 X / Y kcal｜**蛋白質 A / B g**`（`.dsum`），下面依 早餐／午餐／晚餐（／點心，當天有才顯示）分組的打勾清單（`dGroups()`）：每行＝勾選框＋食物名（去掉括號說明）＋份量（灰小字），行尾蛋白質 g 粗體；不顯示碳水、脂肪、時間點（跑前 45 分鐘等）。分組：slot 開頭「早餐」→早餐、「午餐」→午餐、其餘（訓練前後香蕉、加餐（下午）、比賽中能量膠）→點心；晚餐＝Meiji＋「自由餐 X kcal」（例：當天參考例一行）；另加碳水點心（白吐司）→點心。
+  - 不顯示：課表／訓練文字、tier、消耗／目標公式、三大營養素格、每公斤、notes、tips、每週缺口（`meta.weeks`）、12/31 目標列、規則、註腳（`meta.rules`／`footnotes`／`summary` 仍在 diet.json，網頁不讀）。
+  - 顏色：只用儀表板藍 `var(--blue)`（#5b9bd5：今天框線、今天字樣、勾選框、週 chip）＋灰階；`test_tabs.py` 會檢查飲食分頁所有元素的文字／框線／背景色只能是灰階或 `--blue`。
+  - 打勾 key 不變（`dietEaten:YYYY-MM-DD:id`，id 同第八版：bf-*／lunch-*／snack-*／pre-*／dinner-meiji／dinner-free／dinner-snack），舊勾選照樣有效；全部打勾＝目標 kcal／蛋白質（`dItems()` 邏輯不變）。
+  - 測試：`test_tabs.py 390 700`（飲食段改為檢查 .dday、今天展開、分組順序、摘要格式、行尾蛋白質粗體、週卡片文字無課表／訓練／碳水／脂肪／規則字樣、大方向 ≤5 行、顏色、週切換；截圖 `diet_minimal_390x700.png`、`diet_minimal_full_390x700.png`）；`test_check.py [port]`（改用 `.dday.today`、`.dsum`、`.deat`，另測舊 key 直接生效）。8765 埠被占用時：`python3 -m http.server 8767 -d _site &` 後 `test_tabs.py 390 700 http://localhost:8767/index.html`、`test_check.py 8767`。
