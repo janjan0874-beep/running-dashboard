@@ -545,7 +545,7 @@ function render(){
     {type:'scatter',mode:'lines',name:'7 趟移動平均',x:ok.map(r=>r.date),y:ma,line:{color:C_ORG,width:3.5},customdata:ma.map(fmtP),hovertemplate:'%{x}<br>7趟均 %{customdata}/km<extra></extra>'}],
     {...L,yaxis:{title:'配速（分/公里）',autorange:false,gridcolor:GRID,...pR},xaxis:{gridcolor:GRID}},{x:{nticks:5,tickformat:'%m/%d',tickangle:-45}});
 }
-const todayStr=()=>new Date(Date.now()+(new Date().getTimezoneOffset()+480)*60000).toISOString().slice(0,10);
+const todayStr=()=>new Date(Date.now()+480*60000).toISOString().slice(0,10);  // 新加坡日期（UTC+8）；2026-10-09 修正：原本多加 getTimezoneOffset，UTC+8 的手機在 0:00–8:00 會算成前一天
 let curWeek=null, weekKeys=[], weeksMap={};
 function dayHTML(d,today,p){
   const cls=d.kind==='race'?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
