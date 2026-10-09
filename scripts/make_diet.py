@@ -246,12 +246,11 @@ def build():
     capped = d_t > hu(D_CAP * 10)
     if capped: d_t = hu(D_CAP * 10)
     p1 = _build(d_t, {}, {})
-    SH, sh_info = shifts_for(p1)
-    pp = _build(d_t, SH, {}, probe=True)
+    pp = _build(d_t, {}, {}, probe=True)   # 2026-10-09：不再做平日／週末熱量移轉（含晚餐 450 下限與週末加成）
     SZ, sz_short = pick_sz(pp)
-    p = _build(d_t, SH, SZ)
+    p = _build(d_t, {}, SZ)
     global LAST_INFO   # 報告用（不寫進 diet.json）
-    LAST_INFO = dict(floor=sh_info["floor"], below=sh_info["below"], sz_short=sz_short, sz_days=sorted(SZ))
+    LAST_INFO = dict(floor=[], below=[], sz_short=sz_short, sz_days=sorted(SZ))
     total = sum(x["energy"]["gap_t"] for x in p["days"].values())
     pre = sum(x["energy"]["gap_t"] for k, x in p["days"].items() if k <= "2026-10-25")
     assert all(g0(p["days"][k]) == d_t for k in flex)
@@ -277,8 +276,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
     for w, ks in sorted(wk.items()):
         we = [k for k in ks if dt.date.fromisoformat(k).weekday() >= 5]
         if w in NO_SHIFT_WEEKS: continue
-        for k in we:
-            if k not in SHIFT: continue
+        for k in we:   # 2026-10-09：取消平日 −100／週末 +250；週末仍用吃好點參考例，份量依未移轉的晚餐剩餘
             tmr0 = byd.get((dt.date.fromisoformat(k) + dt.timedelta(days=1)).isoformat(), [])
             if classify(byd[k], tmr0) == "prelong": TREAT[k] = TREAT_PRELONG
             else:
@@ -560,7 +558,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）；12/27 10K 測試日 {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天＝碳水 355 g＋蛋白質＋脂肪 {g1(hu(FAT_FLOOR * WEIGHT * 10))} g，缺口為實際結果。週標題顯示本週缺口合計（每日消耗 − 目標）。",
                "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
                f"蛋白質：固定 {g1(FIXED_P)} g＝雞蛋 × 2（{g1(item('egg', 2)['p'])}）＋Meiji 30 g × 2 瓶（60.0；早餐、晚餐各 1 瓶）＋肉片（里肌）100 g（{g1(item('porkloin', 100)['p'])}）。每天至少 130.0 g（1.83 g/kg）：固定食物不夠時，晚餐參考例加里肌肉片補到 130.0 g。另加午餐豆腐、高麗菜、白飯與晚餐參考例（主食、肉／魚／餐點、加餐）、香蕉的蛋白質。",
-               f"週末吃好點：每週平日（週一至週五）晚餐各 −{g1(-SHIFT_WD_T)} kcal，但平日晚餐剩餘不低於 {g1(DINNER_FLOOR_T)} kcal（會低於 {g1(DINNER_FLOOR_T)} 時只扣到 {g1(DINNER_FLOOR_T)}，本來就低於 {g1(DINNER_FLOOR_T)} 的日子不扣）；扣下來的總量平分到週六、日，週總量不變（半馬週 10/19–10/25、10K 測試週 12/21–12/27 與 12/28–12/31 不調整）。週末晚餐參考例輪替燒肉、牛排、漢堡王（華堡＋小薯＋零卡飲料）、牛丼、鮭魚丼，肉／魚／漢堡已算進晚餐預算；長跑前一天用鮭魚丼，移轉的熱量全部放進碳水。",
+               "週末晚餐參考例輪替燒肉、牛排、漢堡王（華堡＋小薯＋零卡飲料）、牛丼、鮭魚丼，肉／魚／漢堡已算進當天晚餐剩餘（2026-10-09 起不再把平日 −100 kcal 挪到週末）；長跑前一天用鮭魚丼。半馬週 10/19–10/25 與 10K 測試週 12/21–12/27 不用週末參考例。",
                f"平日晚餐參考例輪替 {len(WD_ROT)} 道：" + "、".join(WD_ROT) + "；每週 2 個平日換成薩莉亞（肉醬義大利麵、芝麻菜雞肉沙拉、米蘭風焗飯、漢堡排、辣味烤雞中放得下當天預算的品項，碳水不夠就加點白飯）；相鄰兩天不重複（含平日與週末交界）。肉／魚／餐點已算進晚餐預算，份量依當天晚餐剩餘調整。",
                f"白飯／麵一餐最多 {MAX_BASE_G} g（熟重）；超過的碳水另列加餐（白吐司，可換成同樣碳水的香蕉、果汁或運動飲料）。10/23–10/25 晚餐維持義大利麵參考例。",
                f"脂肪：補到碳水 × 4＋蛋白質 × 4＋脂肪 × 9 剛好等於目標熱量；下限 {FAT_FLOOR:.1f} g/kg（{g1(FLOOR_T)} g）、上限 {FAT_CAP:.1f} g/kg（{g1(CAP_T)} g）。低於下限時改減碳水，高於上限時多的熱量放進碳水（晚餐；午餐固定 700.0 kcal 不調整），卡片上會註明。"],

@@ -755,7 +755,6 @@ function dietRender(){
     <li>熱量缺口：10/25 前每天 ${X.meta.deficit} kcal，10/26 起 ${gd.d} kcal；12/31 前合計 ${String(gd.goal).replace('.0','')} kcal。</li>
     <li><b>蛋白質：每天至少 130.0 g</b>（固定 98.8 g：雞蛋 2 顆、Meiji 2 瓶、午餐肉片 100 g），當天目標見每天第一行。</li>
     <li>早餐、午餐固定（午餐 700 kcal），晚餐自由吃剩下的。</li>
-    <li>平日晚餐 −100 kcal，挪到週六、日（各 +250 kcal）。</li>
     <li>10/23、10/24 賽前補碳：碳水 568 g，不設缺口。</li></ul>`;
 }
 $('d_wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)dShowWeek(b.dataset.wk,true);});
