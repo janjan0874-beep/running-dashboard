@@ -88,9 +88,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .day .dt{font-weight:700;font-size:14px}.day .dt em{font-style:normal;font-weight:400;color:var(--mut);margin-left:6px}
 .day .km{font-weight:700;color:#d9702f;white-space:nowrap;font-size:14px}
 .day .rt{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.day .ck{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;box-sizing:border-box;font-size:12px;font-weight:700;line-height:1;flex:none}
-.day .ck.on{background:var(--blue);color:#fff}
-.day .ck.miss{border:1.5px solid #c9ced6}
+.day .pck{width:22px;height:22px;flex:none;margin:0;accent-color:var(--blue);cursor:pointer}
 .day .ty{font-weight:600;line-height:1.4;font-size:14px}
 .day .ex{color:#4b5563;font-size:12.5px;line-height:1.4}
 .day .nt{color:var(--mut);font-size:12.5px;line-height:1.4}
@@ -551,23 +549,17 @@ function render(){
 }
 const todayStr=()=>new Date(Date.now()+480*60000).toISOString().slice(0,10);  // 新加坡日期（UTC+8）；2026-10-09 修正：原本多加 getTimezoneOffset，UTC+8 的手機在 0:00–8:00 會算成前一天
 let curWeek=null, weekKeys=[], weeksMap={};
-// 完成標示（2026-10-09 使用者：「只需要幫我做打勾的標示有沒有完成」）：直接由 Strava 資料判斷，不等使用者回報。
-// 跑步日（run／race）＝當天 activities.json 有跑步；重訓日（str）＝當天 workouts.json 有 Workout 類（strength：Workout／HIIT，或 WeightTraining）。
-// 完成＝藍色 ✓；已過去但沒有＝灰色空圈；今天／未來沒有＝不顯示。休息日不標。
-function doneOf(d){
-  if(d.kind==='run'||d.kind==='race') return D.a.some(r=>r.date===d.date);
-  if(d.kind==='str') return ((D.t&&D.t.rows)||[]).some(r=>r.date===d.date&&(r.strength||/weight\s*training/i.test(r.type||'')));
-  return null;
-}
-function ckHTML(d,today){
-  const v=doneOf(d); if(v===null) return '';
-  if(v) return '<span class="ck on" title="已完成（Strava）">✓</span>';
-  return d.date<today?'<span class="ck miss" title="沒有 Strava 紀錄"></span>':'';
-}
+// 完成打勾（2026-10-09 使用者改為手動）：課表每一列一個勾選框，使用者自己點；存在 localStorage（每台裝置各自保存），
+// key＝plan-check-YYYY-MM-DD-<idx>（idx＝同一天第幾筆，從 0 起；例如 10/31 重訓＝-0、輕鬆跑＝-1）＝"1"。不再由 Strava 自動判斷。
+const PCK='plan-check-', pKey=d=>PCK+d.date+'-'+D.p.days.filter(x=>x.date===d.date).indexOf(d);
+const pGet=k=>{try{return localStorage.getItem(k)==='1';}catch(e){return false;}};
+const pSet=(k,v)=>{try{v?localStorage.setItem(k,'1'):localStorage.removeItem(k);}catch(e){}};
+function ckHTML(d){const k=pKey(d);return `<input type="checkbox" class="pck" data-k="${k}" aria-label="完成"${pGet(k)?' checked':''}>`;}
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.matches('#plan input.pck')) pSet(t.dataset.k,t.checked);});
 function dayHTML(d,today,p){
   const cls=d.kind==='race'?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
   const ex=[d.pace?`配速 ${d.pace}`:'',(d.treadmill&&d.treadmill!=='—')?`跑步機 ${d.treadmill}`:''].filter(Boolean).join('・');
-  return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="rt"><span class="km">${d.km?d.km+' km':''}</span>${ckHTML(d,today)}</span></div>
+  return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="rt"><span class="km">${d.km?d.km+' km':''}</span>${ckHTML(d)}</span></div>
     <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
 }
 function showWeek(wk,fromUser){
