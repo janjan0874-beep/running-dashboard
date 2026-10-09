@@ -204,10 +204,19 @@ def next_goal(today):
 def week_key(d):
     return d - dt.timedelta(days=d.weekday())
 
-def build():
+def build(apply_adjust=True, check_actual=True, today=None):
+    """apply_adjust：套用 adjust_week.py 寫的 plan_adjust.json（每日 8:00 動態補量）；check_actual：本週／過去週用「實際＋剩餘」檢查。"""
+    today = today or dt.date.today()
+    adj = {}
+    if apply_adjust:
+        import adjust_week
+        adj = adjust_week.load()
     days = []
     for d, kind, t, km, pace, tm, note in DAYS:
         dd = dt.date.fromisoformat(d)
+        if d in adj and kind == "run":
+            a = adj[d]; km = a["km"]; km = int(km) if km == int(km) else km
+            note = f"本週跑量不足，由 {a['from']:g} km 加到 {km:g} km（{a['set'][5:].replace('-', '/')} 動態補量）；" + note
         days.append(dict(date=d, weekday="週"+WD[dd.weekday()], kind=kind, type=t, km=km, pace=pace, treadmill=tm, note=note,
                          week=week_key(dd).isoformat()))
     weeks = {}
@@ -215,8 +224,22 @@ def build():
         if x["date"] != RACE.isoformat():
             weeks[x["week"]] = weeks.get(x["week"], 0) + x["km"]
     weekly = {k: round(v, 1) for k, v in weeks.items()}
-    for k, v in WEEK_TOTAL.items():   # 逐日加總必須等於宣告的週總量
-        assert abs(weekly[k] - v) < 1e-9, (k, weekly[k], v)
+    # 週總量檢查（2026-10-09 09:44 起）：還沒開始的週＝逐日計畫加總必須等於 WEEK_TOTAL；
+    # 已開始的週（含本週）＝Strava 實際（今天以前／今天已跑）＋今天起還沒跑的計畫 km 與 WEEK_TOTAL 比較：
+    # 不足時（補量已到上限或不補量的週）只印警告、不中斷 8:00 流程；跑超過也只印出。
+    import sys as _sys
+    for k, v in WEEK_TOTAL.items():
+        if k > today.isoformat() or not check_actual:
+            if k > today.isoformat():
+                assert abs(weekly[k] - v) < 1e-9, (k, weekly[k], v)
+            continue
+        import adjust_week
+        from decimal import Decimal
+        act, rem = adjust_week.week_status(k, today, [x for x in days if x["week"] == k and x["date"] != RACE.isoformat()], adjust_week.strava_runs())
+        tot = act + sum(Decimal(str(x["km"])) for x in rem)
+        if tot != Decimal(str(v)):
+            print(f"週起 {k}：實際 {act} km＋剩餘計畫 {tot - act} km＝{tot} km，週目標 {v} km（差 {tot - Decimal(str(v))}）", file=_sys.stderr)
+        weekly[k] = v                 # 每週目標（網頁目標線）＝WEEK_TOTAL，不因補量改變
     ks = sorted(WEEK_TOTAL)
     for a, b in zip(ks, ks[1:]):      # 每週增幅不超過前週 10%
         assert WEEK_TOTAL[b] <= WEEK_TOTAL[a] * 1.10 + 1e-9, (a, b)

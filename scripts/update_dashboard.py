@@ -216,7 +216,8 @@ def main():
         open(os.path.join(DATA, f), "w").write(open(os.path.join(HERE, f)).read())
     # 計畫
     sys.path.insert(0, HERE)
-    import make_plan
+    import adjust_week, make_plan
+    adjust_week.apply()            # 每日 8:00 動態補量（2026-10-09 09:44）：本週不足的 km 加到今天起還沒跑的輕鬆跑日，寫 plan_adjust.json
     p = make_plan.build()
     json.dump(p, open(os.path.join(DATA, "plan.json"), "w"), ensure_ascii=False, indent=1)
     md = make_plan.to_md(p)
@@ -230,7 +231,7 @@ def main():
     with open(os.path.join(REPO, "index.html"), "w", encoding="utf-8") as f: f.write(html)
     # 備份腳本到 repo
     os.makedirs(os.path.join(REPO, "scripts"), exist_ok=True)
-    for f in ("update_dashboard.py", "make_plan.py", "make_diet.py", "profile.json", "UPDATE.md", "index_template.html"):
+    for f in ("update_dashboard.py", "make_plan.py", "make_diet.py", "adjust_week.py", "plan_adjust.json", "profile.json", "UPDATE.md", "index_template.html"):
         src = os.path.join(HERE, f)
         if os.path.exists(src): open(os.path.join(REPO, "scripts", f), "w").write(open(src).read())
     print("workouts：", len(wrows), "筆，", wj["type_counts"], "，截至", wj["workout_through"])

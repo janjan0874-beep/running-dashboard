@@ -19,6 +19,7 @@
    - **Strava 取得方式（2026-10-08 確認）**：沒有 Strava API／token，一律用 box 瀏覽器裡已登入的 Strava（使用者以 Google 帳號登入，athlete 172102231）。列表：`https://www.strava.com/athlete/training`（My Activities：Sport／Date／Title／Time／Distance…，最新在上，連結含活動 id）；單筆：`https://www.strava.com/activities/<id>` 取 Moving Time、Pace、開始時間、Elapsed Time、心率（Avg／Max）、Calories。跑步寫 `activities.csv`（moving 用活動頁的 Moving Time，列表的 Time 可能是 elapsed）；Workout 等寫 `workouts.csv`。若瀏覽器顯示登入頁＝登入失效，需請使用者重新登入，不要用其他方式取 token。
    - 若 8:00 例行流程中斷過（例如 10/7、10/8），先看 `data_through`（`running-dashboard/data/summary.json`），把之後每一天的活動補齊再跑。注意：`activities.csv` 是新的在上（第一筆資料列＝最新），檔尾是 2026-07 的舊資料，不代表資料過期；repo 在 `/workspace/strava/running-dashboard`（`/workspace/strava` 本身不是 git checkout）。
 1b. **非跑步活動**（Workout、HIIT、Swim、Stair-Stepper…）附加到 `workouts.csv`（欄位如上）。新增前先檢查 `url` 是否已存在（`grep -c <activity id> workouts.csv`）；程式讀檔時也會以 `url` 去重（保留第一筆、略過其餘並印出筆數），但仍請不要重複加。日期不必排序，程式會依日期＋開始時間排序。
+1c. **動態補量（2026-10-09 09:44 使用者確認，自動）**：步驟 2 的 `update_dashboard.py` 會先呼叫 `adjust_week.apply()`，依本週 Strava Run 實際 km 直接改本週今天起還沒跑的跑步日公里數（規則見下方「每日動態補量」）。所以**一定要先把昨天以前（含今天已跑）的活動補齊**再執行，否則會多補。
 2. 執行：
    ```bash
    cd /workspace/strava && python3 update_dashboard.py --push
@@ -121,10 +122,10 @@
   - 測試：`test_tabs.py 390 700`（飲食段改為檢查 .dday、今天展開、分組順序、摘要格式、行尾蛋白質粗體、週卡片文字無課表／訓練／碳水／脂肪／規則字樣、大方向 ≤5 行、顏色、週切換；截圖 `diet_minimal_390x700.png`、`diet_minimal_full_390x700.png`）；`test_check.py [port]`（改用 `.dday.today`、`.dsum`、`.deat`，另測舊 key 直接生效）。8765 埠被占用時：`python3 -m http.server 8767 -d _site &` 後 `test_tabs.py 390 700 http://localhost:8767/index.html`、`test_check.py 8767`。
 - **`todayStr()` 修正（2026-10-09）**：原式 `Date.now()+(getTimezoneOffset()+480)分` 只在 UTC 時區的瀏覽器正確；新加坡（UTC+8）手機在 0:00–8:00 會把「今天」算成前一天（課表、飲食分頁的今天標示／展開）。改為 `Date.now()+480 分` 取 UTC 日期＝新加坡日期，任何時區都正確。
 
-## 2026-10-09 飲食與課表（使用者：中午是肉片、早餐不喝蛋白粉、課表不要改成補跑）
+## 2026-10-09 飲食與課表（使用者：中午是肉片、早餐不喝蛋白粉；「課表不要改成補跑」已於 09:44 改為動態補量）
 - 午餐固定仍是 700.0 kcal：肉片（里肌，熟）100 g（USDA FDC 168250，蛋白質 26.2 g、脂肪 3.6 g；原值 26.18／3.51，脂肪取 3.6 才能讓 4/4/9 剛好 700.0）＋高麗菜 300 g＋豆腐 100 g＋白飯 310.5 g（原 295 g）。打勾 id 仍是 `lunch-chicken`，舊勾選有效。備份 `make_diet.pre_meat1009.py`。
 - 早餐＝雞蛋 2 顆＋Meiji 1 瓶（蛋白粉移除，少的熱量進晚餐）。固定蛋白質改為 98.8 g（雞蛋 12.6＋Meiji 60.0＋肉片 26.2）。每天蛋白質目標至少 130.0 g；不夠時晚餐參考例加里肌肉片（這次 10/9–12/31 最低 137.2 g，沒有觸發）。飲食大方向的蛋白質行改為粗體「每天至少 130.0 g」。
-- 課表週 10/5–10/11 恢復 10/5 停跑之前的原本計畫（commit b520c64）：5、0、4、0、3、0、14 km，週目標 26.0 km。不再把沒跑完的公里寫進後面的日子。每天只顯示原本計畫公里，不加「計畫｜實際」。週標題與 9/28 相同：左側「週起 MM/DD」，右側「已跑 X km」（只加 Strava 的 Run，Workout 不算；10/5 這週是已跑 6.3 km）。週總量四捨五入恢復 1 位小數。備份 `make_plan.pre_restore1009.py`、`index_template.pre_actual1009.html`。
+- 課表週 10/5–10/11 恢復 10/5 停跑之前的原本計畫（commit b520c64）：5、0、4、0、3、0、14 km，週目標 26.0 km。（「不再把沒跑完的公里寫進後面的日子」已於 2026-10-09 09:44 由使用者改為動態補量，見下方「每日動態補量」。）每天只顯示原本計畫公里，不加「計畫｜實際」。週標題與 9/28 相同：左側「週起 MM/DD」，右側「已跑 X km」（只加 Strava 的 Run，Workout 不算；10/5 這週是已跑 6.3 km）。週總量四捨五入恢復 1 位小數。備份 `make_plan.pre_restore1009.py`、`index_template.pre_actual1009.html`。
 
 ## 2026-10-09 取消週末熱量移轉
 - 不再做「平日晚餐 −100 kcal → 週六、日 +250」以及晚餐 450 kcal 下限的重新分配；每天目標就是當天自己算出來的值（energy.shift 一律 0）。
@@ -145,3 +146,11 @@
 - **肌酸**：10/9–12/31 每天早餐加「肌酸 5 g」（`F["creatine"]`，0 kcal、0 g 蛋白質，`CREATINE_FROM`；打勾 id `bf-creatine`；10/25 比賽日早餐也有）。目標、晚餐預算、D 都不變。8:00 每日訊息（`days[日期].text`）的早餐行改為「早餐：雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g」（比賽日仍是原本的「、」列法再加肌酸 5 g）。
 - 備份：`make_plan.pre_check1009.py`、`make_diet.pre_check1009.py`、`index_template.pre_check1009.html`、`update_dashboard.pre_check1009.py`、`UPDATE.pre_check1009.md`、`test_*.pre_check1009.py`。
 - **午餐拿掉豆腐（2026-10-09，使用者：麻辣燙沒有豆腐）**：午餐＝肉片（里肌）160.6 g（`LUNCH_PORK_G`；蛋白質 42.1 g、脂肪 5.8 g）＋高麗菜 300 g＋白飯 310.5 g（不變）＝碳水 105.0 g、**蛋白質 54.3 g**、脂肪 7.0 g、700.2 kcal。豆腐 100 g（83.2 kcal）改給肉片：220.4 ÷ 1.372 kcal/g＝160.64 g → 160.6 g；營養素以 0.1 g 計時沒有任何 0.1 g 肉片克數能剛好 700.0（160.4 g＝699.8、160.5–160.8 g＝700.2），所以 `LUNCH_KCAL_T`＝7002（700.2 kcal）。固定蛋白質改為 **114.7 g**（雞蛋 12.6＋Meiji 60.0＋肉片 42.1）；130.0 g 下限邏輯不變（10/9–12/31 最低 145.5 g，沒有觸發）。打勾 id 仍是 `lunch-chicken`；`lunch-tofu` 不再出現。晚餐剩餘全部重算；長跑前一天、10/23–10/25 的目標是公式值（含當天蛋白質），所以這些天的目標也跟著變；D 自動重算為 230.4（10/24、12/26 改回休息、10/31 加重訓後為 233.6）。飲食大方向的蛋白質行改為「固定 114.7 g：…午餐肉片 160.6 g」。
+
+## 每日動態補量（2026-10-09 09:44 使用者確認：跑量不足時直接改網頁課表剩下的日子，過去的日子不動）
+- 程式：`adjust_week.py`（`update_dashboard.py` 每次執行自動呼叫 `apply()`，在產生 plan.json 之前；也可 `python3 adjust_week.py [YYYY-MM-DD]` 單獨跑看結果）→ 寫 `plan_adjust.json` → `make_plan.build()` 套用。不需要改 `make_plan.py` 的 DAYS（DAYS 永遠是原計畫，補量是覆蓋層）。
+- 規則：實際＝本週（週一起）Strava Run km（今天以前＋今天已跑）；剩餘＝今天起還沒跑的跑步日原計畫 km（今天已有 Run 就算已跑）。差額＝`WEEK_TOTAL`−實際−剩餘＞0 時，依日期先後加到剩餘的**輕鬆跑日**（不含長跑、節奏、間歇、目標配速、測試、配速模擬、比賽），每天最多比原計畫 **+3.0 km**，km 取 0.01；配速與跑步機速度沿用該日原本的（例：恢復跑 7:10/km、8.4 km/h）。長跑不動；不新增跑步日（不會把跑步排到週二／四／六重訓日；10/31 原本就有的跑步可加）；今天以前的調整保留不動（歷史）；**10/19 週（半馬賽週）、12/21 週（10K 測試週）不補**；不在 `WEEK_TOTAL` 的週不補；跑超過不減量。
+- 被調整的那天 note 前面加一句「本週跑量不足，由 X km 加到 Y km（MM/DD 動態補量）；」。公里數直接顯示新值；「已跑 X km」、打勾、不加「計畫｜實際」都不變。飲食依新公里數自動重算（跑步 71 kcal/km）。
+- 週總量檢查（`make_plan.build()`）：還沒開始的週＝逐日計畫加總必須等於 `WEEK_TOTAL`（assert）；已開始的週＝實際＋剩餘計畫與 `WEEK_TOTAL` 比較，不相等只在 stderr 印警告（例如可補的日子已到 +3.0 上限、或只剩長跑），不中斷 8:00 流程。plan.json 的 `weekly_km`（網頁每週目標線）一律是 `WEEK_TOTAL`。
+- 2026-10-09 套用：10/5 週已跑 6.29 km（10/6 2.08＋10/7 4.21），剩 10/9 恢復跑 3 km＋10/11 長跑 14 km → 10/9 改為 **5.71 km**（7:10/km、8.4 km/h），6.29＋5.71＋14＝26.00 km。
+- 備份：`make_plan.pre_adjust1009.py`、`update_dashboard.pre_adjust1009.py`、`UPDATE.pre_adjust1009.md`。
