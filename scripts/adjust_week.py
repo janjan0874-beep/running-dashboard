@@ -4,13 +4,13 @@
 規則：
 - 實際＝本週（週一起）今天（含）以前 Strava Run km（activities.csv）；剩餘＝今天起還沒跑的跑步日原計畫 km（今天已有 Run 就算已跑）。
 - 差額＝週目標（make_plan.WEEK_TOTAL）−實際−剩餘；> 0 時依日期先後加到剩餘的輕鬆跑日（不含長跑、節奏、間歇、目標配速、測試、配速模擬、比賽），
-  每天最多比原計畫 +3.0 km（CAP），km 取 0.01；配速／跑步機速度沿用該日原本的（輕鬆／恢復配速）。
+  每天最多比原計畫 +3.0 km（CAP）；補量後距離無條件進位到整數 km（2026-10-09 12:32），所以週總量可能略超過目標；配速／跑步機速度沿用該日原本的（輕鬆／恢復配速）。
 - 長跑不動、不新增跑步日（不會把跑步排到週二／四／六重訓日；10/31 原本就有的跑步可加）、過去的日子不動（保留當時的調整）、
   10/19 週（半馬賽週）與 12/21 週（10K 測試週）不補；不在 WEEK_TOTAL 的週不補。跑超過不減量。
 - 結果寫入 plan_adjust.json：{日期: {"km": 新公里, "from": 原公里, "week": 週一, "set": 設定日}}；make_plan.build() 讀檔套用並在 note 前加一句補量說明。
   今天以前的條目保留（歷史），今天起的條目每次重算。"""
 import csv, json, os, datetime as dt, sys
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING, ROUND_FLOOR
 HERE = os.path.dirname(os.path.abspath(__file__))
 ADJ = os.path.join(HERE, "plan_adjust.json")
 NO_MAKEUP = {"2026-10-19", "2026-12-21"}
@@ -49,9 +49,12 @@ def compute(today=None):
     for x in rem:
         if gap <= 0: break
         if x["kind"] != "run" or any(h in x["type"] for h in HARD): continue
-        add = min(gap, CAP).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP); gap -= add
-        new = Decimal(str(x["km"])) + add
-        adj[x["date"]] = dict(km=float(new), **{"from": x["km"]}, week=wk, set=t)
+        # 2026-10-09 12:32 使用者：補量後的距離一律無條件進位到整數 km（仍不超過原計畫 +3.0 km；原計畫非整數時取不超過上限的最大整數）
+        orig = Decimal(str(x["km"])); new = (orig + min(gap, CAP)).to_integral_value(rounding=ROUND_CEILING)
+        if new > orig + CAP: new = (orig + CAP).to_integral_value(rounding=ROUND_FLOOR)
+        if new <= orig: continue
+        gap -= new - orig
+        adj[x["date"]] = dict(km=int(new) if new == int(new) else float(new), **{"from": x["km"]}, week=wk, set=t)
     return adj, wk, act, max(gap, Decimal(0))
 
 def apply(today=None):

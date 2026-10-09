@@ -226,7 +226,7 @@ def build(apply_adjust=True, check_actual=True, today=None):
     weekly = {k: round(v, 1) for k, v in weeks.items()}
     # 週總量檢查（2026-10-09 09:44 起）：還沒開始的週＝逐日計畫加總必須等於 WEEK_TOTAL；
     # 已開始的週（含本週）＝Strava 實際（今天以前／今天已跑）＋今天起還沒跑的計畫 km 與 WEEK_TOTAL 比較：
-    # 不足時（補量已到上限或不補量的週）只印警告、不中斷 8:00 流程；跑超過也只印出。
+    # 不足時（補量已到上限或不補量的週）只印警告、不中斷 8:00 流程；超過（含補量進位到整數 km）不警告。
     import sys as _sys
     for k, v in WEEK_TOTAL.items():
         if k > today.isoformat() or not check_actual:
@@ -237,7 +237,7 @@ def build(apply_adjust=True, check_actual=True, today=None):
         from decimal import Decimal
         act, rem = adjust_week.week_status(k, today, [x for x in days if x["week"] == k and x["date"] != RACE.isoformat()], adjust_week.strava_runs())
         tot = act + sum(Decimal(str(x["km"])) for x in rem)
-        if tot != Decimal(str(v)):
+        if tot < Decimal(str(v)):     # 補量進位到整數 km 後可能超過目標，超過不警告
             print(f"週起 {k}：實際 {act} km＋剩餘計畫 {tot - act} km＝{tot} km，週目標 {v} km（差 {tot - Decimal(str(v))}）", file=_sys.stderr)
         weekly[k] = v                 # 每週目標（網頁目標線）＝WEEK_TOTAL，不因補量改變
     ks = sorted(WEEK_TOTAL)
