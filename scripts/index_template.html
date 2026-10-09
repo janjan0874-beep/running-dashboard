@@ -87,6 +87,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .day .r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .day .dt{font-weight:700;font-size:14px}.day .dt em{font-style:normal;font-weight:400;color:var(--mut);margin-left:6px}
 .day .km{font-weight:700;color:#d9702f;white-space:nowrap;font-size:14px}
+.day .km.act{font-size:12px;font-weight:600}
 .day .ty{font-weight:600;line-height:1.4;font-size:14px}
 .day .ex{color:#4b5563;font-size:12.5px;line-height:1.4}
 .day .nt{color:var(--mut);font-size:12.5px;line-height:1.4}
@@ -547,17 +548,23 @@ function render(){
 }
 const todayStr=()=>new Date(Date.now()+480*60000).toISOString().slice(0,10);  // 新加坡日期（UTC+8）；2026-10-09 修正：原本多加 getTimezoneOffset，UTC+8 的手機在 0:00–8:00 會算成前一天
 let curWeek=null, weekKeys=[], weeksMap={};
+const fk1=n=>(Math.round(+n*100)%10)?(+n).toFixed(2):(+n).toFixed(1);   // 2.08 保留兩位，5 顯示 5.0
+let runByDate={};
 function dayHTML(d,today,p){
   const cls=d.kind==='race'?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
   const ex=[d.pace?`配速 ${d.pace}`:'',(d.treadmill&&d.treadmill!=='—')?`跑步機 ${d.treadmill}`:''].filter(Boolean).join('・');
-  return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="km">${d.km?d.km+' km':''}</span></div>
+  // 過去的日子：課表維持原本計畫公里，Strava 實際跑步（不含 Workout）寫在旁邊
+  const km=d.date<today?`<span class="km act">計畫 ${fk1(d.km||0)}｜實際 ${fk1(runByDate[d.date]||0)}</span>`:(d.km?`<span class="km">${d.km} km</span>`:'<span class="km"></span>');
+  return `<div class="day ${cls}" data-date="${d.date}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span>${km}</div>
     <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
 }
 function showWeek(wk,fromUser){
   if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), ph=(p.week_phase||{})[wk]; const wdays=weeksMap[wk]; const wend=wdays[wdays.length-1].date; const act=D.a.filter(r=>r.date>=wk&&r.date<=wend).reduce((x,r)=>x+(+r.km),0); const planned=wdays.reduce((s,d)=>s+((d.kind==='run'||d.kind==='race')?+d.km:0),0); const isFut=false; const t=act;
+  const isCur=today>=wk&&today<=wend, goal=(p.weekly_km||{})[wk];
+  const stat=(isCur&&goal!=null)?`本週已跑 ${act.toFixed(1)} / ${(+goal).toFixed(1)} km｜還差 ${Math.max(0,+goal-act).toFixed(1)} km`:`${isFut?'計畫':'已跑'} ${t.toFixed(1)} km`;
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const days=weeksMap[wk];
-  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${ph?ph+'｜':''}${isFut?'計畫':'已跑'} ${t.toFixed(1)} km</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
+  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${ph?ph+'｜':''}${stat}</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
   if(fromUser){const b=document.querySelector('#wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
 function plan(){
@@ -570,6 +577,7 @@ function plan(){
     $('ck_items').innerHTML=c.items.map(x=>`<li>${x}</li>`).join('');
     $('ck_goals').textContent=c.goals.join('；');$('ck_rules').textContent=c.rules.join('；');}
   const today=todayStr();
+  runByDate={}; (D.a||[]).forEach(r=>{runByDate[r.date]=(runByDate[r.date]||0)+(+r.km);});   // 只有 activities（跑步），Workout 不算
   weeksMap={};p.days.forEach(d=>(weeksMap[d.week]=weeksMap[d.week]||[]).push(d));
   weekKeys=Object.keys(weeksMap).sort();
   // 今日課表
@@ -753,7 +761,7 @@ function dietRender(){
   const gd=X.meta.goal||{};
   $('d_gen').innerHTML=`<h4>飲食大方向</h4><ul>
     <li>熱量缺口：10/25 前每天 ${X.meta.deficit} kcal，10/26 起 ${gd.d} kcal；12/31 前合計 ${String(gd.goal).replace('.0','')} kcal。</li>
-    <li><b>蛋白質：每天至少 138.6 g</b>（固定食物），當天目標見每天第一行。</li>
+    <li><b>蛋白質：每天至少 130.0 g</b>（固定 98.8 g：雞蛋 2 顆、Meiji 2 瓶、午餐肉片 100 g），當天目標見每天第一行。</li>
     <li>早餐、午餐固定（午餐 700 kcal），晚餐自由吃剩下的。</li>
     <li>平日晚餐 −100 kcal，挪到週六、日（各 +250 kcal）。</li>
     <li>10/23、10/24 賽前補碳：碳水 568 g，不設缺口。</li></ul>`;

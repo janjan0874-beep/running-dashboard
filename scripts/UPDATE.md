@@ -120,3 +120,8 @@
   - 打勾 key 不變（`dietEaten:YYYY-MM-DD:id`，id 同第八版：bf-*／lunch-*／snack-*／pre-*／dinner-meiji／dinner-free／dinner-snack），舊勾選照樣有效；全部打勾＝目標 kcal／蛋白質（`dItems()` 邏輯不變）。
   - 測試：`test_tabs.py 390 700`（飲食段改為檢查 .dday、今天展開、分組順序、摘要格式、行尾蛋白質粗體、週卡片文字無課表／訓練／碳水／脂肪／規則字樣、大方向 ≤5 行、顏色、週切換；截圖 `diet_minimal_390x700.png`、`diet_minimal_full_390x700.png`）；`test_check.py [port]`（改用 `.dday.today`、`.dsum`、`.deat`，另測舊 key 直接生效）。8765 埠被占用時：`python3 -m http.server 8767 -d _site &` 後 `test_tabs.py 390 700 http://localhost:8767/index.html`、`test_check.py 8767`。
 - **`todayStr()` 修正（2026-10-09）**：原式 `Date.now()+(getTimezoneOffset()+480)分` 只在 UTC 時區的瀏覽器正確；新加坡（UTC+8）手機在 0:00–8:00 會把「今天」算成前一天（課表、飲食分頁的今天標示／展開）。改為 `Date.now()+480 分` 取 UTC 日期＝新加坡日期，任何時區都正確。
+
+## 2026-10-09 飲食與課表（使用者：中午是肉片、早餐不喝蛋白粉、課表不要改成補跑）
+- 午餐固定仍是 700.0 kcal：肉片（里肌，熟）100 g（USDA FDC 168250，蛋白質 26.2 g、脂肪 3.6 g；原值 26.18／3.51，脂肪取 3.6 才能讓 4/4/9 剛好 700.0）＋高麗菜 300 g＋豆腐 100 g＋白飯 310.5 g（原 295 g）。打勾 id 仍是 `lunch-chicken`，舊勾選有效。備份 `make_diet.pre_meat1009.py`。
+- 早餐＝雞蛋 2 顆＋Meiji 1 瓶（蛋白粉移除，少的熱量進晚餐）。固定蛋白質改為 98.8 g（雞蛋 12.6＋Meiji 60.0＋肉片 26.2）。每天蛋白質目標至少 130.0 g；不夠時晚餐參考例加里肌肉片（這次 10/9–12/31 最低 137.2 g，沒有觸發）。飲食大方向的蛋白質行改為粗體「每天至少 130.0 g」。
+- 課表週 10/5–10/11 恢復 10/5 停跑之前的原本計畫（commit b520c64）：5、0、4、0、3、0、14 km，週目標 26.0 km。不再把沒跑完的公里寫進後面的日子。實際跑步只顯示在旁邊：過去日「計畫 X｜實際 Y」（Y 只加 Strava 的 Run，Workout 不算），本週標題「本週已跑 X / 26.0 km｜還差 Y km」（同原本週標題的位置與顏色）。週總量四捨五入恢復 1 位小數。備份 `make_plan.pre_restore1009.py`、`index_template.pre_actual1009.html`。

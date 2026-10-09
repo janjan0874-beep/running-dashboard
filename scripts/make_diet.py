@@ -57,12 +57,13 @@ F = {
  "banana":  dict(name="香蕉（中型 118 g）", unit="根", c=270, p=13, f=4, src="USDA FDC 173944 Bananas, raw，中型 118 g：碳水 27.0 g、蛋白質 1.3 g、脂肪 0.4 g"),
  "egg":     dict(name="雞蛋（大顆 50 g，水煮）", unit="顆", c=6, p=63, f=53, src="USDA FDC 173424 Egg, whole, cooked, hard-boiled，大顆 50 g：蛋白質 6.3 g、脂肪 5.3 g、碳水 0.6 g"),
  "chicken": dict(name="雞胸肉（熟重，巴掌大）", unit="100 g", c=0, p=310, f=36, src="USDA FDC 171477 Chicken breast, meat only, cooked, roasted：蛋白質 31.0 g、脂肪 3.6 g、碳水 0 g／100 g"),
+ "porkloin": dict(name="肉片（里肌，熟）", unit="100 g", c=0, p=262, f=36, src="USDA FDC 168250 Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted：每 100 g 蛋白質 26.18 g、脂肪 3.51 g、碳水 0 g；本表取 0.1 g（蛋白質 26.2 g、脂肪 3.6 g，脂肪由 3.51 四捨五入到 3.6，午餐 4/4/9 才剛好 700.0 kcal）"),
  "meiji":   dict(name="Meiji High Protein（350 ml）", unit="瓶", c=98, p=300, f=21, src="Meiji High Protein 350 ml：蛋白質 30.0 g（依你提供）；碳水 9.8 g、脂肪 2.1 g（巧克力口味瓶身標示；香蕉、綠茶口味碳水 8.1 g）"),
  "powder":  dict(name="蛋白粉", unit="份", c=0, p=350, f=0, src="蛋白粉 1 份：蛋白質 35.0 g（依你提供）；品牌未知，碳水與脂肪未計入"),
 }
-# 午餐固定 700.0 kcal（2026-10-06 使用者：「午餐應該有700卡不只吃雞胸還有配菜」）：麻辣燙（不加辣）＝雞胸肉 100 g＋高麗菜 300 g＋豆腐 100 g，配白飯 295 g。
-# 碳水 102.5 g、蛋白質 50.9 g、脂肪 9.6 g；4/4/9 合計剛好 700.0 kcal（_build 內 assert）。湯與油不計。
-LUNCH_RICE_G, LUNCH_KCAL_T = 295, 7000
+# 午餐固定 700.0 kcal：麻辣燙（不加辣）＝肉片（里肌）100 g＋高麗菜 300 g＋豆腐 100 g，配白飯 310.5 g。
+# 2026-10-09 使用者：「中午都是肉片不會有雞胸」。肉片用 USDA 里肌瘦肉；白飯由 295 g 改 310.5 g，4/4/9 仍剛好 700.0 kcal。湯與油不計。
+LUNCH_RICE_G, LUNCH_KCAL_T = 310.5, 7000
 CARB_GKG = {"rest": 3, "str": 3, "easy": 4, "long": 5, "quality": 5, "prelong": 5, "race": 5, "load": 8}
 TIER_LABEL = {"rest": "休息日", "str": "肌力日", "easy": "輕鬆跑日", "long": "長跑日", "quality": "強度課日",
               "prelong": "長跑前一天", "race": "比賽日", "load": "肝醣超補日"}
@@ -167,7 +168,7 @@ def exercise(ents):
 
 def _pn(q):   # 參考例裡的品名（去掉括號說明）
     n = q["name"]
-    for t in ("（熟）", "（烤，熟）", "（生魚片）", "（Whopper）", "（Whopper Jr.）", "（French Fries S）", "（鯛魚，熟）", "（雞蛋麵，熟）", "（加餐碳水）", "（熟重，巴掌大）", "（大顆 50 g，水煮）"):
+    for t in ("（熟）", "（烤，熟）", "（生魚片）", "（Whopper）", "（Whopper Jr.）", "（French Fries S）", "（鯛魚，熟）", "（里肌，熟）", "（雞蛋麵，熟）", "（加餐碳水）", "（熟重，巴掌大）", "（大顆 50 g，水煮）"):
         n = n.replace(t, "")
     return n
 
@@ -289,6 +290,8 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         w = byd[k][0]["week"]
         return sum(-SHIFT.get(x, 0) for x in wk.get(w, []) if dt.date.fromisoformat(x).weekday() < 5)
     BMR_T = hu(BMR * 10); BASE_T = hu(BMR * ACTIVITY * 10); FLOOR_T = hu(FAT_FLOOR * WEIGHT * 10); CAP_T = hu(FAT_CAP * WEIGHT * 10)
+    FIXED_P = item("egg", 2)["p"] + item("meiji", 2)["p"] + item("porkloin", 100)["p"]   # 雞蛋 2 顆＋Meiji 2 瓶＋午餐肉片 100 g（2026-10-09 起不再含蛋白粉、雞胸）
+    PROT_MIN_T = 1300   # 每天蛋白質至少 130.0 g（1.83 g/kg）
     d = dt.date.fromisoformat(START)
     while d.isoformat() <= END:
         ds = d.isoformat(); ents = byd.get(ds, [])
@@ -305,7 +308,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         # ---- 固定餐點
         meals = []
         if ds == HALF_RACE:
-            base = [item("powder", 1), item("egg", 2), item("meiji", 1), item("banana", 2)]
+            base = [item("egg", 2), item("meiji", 1), item("banana", 2)]   # 2026-10-09：早餐不喝蛋白粉
             bc = sum(i["c"] for i in base)
             rice_g = hu((RACE_BREAKFAST_C - bc) / F["rice"]["c"] * 100)
             meals.append(dict(slot="早餐（起跑前 3 小時）", items=base + [item("rice", rice_g)],
@@ -313,14 +316,14 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             meals.append(dict(slot="比賽中", items=[], text_items=["能量膠 × 2（10 km、16 km 各 1 包，配水）"],
                               tips=["能量膠沒有指定品牌，碳水未計入今日總量；用 10/11、10/18 演練過的同一款。"]))
         else:
-            meals.append(dict(slot="早餐", items=[item("powder", 1), item("egg", 2), item("meiji", 1)], tips=[]))   # 2026-10-06：早餐不吃澱粉（地瓜移除，碳水移到晚餐）；Meiji 1 瓶早餐、1 瓶晚餐
+            meals.append(dict(slot="早餐", items=[item("egg", 2), item("meiji", 1)], tips=[]))   # 2026-10-09：早餐不喝蛋白粉（太飽），只留雞蛋 2 顆＋Meiji 1 瓶；少掉的熱量由晚餐吸收
         # 2026-10-06 使用者：Meiji 改為早餐 1 瓶、晚餐 1 瓶（不再放訓練後／下午點心／睡前）
         tr_items = []
         if has_run and ds != HALF_RACE: tr_items.append(item("banana", 1, "跑前 45 分鐘"))
         slot_tr = "訓練前後"
         dinner_fixed = [item("meiji", 1, "晚餐")]
         snack_fixed = [item("banana", 2)] if tier == "load" else []
-        lunch_fixed = [item("chicken", 100, "放進麻辣燙"), item("cabbage", 300, "放進麻辣燙"), item("tofu", 100, "放進麻辣燙"), item("rice", LUNCH_RICE_G)]
+        lunch_fixed = [item("porkloin", 100, "放進麻辣燙"), item("cabbage", 300, "放進麻辣燙"), item("tofu", 100, "放進麻辣燙"), item("rice", LUNCH_RICE_G)]
         assert kcal_t(*sums(lunch_fixed)) == LUNCH_KCAL_T, (ds, kcal_t(*sums(lunch_fixed)))
         fixed = [i for m in meals for i in m["items"]] + tr_items + snack_fixed + lunch_fixed + dinner_fixed
         fc, fp, ff = sums(fixed)
@@ -430,7 +433,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         C = fc + rc + dc
         lunch = lunch_fixed
         meals.append(dict(slot="午餐", title="麻辣燙（不加辣）配白飯", items=lunch,
-                          tips=[f"午餐每天固定 {g1(LUNCH_KCAL_T)} kcal：雞胸肉 100 g（或等量瘦肉：里肌、魚片、蝦）、高麗菜 300 g（或等量青菜）、豆腐 100 g 放進麻辣燙，配白飯 {LUNCH_RICE_G} g。",
+                          tips=[f"午餐每天固定 {g1(LUNCH_KCAL_T)} kcal：肉片（里肌）100 g、高麗菜 300 g（或等量青菜）、豆腐 100 g 放進麻辣燙，配白飯 {LUNCH_RICE_G:g} g。",
                                 "炸物（豆皮、炸豆包、油條）與加工丸子、餃類少拿。",
                                 "湯不要喝（湯裡有油）。"]))
         if tier == "load":
@@ -441,9 +444,25 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         used = [i for m in meals for i in m["items"]] + dinner_fixed
         uc, up, uf = sums(used)
         ex = ex_for(dc)
-        dp = ep + pk
+        leans = []   # 固定餐＋參考例蛋白質不足 130.0 g 時，參考例加里肌肉片（每 10 g），熱量從晚餐碳水扣回
+        while up + ep + sum(a["p"] for a in leans) + pk < PROT_MIN_T:
+            add = item("porkloin", 10)
+            take = kcal_t(add["c"], add["p"], add["f"])
+            assert take % 4 == 0, (ds, take)
+            cg = take // 4
+            if dc < cg:
+                break
+            dc -= cg
+            FAT_T += add["f"]
+            ex["p"] += add["p"]; ex["f"] += add["f"]; ex["c"] += add["c"]
+            if ex.get("parts") is not None:
+                ex["parts"].append(add)
+            leans.append(add)
+        dp = ep + sum(a["p"] for a in leans) + pk
         dfat = FAT_T - uf
+        C = fc + rc + dc
         P = up + dp
+        assert P >= PROT_MIN_T, (ds, g1(P))
         assert uc + dc == C and 4 * C + 4 * P + 9 * FAT_T == TK, (ds, 4 * C + 4 * P + 9 * FAT_T, TK)
         assert dc >= 0 and dfat >= 0 and dp >= 0, (ds, dc, dfat, dp)
         other_fat = max(0, dfat - ex["f"])
@@ -452,15 +471,16 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             code = SLOT_ID.get(slot, slot); seen = {}
             def iid(k):
                 seen[k] = seen.get(k, 0) + 1
-                return f"{code}-{k}" + (f"-{seen[k]}" if seen[k] > 1 else "")
+                kk = "chicken" if k == "porkloin" and slot.startswith("午餐") else k   # 肉片沿用舊的 lunch-chicken，已打的勾不消失
+                return f"{code}-{kk}" + (f"-{seen[k]}" if seen[k] > 1 else "")
             return [dict(id=iid(i["key"]), name=i["name"], when=i["when"], amount=i["amount"], na=(["carbs", "fat"] if i["key"] == "powder" else []), carbs=g1(i["c"]), protein=g1(i["p"]), fat=g1(i["f"]),
                          kcal=g1(kcal_t(i["c"], i["p"], i["f"]))) for i in items]
         dfc, dfp, dff = sums(dinner_fixed)
         dinner = dict(fixed_items=fmt_items(dinner_fixed, "晚餐"), fixed_subtotal=dict(carbs=g1(dfc), protein=g1(dfp), fat=g1(dff), kcal=g1(kcal_t(dfc, dfp, dff))),
                       carbs=g1(dc), protein=g1(dp), fat=g1(dfat), kcal=g1(kcal_t(dc, dp, dfat)),
-                      example=(dict(food=ex["name"], grams=int(ex["amount"].split()[0]), carbs=g1(ex["c"]), protein=g1(ex["p"]), fat=g1(ex["f"]),
+                      example=(dict(food=ex["name"], grams=int(float(ex["amount"].split()[0])), carbs=g1(ex["c"]), protein=g1(ex["p"]), fat=g1(ex["f"]),
                                    other_fat=g1(other_fat),
-                                   text=f"{ex['name'].replace('（熟）','')} {ex['amount']}（碳水 {g1(ex['c'])} g、蛋白質 {g1(ex['p'])} g、脂肪 {g1(ex['f'])} g）＋青菜＋烹調油／醬汁／配料脂肪 {g1(other_fat)} g") if not TR else
+                                   text=f"{ex['name'].replace('（熟）','')} {ex['amount']}（碳水 {g1(ex['c'])} g、蛋白質 {g1(ex['p'])} g、脂肪 {g1(ex['f'])} g）" + (f"＋肉片（里肌）{sum(10 for _ in leans)} g" if leans else "") + f"＋青菜＋烹調油／醬汁／配料脂肪 {g1(other_fat)} g") if not TR else
                                dish_example(ex, dc, other_fat)),
                       tips=["晚餐喝 Meiji 1 瓶，其餘自由選，控制在上面的剩餘預算內（剩餘預算已扣掉這瓶 Meiji）。",
                             "蛋白質已由早餐、午餐與 2 瓶 Meiji 吃夠；晚餐加肉、魚或豆腐，請從脂肪預算扣。"] if not TR else
@@ -507,7 +527,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
                    tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train, energy=energy,
                    targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT_T), kcal=g1(TK),
-                                protein_note=f"固定 138.6 g＋午餐豆腐、高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - 1386)} g",
+                                protein_note=f"固定 {g1(FIXED_P)} g＋午餐豆腐、高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - FIXED_P)} g",
                                 carbs_gkg=f"{C/10/WEIGHT:.2f}", protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT_T/10/WEIGHT:.2f}",
                                 carbs_reduced=adj == "floor", carbs_raised=adj == "cap"),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
@@ -539,7 +559,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT 用 MET {MET_HYROX:.1f}；休息日 0。",
                f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）；12/27 10K 測試日 {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天＝碳水 355 g＋蛋白質＋脂肪 {g1(hu(FAT_FLOOR * WEIGHT * 10))} g，缺口為實際結果。週標題顯示本週缺口合計（每日消耗 − 目標）。",
                "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
-               "蛋白質：固定 138.6 g＝Meiji 30 g × 2 瓶（60.0；早餐、晚餐各 1 瓶）＋蛋白粉 1 份（35.0）＋雞蛋 × 2（12.6）＋雞胸肉 100 g（31.0），再加上午餐豆腐、高麗菜、白飯與晚餐參考例（主食、肉／魚／餐點、加餐）、香蕉的蛋白質（午餐雞胸肉只計一次）。",
+               f"蛋白質：固定 {g1(FIXED_P)} g＝雞蛋 × 2（{g1(item('egg', 2)['p'])}）＋Meiji 30 g × 2 瓶（60.0；早餐、晚餐各 1 瓶）＋肉片（里肌）100 g（{g1(item('porkloin', 100)['p'])}）。每天至少 130.0 g（1.83 g/kg）：固定食物不夠時，晚餐參考例加里肌肉片補到 130.0 g。另加午餐豆腐、高麗菜、白飯與晚餐參考例（主食、肉／魚／餐點、加餐）、香蕉的蛋白質。",
                f"週末吃好點：每週平日（週一至週五）晚餐各 −{g1(-SHIFT_WD_T)} kcal，但平日晚餐剩餘不低於 {g1(DINNER_FLOOR_T)} kcal（會低於 {g1(DINNER_FLOOR_T)} 時只扣到 {g1(DINNER_FLOOR_T)}，本來就低於 {g1(DINNER_FLOOR_T)} 的日子不扣）；扣下來的總量平分到週六、日，週總量不變（半馬週 10/19–10/25、10K 測試週 12/21–12/27 與 12/28–12/31 不調整）。週末晚餐參考例輪替燒肉、牛排、漢堡王（華堡＋小薯＋零卡飲料）、牛丼、鮭魚丼，肉／魚／漢堡已算進晚餐預算；長跑前一天用鮭魚丼，移轉的熱量全部放進碳水。",
                f"平日晚餐參考例輪替 {len(WD_ROT)} 道：" + "、".join(WD_ROT) + "；每週 2 個平日換成薩莉亞（肉醬義大利麵、芝麻菜雞肉沙拉、米蘭風焗飯、漢堡排、辣味烤雞中放得下當天預算的品項，碳水不夠就加點白飯）；相鄰兩天不重複（含平日與週末交界）。肉／魚／餐點已算進晚餐預算，份量依當天晚餐剩餘調整。",
                f"白飯／麵一餐最多 {MAX_BASE_G} g（熟重）；超過的碳水另列加餐（白吐司，可換成同樣碳水的香蕉、果汁或運動飲料）。10/23–10/25 晚餐維持義大利麵參考例。",
@@ -549,12 +569,12 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             "運動 MET：Compendium of Physical Activities（Ainsworth BE et al. 2011；Herrmann SD et al. 2024 成人版）；肌力 MET 5.0、Hyrox／HIIT MET 8.0，淨消耗＝（MET − 1）× 體重 × 小時。",
             "跑步淨消耗 1 kcal/kg/km：跑步每公里的淨能量消耗與速度大致無關，約等於體重（kg）kcal（Margaria et al. 1963；ACSM Guidelines 跑步代謝公式）。",
             "每公斤體重的碳水、蛋白質、脂肪建議依據：ACSM／美國營養與飲食學會／加拿大營養師協會 2016 聯合立場聲明（Thomas et al., Med Sci Sports Exerc 48:543）與 ISSN 立場聲明（Jäger et al. 2017 蛋白質與運動；Kerksick et al. 2017 營養時機）。",
-            f"午餐固定 {g1(LUNCH_KCAL_T)} kcal＝雞胸肉 100 g＋高麗菜 300 g＋豆腐 100 g＋白飯 {LUNCH_RICE_G} g；麻辣燙的湯與油沒有計入（用油每家不同），請不要喝湯。",
-            "蛋白粉品牌未知，只計蛋白質 35.0 g；能量膠品牌未知，碳水未計入。Meiji 碳水與脂肪以巧克力口味瓶身標示計。",
+            f"午餐固定 {g1(LUNCH_KCAL_T)} kcal＝肉片（里肌，USDA FDC 168250）100 g＋高麗菜 300 g＋豆腐 100 g＋白飯 {LUNCH_RICE_G:g} g；麻辣燙的湯與油沒有計入（用油每家不同），請不要喝湯。",
+            "能量膠品牌未知，碳水未計入。Meiji 碳水與脂肪以巧克力口味瓶身標示計。蛋白粉於 2026-10-09 從早餐移除（太飽）。",
             "消耗是公式估算值，請以每週日的體重、體脂、腰圍趨勢檢查：連續 2 週體重沒有下降就再調整。",
             (f"活動係數 {ACTIVITY:g} 依 Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天校正（手錶會高估，未完全採用）。" if ACTIVITY != 1.2 else
              f"活動係數 {ACTIVITY:g}：2026-10-06 依你的回饋（熱量估太多）由 1.3 改回 1.2；Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天只作參考（手錶會高估）。") if _B.get("watch_calibration") else "",
-        ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "cabbage", "tofu", "banana", "egg", "chicken", "meiji", "powder", "steak", "pork", "salmon", "whopper", "whopperjr", "bkfries",
+        ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "cabbage", "tofu", "banana", "egg", "chicken", "porkloin", "meiji", "powder", "steak", "pork", "salmon", "whopper", "whopperjr", "bkfries",
                                                  "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken")],
     )
     return dict(meta=meta, days=out)
