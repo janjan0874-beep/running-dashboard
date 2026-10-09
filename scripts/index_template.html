@@ -590,10 +590,12 @@ function plan(){
   weeksMap={};p.days.forEach(d=>(weeksMap[d.week]=weeksMap[d.week]||[]).push(d));
   weekKeys=Object.keys(weeksMap).sort();
   // 今日課表
-  const td=p.days.find(d=>d.date===today)||p.days.find(d=>d.date>today)||p.days[p.days.length-1];
+  const td0=p.days.find(d=>d.date===today)||p.days.find(d=>d.date>today)||p.days[p.days.length-1];
+  const tds=p.days.filter(d=>d.date===td0.date), td=tds.find(d=>d.km)||td0;   // 同一天多筆（例：10/31 重訓＋輕鬆跑）：卡片以跑步為主，標題前加其他項目
+  const tpre=tds.filter(d=>d!==td).map(d=>d.type+'＋').join('');
   const isToday=td.date===today, tm=(td.treadmill&&td.treadmill!=='—')?td.treadmill:'';
   $('today').innerHTML=`<div class="todaycard${td.kind==='race'?' race':''}"><div class="lab">${isToday?'今天':'下一次課表'} ${td.date.slice(5).replace('-','/')} ${td.weekday}</div>
-    <div class="big">${td.type}${td.km?`<span class="km">${td.km} km</span>`:''}</div>
+    <div class="big">${tpre}${td.type}${td.km?`<span class="km">${td.km} km</span>`:''}</div>
     ${td.km?`<div class="two"><div><b>🌳 戶外</b><br>${td.pace?'配速 '+td.pace:'輕鬆跑'}</div><div><b>🏃 跑步機</b><br>${tm||'—'}</div></div>`:''}
     <div class="nt">${td.note}</div></div>`;
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
