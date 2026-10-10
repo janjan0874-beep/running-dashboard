@@ -163,3 +163,14 @@
 - 注意：12/18（週五，12/20 5 km 測試前兩天）因吸收週一的公里數變成 5.5 km 輕鬆跑＋strides（原 3.5 km）。
 - 半個 km 的日子（11/6 3.5、11/20 4.5、12/4 3.5、12/18 5.5、12/23 3.5）是因為週總量本身有 0.5 km，無法全部整數。
 - 備份：`make_plan.pre_monfri1009.py`、`UPDATE.pre_monfri1009.md`。
+
+## 2026-10-10 打勾消失調查與穩定 key（使用者：「為什麼飲食的打勾會不見？」）
+- 調查：程式沒有任何清除 localStorage 的地方（↻ 與 `?v=` 只換網址參數、同一個 origin，不影響）。飲食 key `dietEaten:日期:id` 的 id 是「餐次代號＋食物 key」（例 `bf-meiji`、`lunch-rice`、`dinner-free`），不是位置、名稱或份量；10/9 一整天的重建（加肌酸、拿掉豆腐、肉片克數、晚餐 kcal、每日重建）比對每個 commit 的 diet.json，原有食物的 id 都沒變，只有被移除的食物（`lunch-tofu`、`bf-powder`）的舊勾選不再顯示。課表 10/9 版 key `plan-check-日期-<第幾筆>` 上線後沒有發生列順序變動。
+- 最可能原因：iOS 26 起「加入主畫面」預設開成獨立 Web App，它的 localStorage 與 Safari（及其他瀏覽器／App 內瀏覽器）分開；在 Safari 打的勾在主畫面 App 看不到，反之亦然。另外打勾是每天各自一張卡，換日後「今天」那張是新的一天（前一天的勾還在前一天的卡）。
+- 修正（`index_template.html`）：
+  - 課表 key 改為穩定的 `plan-check-YYYY-MM-DD-<類別>`（跑步／比賽＝`run`、重訓＝`str`、休息＝`rest`；同一天同類別第 2 筆加 `-2`），與列的順序、公里數、說明無關。舊 key（`plan-check-日期-數字`）第一次載入時依當時課表複製成新 key（只做一次，旗標 `plan-check-migrated-v2`；舊 key 保留不刪）。
+  - 飲食 key 不變（本來就穩定）。
+  - 載入時呼叫 `navigator.storage.persist()`，請瀏覽器把本站資料標為持久（不支援就略過）。
+  - 永不清除 localStorage。
+- 建議使用者固定用同一個入口（主畫面圖示或 Safari 二選一）打勾。
+- 測試：`test_check.py [port]` 新增：課表新 key、舊 key 遷移一次且取消後不會補回、模擬重建（食物份量全改、早餐插入新食物、晚餐 kcal 改、10/31 插入新列並改公里數與說明）後重新整理，飲食與課表的勾選都還在。備份 `index_template.pre_stablekey1010.html`、`test_check.pre_stablekey1010.py`、`UPDATE.pre_stablekey1010.md`。

@@ -429,6 +429,7 @@ const lastDay=ym=>{const y=+ym.slice(0,4),m=+ym.slice(5,7);return new Date(Date.
 let D={}, months=0;
 const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
 
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}  // 2026-10-10：請瀏覽器保留本站資料（打勾），不支援就略過
 async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
   const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
@@ -549,11 +550,22 @@ function render(){
 }
 const todayStr=()=>new Date(Date.now()+480*60000).toISOString().slice(0,10);  // 新加坡日期（UTC+8）；2026-10-09 修正：原本多加 getTimezoneOffset，UTC+8 的手機在 0:00–8:00 會算成前一天
 let curWeek=null, weekKeys=[], weeksMap={};
-// 完成打勾（2026-10-09 使用者改為手動）：課表每一列一個勾選框，使用者自己點；存在 localStorage（每台裝置各自保存），
-// key＝plan-check-YYYY-MM-DD-<idx>（idx＝同一天第幾筆，從 0 起；例如 10/31 重訓＝-0、輕鬆跑＝-1）＝"1"。不再由 Strava 自動判斷。
-const PCK='plan-check-', pKey=d=>PCK+d.date+'-'+D.p.days.filter(x=>x.date===d.date).indexOf(d);
+// 完成打勾（2026-10-09 使用者改為手動）：課表每一列一個勾選框，使用者自己點；存在 localStorage（每台裝置、每個瀏覽器／主畫面 App 各自保存），不再由 Strava 自動判斷。
+// key（2026-10-10 起，穩定）＝plan-check-YYYY-MM-DD-<類別>：跑步／比賽＝run、重訓＝str、休息＝rest；同一天同類別第 2 筆加 -2。
+// 不用列的順序或內容，所以課表公里數、說明、插入／刪除別的列都不影響已打的勾。
+// 舊 key（10/9 版：plan-check-日期-<第幾筆>）在第一次載入時依當時的課表複製成新 key（只做一次，旗標 plan-check-migrated-v2；舊 key 保留不刪）。
+const PCK='plan-check-', pRole=d=>(d.kind==='run'||d.kind==='race')?'run':d.kind;
+const pKey=d=>{const same=D.p.days.filter(x=>x.date===d.date&&pRole(x)===pRole(d));const n=same.indexOf(d);return PCK+d.date+'-'+pRole(d)+(n>0?'-'+(n+1):'');};
 const pGet=k=>{try{return localStorage.getItem(k)==='1';}catch(e){return false;}};
 const pSet=(k,v)=>{try{v?localStorage.setItem(k,'1'):localStorage.removeItem(k);}catch(e){}};
+function pMigrate(){try{
+  if(localStorage.getItem('plan-check-migrated-v2')==='1') return;
+  const ks=[];for(let i=0;i<localStorage.length;i++) ks.push(localStorage.key(i));
+  for(const k of ks){const m=/^plan-check-(\d{4}-\d\d-\d\d)-(\d+)$/.exec(k||'');
+    if(!m||localStorage.getItem(k)!=='1') continue;
+    const d=D.p.days.filter(x=>x.date===m[1])[+m[2]]; if(d&&!pGet(pKey(d))) localStorage.setItem(pKey(d),'1');}
+  localStorage.setItem('plan-check-migrated-v2','1');
+}catch(e){}}
 function ckHTML(d){const k=pKey(d);return `<input type="checkbox" class="pck" data-k="${k}" aria-label="完成"${pGet(k)?' checked':''}>`;}
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.matches('#plan input.pck')) pSet(t.dataset.k,t.checked);});
 function dayHTML(d,today,p){
@@ -570,6 +582,7 @@ function showWeek(wk,fromUser){
   if(fromUser){const b=document.querySelector('#wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
 function plan(){
+  pMigrate();
   const p=D.p; $('caveat').textContent=p.caveat;
   $('assump').innerHTML=p.assumptions.map(x=>`<li>${x}</li>`).join('');
   $('racep').innerHTML=p.race_plan.map(x=>`<li>${x}</li>`).join('');
