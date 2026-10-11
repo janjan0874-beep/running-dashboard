@@ -478,9 +478,12 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         if ds >= YAKUN_FROM and d.weekday() >= 5 and ds not in YAKUN_SKIP:
             assert not leans, (ds, "leans on yakun day")
             yk = [item("yakun_kopi", 1), item("yakun_kaya", 1)]
-            kc, kp, kf = sums(yk)
-            meals[0]["items"] = meals[0]["items"] + yk
-            dc -= kc; dp -= kp; dfat -= kf
+            # 2026-10-11 12:21 使用者：亞坤的週末早餐＝Meiji 1 瓶＋soya kopi O＋咖椰吐司＋肌酸 5 g，不吃雞蛋 2 顆；雞蛋的碳水／蛋白質／脂肪加回晚餐預算
+            drop = [i for i in meals[0]["items"] if i["key"] == "egg"]
+            kc, kp, kf = sums(yk); ec, ep_, ef = sums(drop)
+            bi = [i for i in meals[0]["items"] if i["key"] != "egg"]
+            meals[0]["items"] = [i for i in bi if i["key"] != "creatine"] + yk + [i for i in bi if i["key"] == "creatine"]
+            dc += ec - kc; dp += ep_ - kp; dfat += ef - kf
             if dfat < 0:   # 目前沒有日子會觸發（原本是 10/24，已排除）； 肝醣超補日：晚餐脂肪預算不夠扣（脂肪目標 40.0 g），脂肪目標補到晚餐剩 0.0～0.3 g，同熱量從晚餐碳水扣（每日熱量不變）
                 need = -dfat
                 while (9 * need) % 4: need += 1
@@ -565,7 +568,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
                    tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train, energy=energy,
                    targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT_T), kcal=g1(TK),
-                                protein_note=f"固定 {g1(FIXED_P)} g＋{'亞坤、' if yk else ''}午餐高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - FIXED_P)} g",
+                                protein_note=(f"固定 {g1(FIXED_P - item('egg', 2)['p'])} g（週末亞坤早餐不吃雞蛋）＋亞坤、" if yk else f"固定 {g1(FIXED_P)} g＋") + f"午餐高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - FIXED_P + (item('egg', 2)['p'] if yk else 0))} g",
                                 carbs_gkg=f"{C/10/WEIGHT:.2f}", protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT_T/10/WEIGHT:.2f}",
                                 carbs_reduced=adj == "floor", carbs_raised=adj == "cap"),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
