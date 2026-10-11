@@ -1,5 +1,789 @@
 [
  {
+  "date": "2025-03-20",
+  "km": 0.19,
+  "time": "0:11:30",
+  "pace": "60:32",
+  "pace_sec": 3632,
+  "outlier": true
+ },
+ {
+  "date": "2025-03-23",
+  "km": 5.01,
+  "time": "0:31:20",
+  "pace": "6:15",
+  "pace_sec": 375,
+  "outlier": false
+ },
+ {
+  "date": "2025-03-27",
+  "km": 3.04,
+  "time": "0:20:35",
+  "pace": "6:46",
+  "pace_sec": 406,
+  "outlier": false
+ },
+ {
+  "date": "2025-04-02",
+  "km": 6.27,
+  "time": "0:44:32",
+  "pace": "7:06",
+  "pace_sec": 426,
+  "outlier": false
+ },
+ {
+  "date": "2025-04-10",
+  "km": 1.44,
+  "time": "0:11:56",
+  "pace": "8:17",
+  "pace_sec": 497,
+  "outlier": false
+ },
+ {
+  "date": "2025-04-10",
+  "km": 1.88,
+  "time": "0:15:27",
+  "pace": "8:13",
+  "pace_sec": 493,
+  "outlier": false
+ },
+ {
+  "date": "2025-04-11",
+  "km": 0.89,
+  "time": "0:05:34",
+  "pace": "6:15",
+  "pace_sec": 375,
+  "outlier": false
+ },
+ {
+  "date": "2025-04-24",
+  "km": 2.2,
+  "time": "0:14:10",
+  "pace": "6:26",
+  "pace_sec": 386,
+  "outlier": false
+ },
+ {
+  "date": "2025-05-01",
+  "km": 1.38,
+  "time": "0:08:14",
+  "pace": "5:58",
+  "pace_sec": 358,
+  "outlier": false
+ },
+ {
+  "date": "2025-05-08",
+  "km": 3.4,
+  "time": "0:25:03",
+  "pace": "7:22",
+  "pace_sec": 442,
+  "outlier": false
+ },
+ {
+  "date": "2025-05-22",
+  "km": 3.14,
+  "time": "0:17:00",
+  "pace": "5:25",
+  "pace_sec": 325,
+  "outlier": false
+ },
+ {
+  "date": "2025-05-28",
+  "km": 6.25,
+  "time": "0:42:00",
+  "pace": "6:43",
+  "pace_sec": 403,
+  "outlier": false
+ },
+ {
+  "date": "2025-05-30",
+  "km": 6.28,
+  "time": "0:36:40",
+  "pace": "5:50",
+  "pace_sec": 350,
+  "outlier": false
+ },
+ {
+  "date": "2025-07-05",
+  "km": 0.5,
+  "time": "1:04:19",
+  "pace": "128:38",
+  "pace_sec": 7718,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-07",
+  "km": 1.83,
+  "time": "0:30:30",
+  "pace": "16:40",
+  "pace_sec": 1000,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-08",
+  "km": 0.21,
+  "time": "0:29:47",
+  "pace": "141:50",
+  "pace_sec": 8510,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-10",
+  "km": 2.65,
+  "time": "0:43:00",
+  "pace": "16:14",
+  "pace_sec": 974,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-11",
+  "km": 2.27,
+  "time": "0:35:34",
+  "pace": "15:40",
+  "pace_sec": 940,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-12",
+  "km": 0.64,
+  "time": "0:37:33",
+  "pace": "58:40",
+  "pace_sec": 3520,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-15",
+  "km": 4.09,
+  "time": "0:25:05",
+  "pace": "6:08",
+  "pace_sec": 368,
+  "outlier": false
+ },
+ {
+  "date": "2025-07-15",
+  "km": 0.4,
+  "time": "0:25:56",
+  "pace": "64:50",
+  "pace_sec": 3890,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-20",
+  "km": 1.49,
+  "time": "0:28:52",
+  "pace": "19:22",
+  "pace_sec": 1162,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-21",
+  "km": 4.2,
+  "time": "0:27:07",
+  "pace": "6:27",
+  "pace_sec": 387,
+  "outlier": false
+ },
+ {
+  "date": "2025-07-24",
+  "km": 4.34,
+  "time": "0:23:35",
+  "pace": "5:26",
+  "pace_sec": 326,
+  "outlier": false
+ },
+ {
+  "date": "2025-07-26",
+  "km": 1.75,
+  "time": "1:08:33",
+  "pace": "39:10",
+  "pace_sec": 2350,
+  "outlier": true
+ },
+ {
+  "date": "2025-07-30",
+  "km": 0.12,
+  "time": "0:20:37",
+  "pace": "171:48",
+  "pace_sec": 10308,
+  "outlier": true
+ },
+ {
+  "date": "2025-08-01",
+  "km": 1.31,
+  "time": "0:33:19",
+  "pace": "25:26",
+  "pace_sec": 1526,
+  "outlier": true
+ },
+ {
+  "date": "2025-08-07",
+  "km": 0.19,
+  "time": "0:26:25",
+  "pace": "139:02",
+  "pace_sec": 8342,
+  "outlier": true
+ },
+ {
+  "date": "2025-08-09",
+  "km": 2.51,
+  "time": "0:14:25",
+  "pace": "5:45",
+  "pace_sec": 345,
+  "outlier": false
+ },
+ {
+  "date": "2025-08-12",
+  "km": 4.92,
+  "time": "0:49:18",
+  "pace": "10:01",
+  "pace_sec": 601,
+  "outlier": true
+ },
+ {
+  "date": "2025-08-12",
+  "km": 4.92,
+  "time": "0:48:46",
+  "pace": "9:55",
+  "pace_sec": 595,
+  "outlier": false
+ },
+ {
+  "date": "2025-08-14",
+  "km": 4.65,
+  "time": "0:33:14",
+  "pace": "7:09",
+  "pace_sec": 429,
+  "outlier": false
+ },
+ {
+  "date": "2025-08-14",
+  "km": 5.41,
+  "time": "0:38:43",
+  "pace": "7:09",
+  "pace_sec": 429,
+  "outlier": false
+ },
+ {
+  "date": "2025-08-23",
+  "km": 0.79,
+  "time": "0:10:30",
+  "pace": "13:17",
+  "pace_sec": 797,
+  "outlier": true
+ },
+ {
+  "date": "2025-08-30",
+  "km": 0.92,
+  "time": "0:26:21",
+  "pace": "28:38",
+  "pace_sec": 1718,
+  "outlier": true
+ },
+ {
+  "date": "2025-09-06",
+  "km": 10.15,
+  "time": "1:05:08",
+  "pace": "6:25",
+  "pace_sec": 385,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-10",
+  "km": 6.25,
+  "time": "0:38:14",
+  "pace": "6:07",
+  "pace_sec": 367,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-13",
+  "km": 4.94,
+  "time": "0:29:51",
+  "pace": "6:03",
+  "pace_sec": 363,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-18",
+  "km": 3.0,
+  "time": "0:18:34",
+  "pace": "6:11",
+  "pace_sec": 371,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-20",
+  "km": 0.49,
+  "time": "0:02:20",
+  "pace": "4:46",
+  "pace_sec": 286,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-28",
+  "km": 1.63,
+  "time": "0:11:53",
+  "pace": "7:17",
+  "pace_sec": 437,
+  "outlier": false
+ },
+ {
+  "date": "2025-09-28",
+  "km": 2.18,
+  "time": "0:18:23",
+  "pace": "8:26",
+  "pace_sec": 506,
+  "outlier": false
+ },
+ {
+  "date": "2025-10-03",
+  "km": 0.64,
+  "time": "0:02:49",
+  "pace": "4:24",
+  "pace_sec": 264,
+  "outlier": false
+ },
+ {
+  "date": "2025-10-20",
+  "km": 0.45,
+  "time": "0:03:04",
+  "pace": "6:49",
+  "pace_sec": 409,
+  "outlier": false
+ },
+ {
+  "date": "2025-11-20",
+  "km": 2.91,
+  "time": "0:18:26",
+  "pace": "6:20",
+  "pace_sec": 380,
+  "outlier": false
+ },
+ {
+  "date": "2025-12-06",
+  "km": 0.27,
+  "time": "0:40:14",
+  "pace": "149:01",
+  "pace_sec": 8941,
+  "outlier": true
+ },
+ {
+  "date": "2025-12-11",
+  "km": 2.88,
+  "time": "0:18:00",
+  "pace": "6:15",
+  "pace_sec": 375,
+  "outlier": false
+ },
+ {
+  "date": "2026-02-01",
+  "km": 6.34,
+  "time": "0:47:44",
+  "pace": "7:32",
+  "pace_sec": 452,
+  "outlier": false
+ },
+ {
+  "date": "2026-02-21",
+  "km": 6.86,
+  "time": "0:52:26",
+  "pace": "7:39",
+  "pace_sec": 459,
+  "outlier": false
+ },
+ {
+  "date": "2026-02-21",
+  "km": 3.01,
+  "time": "0:21:39",
+  "pace": "7:12",
+  "pace_sec": 432,
+  "outlier": false
+ },
+ {
+  "date": "2026-02-22",
+  "km": 6.66,
+  "time": "0:49:05",
+  "pace": "7:22",
+  "pace_sec": 442,
+  "outlier": false
+ },
+ {
+  "date": "2026-02-27",
+  "km": 2.92,
+  "time": "0:17:47",
+  "pace": "6:05",
+  "pace_sec": 365,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-01",
+  "km": 8.21,
+  "time": "0:55:56",
+  "pace": "6:49",
+  "pace_sec": 409,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-08",
+  "km": 2.62,
+  "time": "0:14:22",
+  "pace": "5:29",
+  "pace_sec": 329,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-14",
+  "km": 10.22,
+  "time": "1:07:39",
+  "pace": "6:37",
+  "pace_sec": 397,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-15",
+  "km": 3.04,
+  "time": "0:17:05",
+  "pace": "5:37",
+  "pace_sec": 337,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-22",
+  "km": 5.02,
+  "time": "0:28:06",
+  "pace": "5:36",
+  "pace_sec": 336,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-25",
+  "km": 6.29,
+  "time": "0:40:29",
+  "pace": "6:26",
+  "pace_sec": 386,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-26",
+  "km": 1.36,
+  "time": "0:10:08",
+  "pace": "7:27",
+  "pace_sec": 447,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-29",
+  "km": 3.08,
+  "time": "0:17:49",
+  "pace": "5:47",
+  "pace_sec": 347,
+  "outlier": false
+ },
+ {
+  "date": "2026-03-31",
+  "km": 3.31,
+  "time": "0:17:55",
+  "pace": "5:25",
+  "pace_sec": 325,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-08",
+  "km": 4.0,
+  "time": "0:27:06",
+  "pace": "6:46",
+  "pace_sec": 406,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-11",
+  "km": 3.22,
+  "time": "0:17:10",
+  "pace": "5:20",
+  "pace_sec": 320,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-12",
+  "km": 3.62,
+  "time": "0:19:10",
+  "pace": "5:18",
+  "pace_sec": 318,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-15",
+  "km": 3.83,
+  "time": "0:21:16",
+  "pace": "5:33",
+  "pace_sec": 333,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-25",
+  "km": 3.06,
+  "time": "0:16:57",
+  "pace": "5:32",
+  "pace_sec": 332,
+  "outlier": false
+ },
+ {
+  "date": "2026-04-26",
+  "km": 1.41,
+  "time": "0:26:14",
+  "pace": "18:36",
+  "pace_sec": 1116,
+  "outlier": true
+ },
+ {
+  "date": "2026-05-03",
+  "km": 4.02,
+  "time": "0:23:05",
+  "pace": "5:45",
+  "pace_sec": 345,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-09",
+  "km": 4.33,
+  "time": "0:23:41",
+  "pace": "5:28",
+  "pace_sec": 328,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-11",
+  "km": 4.1,
+  "time": "0:19:44",
+  "pace": "4:49",
+  "pace_sec": 289,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-14",
+  "km": 4.75,
+  "time": "0:21:02",
+  "pace": "4:26",
+  "pace_sec": 266,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-17",
+  "km": 4.02,
+  "time": "0:22:25",
+  "pace": "5:35",
+  "pace_sec": 335,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-21",
+  "km": 2.37,
+  "time": "0:13:05",
+  "pace": "5:31",
+  "pace_sec": 331,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-23",
+  "km": 3.52,
+  "time": "0:20:06",
+  "pace": "5:43",
+  "pace_sec": 343,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-25",
+  "km": 3.04,
+  "time": "0:15:15",
+  "pace": "5:01",
+  "pace_sec": 301,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-27",
+  "km": 5.02,
+  "time": "0:27:14",
+  "pace": "5:25",
+  "pace_sec": 325,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-28",
+  "km": 3.0,
+  "time": "0:18:34",
+  "pace": "6:11",
+  "pace_sec": 371,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-29",
+  "km": 1.79,
+  "time": "0:11:12",
+  "pace": "6:15",
+  "pace_sec": 375,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-30",
+  "km": 2.22,
+  "time": "0:19:40",
+  "pace": "8:52",
+  "pace_sec": 532,
+  "outlier": false
+ },
+ {
+  "date": "2026-05-31",
+  "km": 2.02,
+  "time": "0:15:49",
+  "pace": "7:50",
+  "pace_sec": 470,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-01",
+  "km": 1.78,
+  "time": "0:23:27",
+  "pace": "13:10",
+  "pace_sec": 790,
+  "outlier": true
+ },
+ {
+  "date": "2026-06-01",
+  "km": 1.77,
+  "time": "0:15:56",
+  "pace": "9:00",
+  "pace_sec": 540,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-05",
+  "km": 0.69,
+  "time": "0:16:45",
+  "pace": "24:17",
+  "pace_sec": 1457,
+  "outlier": true
+ },
+ {
+  "date": "2026-06-06",
+  "km": 1.41,
+  "time": "0:11:01",
+  "pace": "7:49",
+  "pace_sec": 469,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-07",
+  "km": 3.42,
+  "time": "0:29:21",
+  "pace": "8:35",
+  "pace_sec": 515,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-09",
+  "km": 1.67,
+  "time": "0:13:23",
+  "pace": "8:01",
+  "pace_sec": 481,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-14",
+  "km": 7.01,
+  "time": "0:40:43",
+  "pace": "5:49",
+  "pace_sec": 349,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-15",
+  "km": 2.15,
+  "time": "0:19:36",
+  "pace": "9:07",
+  "pace_sec": 547,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-17",
+  "km": 2.04,
+  "time": "0:15:53",
+  "pace": "7:47",
+  "pace_sec": 467,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-17",
+  "km": 1.59,
+  "time": "0:25:15",
+  "pace": "15:53",
+  "pace_sec": 953,
+  "outlier": true
+ },
+ {
+  "date": "2026-06-19",
+  "km": 2.02,
+  "time": "0:13:31",
+  "pace": "6:41",
+  "pace_sec": 401,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-20",
+  "km": 7.09,
+  "time": "0:40:39",
+  "pace": "5:44",
+  "pace_sec": 344,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-20",
+  "km": 4.52,
+  "time": "0:31:00",
+  "pace": "6:52",
+  "pace_sec": 412,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-21",
+  "km": 3.15,
+  "time": "0:21:37",
+  "pace": "6:52",
+  "pace_sec": 412,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-23",
+  "km": 2.19,
+  "time": "0:23:51",
+  "pace": "10:53",
+  "pace_sec": 653,
+  "outlier": true
+ },
+ {
+  "date": "2026-06-25",
+  "km": 2.03,
+  "time": "0:16:57",
+  "pace": "8:21",
+  "pace_sec": 501,
+  "outlier": false
+ },
+ {
+  "date": "2026-06-26",
+  "km": 1.28,
+  "time": "0:16:08",
+  "pace": "12:36",
+  "pace_sec": 756,
+  "outlier": true
+ },
+ {
+  "date": "2026-06-28",
+  "km": 1.7,
+  "time": "0:15:00",
+  "pace": "8:49",
+  "pace_sec": 529,
+  "outlier": false
+ },
+ {
   "date": "2026-07-03",
   "km": 3.6,
   "time": "0:34:57",

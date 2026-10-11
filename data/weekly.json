@@ -1,24 +1,493 @@
 [
  {
+  "week": "2025-03-24",
+  "km": 3.04,
+  "runs": 1,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2025-03-31",
+  "km": 6.27,
+  "runs": 1,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2025-04-07",
+  "km": 4.21,
+  "runs": 3,
+  "partial": false,
+  "rolling4": null
+ },
+ {
+  "week": "2025-04-14",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 3.38
+ },
+ {
+  "week": "2025-04-21",
+  "km": 2.2,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 3.17
+ },
+ {
+  "week": "2025-04-28",
+  "km": 1.38,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 1.95
+ },
+ {
+  "week": "2025-05-05",
+  "km": 3.4,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 1.75
+ },
+ {
+  "week": "2025-05-12",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 1.75
+ },
+ {
+  "week": "2025-05-19",
+  "km": 3.14,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 1.98
+ },
+ {
+  "week": "2025-05-26",
+  "km": 12.53,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 4.77
+ },
+ {
+  "week": "2025-06-02",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 3.92
+ },
+ {
+  "week": "2025-06-09",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 3.92
+ },
+ {
+  "week": "2025-06-16",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 3.13
+ },
+ {
+  "week": "2025-06-23",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.0
+ },
+ {
+  "week": "2025-06-30",
+  "km": 0.5,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 0.12
+ },
+ {
+  "week": "2025-07-07",
+  "km": 7.6,
+  "runs": 5,
+  "partial": false,
+  "rolling4": 2.02
+ },
+ {
+  "week": "2025-07-14",
+  "km": 5.98,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 3.52
+ },
+ {
+  "week": "2025-07-21",
+  "km": 10.29,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 6.09
+ },
+ {
+  "week": "2025-07-28",
+  "km": 1.43,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 6.33
+ },
+ {
+  "week": "2025-08-04",
+  "km": 2.7,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 5.1
+ },
+ {
+  "week": "2025-08-11",
+  "km": 19.9,
+  "runs": 4,
+  "partial": false,
+  "rolling4": 8.58
+ },
+ {
+  "week": "2025-08-18",
+  "km": 0.79,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 6.21
+ },
+ {
+  "week": "2025-08-25",
+  "km": 0.92,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 6.08
+ },
+ {
+  "week": "2025-09-01",
+  "km": 10.15,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 7.94
+ },
+ {
+  "week": "2025-09-08",
+  "km": 11.19,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 5.76
+ },
+ {
+  "week": "2025-09-15",
+  "km": 3.49,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 6.44
+ },
+ {
+  "week": "2025-09-22",
+  "km": 3.81,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 7.16
+ },
+ {
+  "week": "2025-09-29",
+  "km": 0.64,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 4.78
+ },
+ {
+  "week": "2025-10-06",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 1.99
+ },
+ {
+  "week": "2025-10-13",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 1.11
+ },
+ {
+  "week": "2025-10-20",
+  "km": 0.45,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 0.27
+ },
+ {
+  "week": "2025-10-27",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.11
+ },
+ {
+  "week": "2025-11-03",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.11
+ },
+ {
+  "week": "2025-11-10",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.11
+ },
+ {
+  "week": "2025-11-17",
+  "km": 2.91,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 0.73
+ },
+ {
+  "week": "2025-11-24",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.73
+ },
+ {
+  "week": "2025-12-01",
+  "km": 0.27,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 0.8
+ },
+ {
+  "week": "2025-12-08",
+  "km": 2.88,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 1.52
+ },
+ {
+  "week": "2025-12-15",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.79
+ },
+ {
+  "week": "2025-12-22",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.79
+ },
+ {
+  "week": "2025-12-29",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.72
+ },
+ {
+  "week": "2026-01-05",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.0
+ },
+ {
+  "week": "2026-01-12",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.0
+ },
+ {
+  "week": "2026-01-19",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 0.0
+ },
+ {
+  "week": "2026-01-26",
+  "km": 6.34,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 1.58
+ },
+ {
+  "week": "2026-02-02",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 1.58
+ },
+ {
+  "week": "2026-02-09",
+  "km": 0,
+  "runs": 0,
+  "partial": false,
+  "rolling4": 1.58
+ },
+ {
+  "week": "2026-02-16",
+  "km": 16.53,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 5.72
+ },
+ {
+  "week": "2026-02-23",
+  "km": 11.13,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 6.92
+ },
+ {
+  "week": "2026-03-02",
+  "km": 2.62,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 7.57
+ },
+ {
+  "week": "2026-03-09",
+  "km": 13.26,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 10.88
+ },
+ {
+  "week": "2026-03-16",
+  "km": 5.02,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 8.01
+ },
+ {
+  "week": "2026-03-23",
+  "km": 10.73,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 7.91
+ },
+ {
+  "week": "2026-03-30",
+  "km": 3.31,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 8.08
+ },
+ {
+  "week": "2026-04-06",
+  "km": 10.84,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 7.47
+ },
+ {
+  "week": "2026-04-13",
+  "km": 3.83,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 7.18
+ },
+ {
+  "week": "2026-04-20",
+  "km": 4.47,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 5.61
+ },
+ {
+  "week": "2026-04-27",
+  "km": 4.02,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 5.79
+ },
+ {
+  "week": "2026-05-04",
+  "km": 4.33,
+  "runs": 1,
+  "partial": false,
+  "rolling4": 4.16
+ },
+ {
+  "week": "2026-05-11",
+  "km": 12.87,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 6.42
+ },
+ {
+  "week": "2026-05-18",
+  "km": 5.89,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 6.78
+ },
+ {
+  "week": "2026-05-25",
+  "km": 17.09,
+  "runs": 6,
+  "partial": false,
+  "rolling4": 10.04
+ },
+ {
+  "week": "2026-06-01",
+  "km": 9.07,
+  "runs": 5,
+  "partial": false,
+  "rolling4": 11.23
+ },
+ {
+  "week": "2026-06-08",
+  "km": 8.68,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 10.18
+ },
+ {
+  "week": "2026-06-15",
+  "km": 22.56,
+  "runs": 7,
+  "partial": false,
+  "rolling4": 14.35
+ },
+ {
+  "week": "2026-06-22",
+  "km": 7.2,
+  "runs": 4,
+  "partial": false,
+  "rolling4": 11.88
+ },
+ {
+  "week": "2026-06-29",
+  "km": 10.58,
+  "runs": 3,
+  "partial": false,
+  "rolling4": 12.25
+ },
+ {
   "week": "2026-07-06",
   "km": 10.75,
   "runs": 4,
   "partial": false,
-  "rolling4": null
+  "rolling4": 12.77
  },
  {
   "week": "2026-07-13",
   "km": 12.19,
   "runs": 6,
   "partial": false,
-  "rolling4": null
+  "rolling4": 10.18
  },
  {
   "week": "2026-07-20",
   "km": 1.41,
   "runs": 1,
   "partial": false,
-  "rolling4": null
+  "rolling4": 8.73
  },
  {
   "week": "2026-07-27",

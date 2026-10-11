@@ -229,3 +229,12 @@
 - 檔案 `/workspace/strava/activities.csv`，表頭 `date,km,moving,pace`，每趟一行（同日多趟各一行），順序不限（程式會排序；慣例新的在上）。`date`＝YYYY-MM-DD（當地日期）；`km`＝公里，兩位小數（例 4.13）；`moving`＝Strava Moving Time，`m:ss` 或 `h:mm:ss`（例 22:18、1:14:04）；`pace`＝`m:ss`（每公里，不含「/km」），可留空（留空時由 moving÷km 算）。例：`2026-07-05,4.13,22:18,5:23`。沒有 URL 欄，去重請用日期＋公里數。
 - 注意：`recompute_monthly()` 會用 activities.csv 重算有明細的月份（跑次與里程跟 monthly.csv 不同時以明細覆蓋），所以某個月要補就補完整，否則該月總量會變少；全時間（`profile.json` as_of 2026-09-30 基準）只累加 as_of 之後的跑步，補舊資料不會重複計入。
 - `test_tabs.py` 的課表週標題檢查改為依「本週」（新加坡日期）計算已跑 km，並加上 10/12 週的逐日 km（3／6／3／14）；備份 `test_tabs.pre_wk1012.py`。
+
+## 2026-10-12 補齊 7/3 以前的單趟（98 趟）
+- 來源：`/workspace/strava/backfill/runs_2025.csv`（47 趟，2025-03-20～2025-12-11）、`runs_2026H1.csv`（51 趟，2026-02-01～2026-06-28），由 Strava 訓練列表（Sport＝Run）讀取，欄位 `date,km,moving,url`。合併進 `activities.csv`：pace＝moving÷km（四捨五入到秒，同 `fmt_pace`）；**`activities.csv` 新增第 5 欄 `url`**（新列填 Strava 網址，7/3 以後原本的 57 列留空；程式用 DictReader 依欄名讀，不受影響）。現在共 155 趟（＝Strava 全部跑步），最早 2025-03-20。之後新增跑步請照填 `url`（可留空）。
+- 合併前逐月核對（跑次、km、moving time）：2025-03～2026-06 每個月都和 `monthly.csv` 完全一致，沒有差異；`monthly.csv` 重建後一字不變。2025-08-12 有兩筆 4.92 km（49:18、48:46，…/15427190728、…/15427413947，疑似重複上傳）兩筆都保留；`monthly.csv` 2025-08 的 9 趟／25.62 km 本來就兩筆都算。
+- 全時間：`summary.alltime` 是 `profile.json` 基準（as_of 2026-09-30：150 趟／510.9 km）＋as_of 之後的跑步，補舊資料不會重複計入（重建後 summary.json 完全不變：155 趟、537.9 km）。
+- 自動跟著變：配速分頁每趟圖與 7 趟移動平均從 2025-03-23 起（共 155 趟，排除 >10:00 outlier、慢於 8:30 後顯示 117 點；1.0 km 以下只在每週最快／總覽卡排除）；每週最快配速最早一週 2025-03-17（3/23 5.01 km 6:15），至今 54 週；`weekly.json` 從 2025-03-24 起；訓練分頁圖 B 的每週跑步時數從 2025-03-24 起可拆週（`run_week_from`）。
+- 每週最快配速圖：週數 >16 時點上不標數字（會重疊；點選讀數列仍有完整數值），x 軸改日期軸（週數多時刻度 `YYYY/MM`、少時 `MM/DD`），不是今年的日期在文字與讀數列加年份。
+- 總覽「每週最快平均」：至今 6:03（54 週）、近12個月 5:53（37 週，▲ 快 0:35 vs 前12個月（部分資料））、近6個月 5:49（24 週，▲ 快 0:09）、近3個月 5:37（11 週，▲ 快 0:24）。全部最快一趟：2026-05-14 4.75 km 4:26/km（21:02）。
+- 備份 `activities.pre_backfill1012.csv`、`monthly.pre_backfill1012.csv`、`index_template.pre_backfill1012.html`、`UPDATE.pre_backfill1012.md`；舊 data JSON `/tmp/*.pre_backfill1012.json`。
