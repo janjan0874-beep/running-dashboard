@@ -418,7 +418,8 @@ function catTicks(vals,fmt){
 const abbrM=m=>m.slice(2,4)+'/'+m.slice(5,7), abbrW=w=>w.slice(5,7)+'/'+w.slice(8,10);
 // 2026-10-12 使用者確認為 GPS 異常的單趟：不進任何配速圖與每週最快平均（里程、次數仍計入）。以 日期＋km 比對（activities.json 沒有 url；Strava https://www.strava.com/activities/18499634114）
 const PACE_EXCLUDE=[{date:'2026-05-14',km:4.75}];
-const paceEx=r=>PACE_EXCLUDE.some(x=>x.date===r.date&&Math.abs(x.km-r.km)<0.005);
+const FAST_SEC=312;   // 2026-10-12 使用者：真實最佳為 5:12/km，快於 5:12/km（pace_sec<312）的單趟一律視為 GPS 異常，不進配速圖與每週最快平均（里程、次數仍計入）
+const paceEx=r=>(r.pace_sec!=null&&r.pace_sec<FAST_SEC)||PACE_EXCLUDE.some(x=>x.date===r.date&&Math.abs(x.km-r.km)<0.005);
 const SLOW_SEC=510;   // 2026-10-12 使用者：配速圖與每週最快平均不看慢於 8:30/km 的單趟（里程、次數等統計仍全部計入）
 const fmtP=s=>(s&&isFinite(s))?`${Math.floor(Math.round(s)/60)}:${String(Math.round(s)%60).padStart(2,'0')}`:'—';
 function paceAxis(vals){ // 只依保留的點決定範圍（上＝快），刻度每 30 或 60 秒
@@ -534,7 +535,7 @@ function render(){
   const WF={};D.a.filter(r=>r.date>=co.d&&!r.outlier&&r.km>=1&&r.pace_sec&&r.pace_sec<=SLOW_SEC&&!paceEx(r)).forEach(r=>{const w=wkOf(r.date);if(!WF[w]||r.pace_sec<WF[w].pace_sec)WF[w]=r;});
   const wks=Object.keys(WF).sort(), md=s=>(s.slice(0,4)!==D.s.data_through.slice(0,4)?s.slice(0,4)+'/':'')+ +s.slice(5,7)+'/'+ +s.slice(8,10);   // 不是今年的日期加年份（2026-10-12 補 2025 起的單趟後）
   if(wks.length){const fw=wks.reduce((a,b)=>WF[b].pace_sec<WF[a].pace_sec?b:a),lw=wks[wks.length-1];
-    $('k_wpace').textContent=`不計 1.0 km 以下與慢於 8:30/km 的單趟。最快是 ${md(WF[fw].date)} 的 ${WF[fw].pace}/km（${WF[fw].km} km）；最近一週（${md(lw)} 起）最快 ${WF[lw].pace}/km（${md(WF[lw].date)}，${WF[lw].km} km）。`;}
+    $('k_wpace').textContent=`不計 1.0 km 以下、快於 5:12 或慢於 8:30/km 的單趟。最快是 ${md(WF[fw].date)} 的 ${WF[fw].pace}/km（${WF[fw].km} km）；最近一週（${md(lw)} 起）最快 ${WF[lw].pace}/km（${md(WF[lw].date)}，${WF[lw].km} km）。`;}
   else $('k_wpace').textContent='此期間沒有單趟資料。';
   const wy=wks.map(w=>WF[w].pace_sec), lab=wks.length<=16;   // 週數多（>16）時點上不標數字（會重疊），點選讀數列仍有完整數值
   plot('c_wpace',[
@@ -545,7 +546,7 @@ function render(){
   const A=D.a.filter(r=>r.date>=co.d), ok=A.filter(r=>!r.outlier&&r.pace_sec<=SLOW_SEC&&!paceEx(r));  // outlier（慢於門檻）完全不顯示、不計入平均與趨勢
   const first=D.a[0].date, fshort=+first.slice(5,7)+'/'+ +first.slice(8,10);
   const partialData=info.c.runs>A.length;
-  $('n_pace').textContent=`配速軸向上＝較快。橘線為 7 趟移動平均；慢於 8:30/km 的單趟不列入（里程、次數仍計入）。`+(partialData?`單趟資料自 ${fshort} 起（較早月份只有月彙總），此處顯示全部單趟。`:'');
+  $('n_pace').textContent=`配速軸向上＝較快。橘線為 7 趟移動平均；快於 5:12 或慢於 8:30/km 的單趟不列入（里程、次數仍計入）。`+(partialData?`單趟資料自 ${fshort} 起（較早月份只有月彙總），此處顯示全部單趟。`:'');
   if(ok.length){const tk=ok.reduce((s,r)=>s+r.km,0),ts=ok.reduce((s,r)=>s+r.pace_sec*r.km,0);
     const l7=ok.slice(-7),a7=l7.reduce((s,r)=>s+r.pace_sec,0)/l7.length;
     $('k_pace').textContent=`${partialData?`單趟資料自 ${fshort} 起，`:`${nm}`}共 ${ok.length} 趟，平均 ${fmtP(ts/tk)}/km；最近 ${l7.length} 趟平均 ${fmtP(a7)}/km。`;}
