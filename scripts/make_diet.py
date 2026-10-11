@@ -9,6 +9,10 @@ import make_plan
 _B = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile.json")))["body"]
 WEIGHT = float(_B["weight_kg"]); HEIGHT = float(_B["height_cm"]); AGE = int(_B["age"]); SEX = _B["sex"]
 BODY_FAT = float(_B["body_fat_pct"]); BODY_FAT_GOAL = float(_B["body_fat_goal_pct"])
+# 2026-10-11 週日飲食動態調整（晚間複核，Asia/Singapore）：
+# 本週（10/5–10/11）無新體重／體脂／腰圍／疲勞回報（維持 profile 71.0 kg、17.5%）；
+# 實跑 9.38／目標 26.0 km＝36.1%（<80%）；重訓 3 次（10/8、10/10、10/11 Strava Workout，10/11 尚未寫入 workouts.csv）；
+# 決策：維持 DEFICIT＝183（不升不降）；賽前週 10/19–10/25 不加大缺口。缺口調整須有兩週體重／體脂數據。
 DEFICIT = 183          # kcal/天：10/6–10/25 一般日、12/27 10K 測試日的缺口
 # 12/31 前減脂目標：2.09 kg × 7700 kcal＝16093 kcal（10/6–12/31 合計）。10/26 起的一般日用同一個缺口 D，
 # 由 build() 依其他日子的實際缺口自動反推（課表一改，每日 8:00 重建時 D 會自動重算），D 上限 400。
