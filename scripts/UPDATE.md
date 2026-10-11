@@ -11,7 +11,7 @@
 - `/workspace/strava/workouts.csv`：非跑步活動（Workout／HIIT／Swim／Stair-Stepper…），欄位 `date,start_time,name,type,elapsed,moving,avg_hr,max_hr,calories,distance_km,url`（elapsed／moving 為 `h:mm:ss`；沒有心率的活動 avg_hr、max_hr 留空）。**去重以 `url` 為鍵**。
 - `/workspace/strava/profile.json`：全時間基準（`as_of` 當天為 150 次／510.9 km／232740 秒）、PR、比賽日、異常配速門檻（10:00/km）。`as_of` 之後 activities.csv 新增的跑步會自動累加進「全時間」卡片。**PR 如有刷新請手動改這裡。**
 - `/workspace/strava/make_plan.py`：訓練計畫內容（逐日、假設、比賽日策略）。
-- `/workspace/strava/make_diet.py`：飲食計畫（讀 `make_plan.build()` 的逐日訓練產生，課表一改飲食自動同步）→ `data/diet.json`。
+- `/workspace/strava/make_diet.py`：飲食計畫（讀 `make_plan.build()` 的逐日訓練產生，課表一改飲食自動同步）→ `update_dashboard.py` 寫到 **`/workspace/strava/running-dashboard/data/diet.json`**（＝網站 live 的那份；8:00 每日訊息請讀這份）。`/workspace/strava/data/diet.json` 只有單獨執行 `python3 make_diet.py`（不帶參數）才會寫，不是正式來源（2026-10-11 已同步成同一份內容）。
 - `/workspace/strava/update_dashboard.py`：主程式。
 
 ## 每日例行步驟
@@ -176,12 +176,12 @@
 - 測試：`test_check.py [port]` 新增：課表新 key、舊 key 遷移一次且取消後不會補回、模擬重建（食物份量全改、早餐插入新食物、晚餐 kcal 改、10/31 插入新列並改公里數與說明）後重新整理，飲食與課表的勾選都還在。備份 `index_template.pre_stablekey1010.html`、`test_check.pre_stablekey1010.py`、`UPDATE.pre_stablekey1010.md`。
 
 ## 2026-10-11 週末亞坤早餐（使用者 12:09：「週末通常會多吃亞坤soya kopi O and 咖椰土司加進去改吧」）
-- **範圍**：2026-10-11（`YAKUN_FROM`）起到 12/31 的每個週六、週日（含半馬週 10/24–10/25、10K 測試週 12/26–12/27），早餐多兩個打勾項目：`bf-yakun_kopi`「亞坤 soya kopi O 1 杯」、`bf-yakun_kaya`「亞坤咖椰吐司 1 份」。10/25 比賽日放在「早餐（起跑前 3 小時）」（該餐碳水提示 142.0 g 不含這兩項）。平日、10/11 以前的日子、`meta`（含 D＝233.6）完全不變（已用 diet.json 前後比對確認）。
+- **範圍**：2026-10-11（`YAKUN_FROM`）起到 12/31 的每個週六、週日，**但 10/24（肝醣超補）、10/25（半馬比賽日）、12/26（10K 測試前一天）不吃**（`YAKUN_SKIP`，使用者 2026-10-11 12:17 決定；這 3 天與加亞坤前完全相同，10/24 目標維持碳水 568.0 g、脂肪 40.0 g），早餐多兩個打勾項目：`bf-yakun_kopi`「亞坤 soya kopi O 1 杯」、`bf-yakun_kaya`「亞坤咖椰吐司 1 份」。平日、10/11 以前的日子、`meta`（含 D＝233.6）完全不變（已用 diet.json 前後比對確認）。
 - **數值（每份，0.1 g；kcal 一律 4/4/9 由營養素算，因為打勾加總要剛好等於目標）**：
   - soya kopi O：Ya Kun 菜單上是「Soya Milk Coffee-O（豆漿咖啡-O）」＝黑咖啡加糖＋豆漿（不加煉乳）。Ya Kun 官方營養標示（https://app.yakun.com/nutritional-information → https://app.yakun.com/media/wysiwyg/Ya_Kun_Drinks_NIP.jpg ，同內容 PDF https://app.yakun.com/media/Yakun-NIP-this-is-for-product-nutrition-page.pdf ）的 Soya Series 只有冰的 12 oz 與 22 oz，而且數字不可靠：12 oz 每 100 ml 48.92 kcal／蛋白質 0.00／脂肪 0.00／碳水 6.55，和熱 Ginger Tea O 完全相同（疑為誤植）；22 oz 標 17.28 kcal，但其蛋白質 1.65、脂肪 0.61、碳水 10.81 g 算出來是 55.3 kcal。所以**暫以 Ya Kun 官方 Coffee O（kopi O，有糖，糖 8%）熱 8 oz 內用計**：每 100 ml 37.88 kcal、蛋白質 0.83 g、脂肪 0.37 g、碳水 8.07 g；8 oz＝236.6 ml → **碳水 19.1 g、蛋白質 2.0 g、脂肪 0.9 g、92.5 kcal**（標示換算 89.6 kcal）。豆漿多出的蛋白質沒算進去。若改喝冰的或 6 oz，改 `F["yakun_kopi"]`。
   - 咖椰吐司：Ya Kun Kaya Toast 1 份（2 片，店內賣法）。Ya Kun 官方沒有公布食物營養；用 FatSecret Singapore（https://www.fatsecret.com.sg/calories-nutrition/ya-kun/kaya-toast/2-slices ）：318 kcal、**碳水 38.0 g、蛋白質 5.2 g、脂肪 16.7 g**，4/4/9 計 **323.1 kcal**。
   - 兩項合計 碳水 57.1 g、蛋白質 7.2 g、脂肪 17.6 g、415.6 kcal。
 - **預算**：每日目標（熱量、碳水、蛋白質、脂肪）照原本算法算好後，亞坤的碳水／蛋白質／脂肪從當天晚餐剩餘扣（`make_diet.py` 晚餐段「週末亞坤早餐」）。晚餐參考例依扣完的預算重選：原本的參考例縮份量後脂肪、蛋白質都放得下、且蛋白質離預算不到 15.0 g 就沿用；否則從同日候選＋平日輪替菜色挑放得下、蛋白質最多的；都放不下就用主食（白飯／義大利麵）。輪替紀錄沿用原本的參考例，其他天不受影響。10/11 晚餐剩餘 1473.2 → **1057.6 kcal**（碳水 145.1 g、蛋白質 58.1 g、脂肪 27.2 g）。
-- **例外 10/24（肝醣超補日，週六）**：脂肪目標 40.0 g 扣完咖椰吐司後晚餐脂肪會是 −2.3 g，所以這天脂肪目標改 42.4 g、碳水 568.0 → 562.6 g，熱量 3370.0 不變（卡片 notes 註明；`YK_FATFIX`）。其他週末晚餐的碳水、蛋白質、脂肪都 ≥ 0（最小：12/26 晚餐剩 129.8 kcal）。
-- **8:00 訊息**：週末早餐行為「早餐：雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g＋亞坤 soya kopi O 1 杯＋亞坤咖椰吐司 1 份」（10/25 仍用「、」列法並加這兩項）。`protein_note` 在週末寫「固定 114.7 g＋亞坤、午餐…」。飲食註腳「食物數值」加上兩項來源。
+- **晚餐剩餘不到 400 kcal 的週末（只列出、未調整）**：11/1 226.0、11/7 342.8、11/14 342.8、11/21 342.8、11/28 342.8、12/5 342.8、12/12 342.8、12/19 342.8 kcal。（`YK_FATFIX`：晚餐脂肪不夠扣時的備用調整，排除 10/24 後沒有日子觸發。）
+- **8:00 訊息**：週末早餐行為「早餐：雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g＋亞坤 soya kopi O 1 杯＋亞坤咖椰吐司 1 份」。`protein_note` 在週末寫「固定 114.7 g＋亞坤、午餐…」。飲食註腳「食物數值」加上兩項來源。
 - 備份 `make_diet.pre_yakun1011.py`、`UPDATE.pre_yakun1011.md`、`test_check.pre_yakun1011.py`、`test_tabs.pre_yakun1011.py`、`index_template.pre_yakun1011.html`（後三個未修改）；舊 diet.json `/tmp/diet.pre_yakun1011.json`。

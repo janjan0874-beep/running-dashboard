@@ -115,6 +115,7 @@ SZ_ROT = ["薩莉亞 肉醬義大利麵", "薩莉亞 芝麻菜雞肉沙拉配白
 DINNER_FLOOR_T = 4500   # 平日晚餐剩餘下限 450.0 kcal：−100 會低於 450 時，只扣到 450，週末加成同步減少
 HALF_RACE = "2026-10-25"
 YAKUN_FROM = "2026-10-11"   # 2026-10-11 使用者：週六、日早餐多吃亞坤 soya kopi O 1 杯＋咖椰吐司 1 份（含半馬週、10K 測試週）；從當天晚餐剩餘預算扣，每日目標不變
+YAKUN_SKIP = {"2026-10-24", "2026-10-25", "2026-12-26"}   # 2026-10-11 使用者決定：肝醣超補日、半馬比賽日、10K 測試前一天不吃亞坤
 YK_FATFIX = []   # 亞坤扣完晚餐脂肪預算不夠的日子（報告用）
 CREATINE_FROM = "2026-10-09"   # 2026-10-09 起每天早餐加肌酸 5 g（0 kcal、0 g 蛋白質，可打勾，id bf-creatine）
 RACE_BREAKFAST_C = 1420   # 142 g（2 g/kg），起跑前 3 小時
@@ -474,13 +475,13 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         assert dc >= 0 and dfat >= 0 and dp >= 0, (ds, dc, dfat, dp)
         # ---- 2026-10-11 週末亞坤早餐：每日目標（熱量、碳水、蛋白質、脂肪）沿用上面算好的值，亞坤的碳水／蛋白質／脂肪從晚餐剩餘預算扣；晚餐參考例依扣完的預算重選
         TR_base = TR; yk = []; yk_note = None
-        if ds >= YAKUN_FROM and d.weekday() >= 5:
+        if ds >= YAKUN_FROM and d.weekday() >= 5 and ds not in YAKUN_SKIP:
             assert not leans, (ds, "leans on yakun day")
             yk = [item("yakun_kopi", 1), item("yakun_kaya", 1)]
             kc, kp, kf = sums(yk)
             meals[0]["items"] = meals[0]["items"] + yk
             dc -= kc; dp -= kp; dfat -= kf
-            if dfat < 0:   # 10/24 肝醣超補日：晚餐脂肪預算不夠扣（脂肪目標 40.0 g），脂肪目標補到晚餐剩 0.0～0.3 g，同熱量從晚餐碳水扣（每日熱量不變）
+            if dfat < 0:   # 目前沒有日子會觸發（原本是 10/24，已排除）； 肝醣超補日：晚餐脂肪預算不夠扣（脂肪目標 40.0 g），脂肪目標補到晚餐剩 0.0～0.3 g，同熱量從晚餐碳水扣（每日熱量不變）
                 need = -dfat
                 while (9 * need) % 4: need += 1
                 FAT_T += need; dfat += need; dc -= 9 * need // 4; C -= 9 * need // 4
