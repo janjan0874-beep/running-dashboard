@@ -438,5 +438,13 @@
   "pace": "6:10",
   "pace_sec": 370,
   "outlier": false
+ },
+ {
+  "date": "2026-10-10",
+  "km": 3.09,
+  "time": "0:19:34",
+  "pace": "6:20",
+  "pace_sec": 380,
+  "outlier": false
  }
 ]
