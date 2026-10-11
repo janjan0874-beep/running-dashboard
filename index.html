@@ -166,7 +166,8 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dbody{padding:0 14px 8px;border-top:1px solid var(--line)}
 .dsum{padding:11px 0 2px;font-size:14px;color:var(--fg);font-variant-numeric:tabular-nums}
 .dsum i{font-style:normal;color:#c9ced6;margin:0 6px}
-.dgrp h4{margin:14px 0 0;font-size:13px;font-weight:600;color:var(--mut)}
+.dgrp h4{margin:14px 0 0;font-size:13px;font-weight:600;color:var(--mut);display:flex;justify-content:space-between;align-items:baseline}
+.dgrp h4 .dmk{font-size:12px;font-weight:400;color:var(--mut)}   /* 2026-10-11 使用者「請在每一餐旁邊標上總熱量」：該餐總熱量（灰色小字，靠右） */
 .dli{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f2f5;font-size:14.5px;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .dgrp .dli:last-child{border-bottom:0}
 .dli input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--blue);cursor:pointer}
@@ -742,16 +743,17 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.matches||!t.matche
 // 每一行：勾選框＋食物＋份量，行尾蛋白質 g（粗體）；不顯示碳水、脂肪、時間點（跑前…）
 const dLine=(dt,id,nm,amt,p,sub)=>`<label class="dli">${ckBox(dt,id)}<span class="dnm">${nm}${amt?`<small>${amt}</small>`:''}${sub?`<em>${sub}</em>`:''}</span><b>${p} g</b></label>`;
 function dGroups(d){
-  const dt=d.date, G={早餐:[],午餐:[],晚餐:[],點心:[]}, cut=s=>s.replace(/^點 /,'').replace(/（[^）]*）$/,'');
+  const dt=d.date, G={早餐:[],午餐:[],晚餐:[],點心:[]}, K={早餐:0,午餐:0,晚餐:0,點心:0}, cut=s=>s.replace(/^點 /,'').replace(/（[^）]*）$/,'');
   const it=i=>dLine(dt,i.id,dNm(i.name)[0].replace(' High Protein',''),i.amount,i.protein);
   d.meals.forEach(m=>{const g=m.slot.startsWith('早餐')?'早餐':m.slot.startsWith('午餐')?'午餐':'點心';
-    m.items.forEach(i=>G[g].push(it(i)));(m.text_items||[]).forEach(x=>G[g].push(`<div class="dli nx">${x.replace(/（[^）]*）$/,'')}</div>`));});
-  (d.dinner.fixed_items||[]).forEach(i=>G.晚餐.push(it(i)));
+    m.items.forEach(i=>{G[g].push(it(i));K[g]+=t10(i.kcal);});(m.text_items||[]).forEach(x=>G[g].push(`<div class="dli nx">${x.replace(/（[^）]*）$/,'')}</div>`));});
+  (d.dinner.fixed_items||[]).forEach(i=>{G.晚餐.push(it(i));K.晚餐+=t10(i.kcal);});
   const ex=d.dinner.example||{}, sn=dSnack(d);
   const ps=(ex.parts||[]).map(q=>`${cut(q.name)} ${q.amount}`).join('＋'), eg=ex.parts?(ex.parts.length===1&&ex.food.includes(cut(ex.parts[0].name))?`${ex.food} ${ex.parts[0].amount}`:`${ex.food}（${ps}）`):ex.food?`${dNm(ex.food)[0]} ${ex.grams} g`:'';
   G.晚餐.push(dLine(dt,'dinner-free','自由餐',`${f10(t10(d.dinner.kcal)-(sn?sn.k:0))} kcal`,f10(t10(d.dinner.protein)-(sn?sn.p:0)),eg?`例：${eg}`:''));
+  K.晚餐+=t10(d.dinner.kcal)-(sn?sn.k:0); if(sn) K.點心+=sn.k;
   if(sn) G.點心.push(dLine(dt,'dinner-snack',dNm(ex.snack.name)[0],ex.snack.amount,ex.snack.protein));
-  return Object.entries(G).filter(([,v])=>v.length).map(([k,v])=>`<div class="dgrp"><h4>${k}</h4>${v.join('')}</div>`).join('');
+  return Object.entries(G).filter(([,v])=>v.length).map(([k,v])=>`<div class="dgrp"><h4>${k}<span class="dmk">${f10(K[k])} kcal</span></h4>${v.join('')}</div>`).join('');
 }
 function dDay(d,today,openDate){
   const isT=d.date===today;

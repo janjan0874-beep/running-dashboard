@@ -186,3 +186,7 @@
 - **（雞蛋拿掉之前）晚餐剩餘不到 400 kcal 的週末**：11/1 226.0、11/7 342.8、11/14 342.8、11/21 342.8、11/28 342.8、12/5 342.8、12/12 342.8、12/19 342.8 kcal。（`YK_FATFIX`：晚餐脂肪不夠扣時的備用調整，排除 10/24 後沒有日子觸發。）
 - **8:00 訊息**：週末早餐行為「早餐：雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g＋亞坤 soya kopi O 1 杯＋亞坤咖椰吐司 1 份」。`protein_note` 在週末寫「固定 114.7 g＋亞坤、午餐…」。飲食註腳「食物數值」加上兩項來源。
 - 備份 `make_diet.pre_yakun1011.py`、`UPDATE.pre_yakun1011.md`、`test_check.pre_yakun1011.py`、`test_tabs.pre_yakun1011.py`、`index_template.pre_yakun1011.html`（後三個未修改）；舊 diet.json `/tmp/diet.pre_yakun1011.json`。
+
+## 2026-10-11 各餐總熱量（使用者：「請在每一餐旁邊標上總熱量」）
+- 飲食分頁每天展開後，早餐／午餐／晚餐／點心標題右側顯示該組總熱量（灰色小字 `.dgrp h4 .dmk`，`var(--mut)`，0.1 kcal），由 `dGroups()` 依該組實際列出的打勾項目加總：早餐＝早餐各項；午餐＝午餐各項；晚餐＝晚餐 Meiji＋自由餐（自由餐＝晚餐剩餘預算扣掉另列在「點心」的白吐司）；點心＝訓練前後香蕉（跑前）＋晚餐另列的白吐司（加餐碳水）＋肝醣超補日下午加餐。四組加總剛好＝當日目標 kcal（`test_check.py` 對所有日期斷言）。資料、diet.json、8:00 訊息不變。10/11：早餐 593.7、午餐 700.2、晚餐 1265.6、點心 237.5 kcal（合計 2797.0）。
+- 備份 `index_template.pre_mealkcal1011.html`、`test_tabs.pre_mealkcal1011.py`（標題比對改取第一個文字節點）、`test_check.pre_mealkcal1011.py`、`UPDATE.pre_mealkcal1011.md`。
