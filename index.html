@@ -42,7 +42,7 @@ main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .d{font-size:11.5px;font-weight:600;line-height:1.4;margin-top:1px}
 .d.up{color:var(--ok)}.d.down{color:var(--bad)}.d.flat{color:var(--mut)}
 #cards .s{display:none}
-#cards .card.fast .s{display:block}   /* 2026-10-11 最快配速卡：手機也顯示該趟日期與距離 */
+#cards .card.fast .s{display:block}   /* 2026-10-11 每週最快平均卡：手機也顯示「N 週」 */
 .panel{margin-top:8px}
 .panel h3{font-size:.98rem;margin:0 0 2px;line-height:1.35}
 .panel h3 small{font-weight:400;color:var(--mut);font-size:.78rem;margin-left:6px}
@@ -479,18 +479,21 @@ function cards(){
   const lg=A.length?A.reduce((a,b)=>b.km>a.km?b:a):null;
   const cover=runs>A.length;const fs=(f=>(+f.slice(5,7))+'/'+(+f.slice(8,10)))(D.a[0].date);
   const D_=(a,b,k)=>delta(a,pv?b:null,k,lab,partial);
-  // 最快配速（2026-10-11 使用者：「第一頁的平均也要換掉」）：期間內單趟（activities.json）平均配速最快的一趟；不計 1.0 km 以下與慢於門檻的 outlier；上一期同樣算法
-  const fastOf=(sd,ed)=>{const R=D.a.filter(r=>r.date>=sd&&r.date<=ed&&!r.outlier&&r.km>=1&&r.pace_sec);return R.length?R.reduce((a,b)=>b.pace_sec<a.pace_sec?b:a):null;};
-  const fr=fastOf(cur.sd,cur.ed), fp=prev?fastOf(prev.sd,prev.ed):null;
+  // 每週最快平均（2026-10-11 使用者：「第一頁的平均也要換掉」→ 釐清為每週最快配速的平均）：期間內每週（週一至週日）單趟最快配速（同配速分頁「每週最快配速」：≥1.0 km、不含慢於門檻的 outlier），
+  // 再把各週的秒／公里取算術平均；上一期同樣算法
+  const wkFastAvg=(sd,ed)=>{const wk=x=>{const t=new Date(x+'T00:00:00Z');t.setUTCDate(t.getUTCDate()-(t.getUTCDay()+6)%7);return t.toISOString().slice(0,10);},F={};
+    D.a.filter(r=>r.date>=sd&&r.date<=ed&&!r.outlier&&r.km>=1&&r.pace_sec).forEach(r=>{const w=wk(r.date);if(F[w]==null||r.pace_sec<F[w])F[w]=r.pace_sec;});
+    const v=Object.values(F);return v.length?{avg:v.reduce((a,b)=>a+b,0)/v.length,n:v.length}:null;};
+  const fr=wkFastAvg(cur.sd,cur.ed), fp=prev?wkFastAvg(prev.sd,prev.ed):null;
   const items=[
    [`${nm} 總跑量`,f1(km),'km',`${c.active} 個月有跑步`,D_(km,pv&&pv.km,'n')],
    [`${nm} 跑步次數`,runs,'次',`平均每週 ${f1(runs/(c.days/7))} 次`,D_(runs,pv&&pv.runs,'n')],
    [`${nm} 月均跑量`,f1(c.perMonth),'km／月',`共 ${c.have} 個月`,D_(c.perMonth,pv&&pv.perMonth,'n')],
    [`${nm} 週均跑量`,f1(c.perWeek),'km／週',`${f1(c.days/7)} 週`,D_(c.perWeek,pv&&pv.perWeek,'n')],
-   [`${nm} 最快配速`,fr?fr.pace:'—','／km',fr?`${fr.date.slice(5).replace('-','/')}・${fr.km} km`:'此期間無單趟資料',(pv&&fr&&!fp)?`<div class="d flat">${lab}無單趟資料</div>`:D_(fr&&fr.pace_sec,fp&&fp.pace_sec,'pace')],
+   [`${nm} 每週最快平均`,fr?fmtP(fr.avg):'—','／km',fr?`${fr.n} 週`:'此期間無單趟資料',(pv&&fr&&!fp)?`<div class="d flat">${lab}無單趟資料</div>`:D_(fr&&fr.avg,fp&&fp.avg,'pace')],
    [`${nm} 最長單趟`,lg?f1(lg.km):'—','km',lg?`${lg.date.slice(5).replace('-','/')}${cover?'・單趟資料自 '+fs+' 起':''}`:'此期間無單趟資料','']
   ];
-  const cardH=x=>`<div class="card${x[0].endsWith('最快配速')?' fast':''}"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div><div class="s">${x[3]}</div>${x[4]}</div>`;
+  const cardH=x=>`<div class="card${x[0].endsWith('每週最快平均')?' fast':''}"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div><div class="s">${x[3]}</div>${x[4]}</div>`;
   $('cards').innerHTML=[0,1,3,4].map(i=>cardH(items[i])).join('');
   $('cards2').innerHTML=[2,5].map(i=>cardH(items[i])).join('');
   $('rangeNote').textContent=`${nm}：${cur.sd} ～ ${cur.ed}${months?`（對照 ${prev.sd.slice(0,7)} ～ ${prev.ed.slice(0,7)}）`:''}`;
