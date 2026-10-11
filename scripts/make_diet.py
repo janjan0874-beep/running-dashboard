@@ -386,7 +386,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                 F_ = min(ok) if low else max(ok)
                 dc += (rem - 9 * F_) // 4           # 0.1 kcal 尾數由晚餐碳水吸收
                 return dc, ep, F_
-            if tier == "load" or ds == HALF_RACE or tier == "prelong":
+            if tier == "load" or ds == HALF_RACE:   # 2026-10-11 使用者：長跑前一天改回一般日算法（TDEE − 當天缺口），不再用公式值（碳水＋蛋白質＋脂肪下限）
                 mode = "load" if tier == "load" else ("race" if ds == HALF_RACE else "prelong")
                 FAT_T = {"load": hu(FAT_LOAD * 10), "race": hu(FAT_RACE * 10), "prelong": FLOOR_T}[mode]
                 dc = C_TIER - fc - rc
@@ -601,7 +601,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         summary=f"176 cm、32 歲、男、{WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%。基礎代謝 {BMR:g} kcal；每日消耗＝{BMR:g} × {ACTIVITY:g}＋當天課表運動；目標＝消耗 − 缺口（10/6–10/25 一般日 {DEFICIT} kcal；10/26 起一般日 {g1(late_def_t)} kcal；特殊日見下）。",
         rules=[f"基礎代謝（Mifflin-St Jeor，男）：10 × {WEIGHT:g} ＋ 6.25 × {HEIGHT:g} − 5 × {AGE} ＋ 5 ＝ {BMR:g} kcal；× {ACTIVITY:g}（日常活動）＝ {g1(BASE_T)} kcal。",
                f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT 用 MET {MET_HYROX:.1f}；休息日 0。",
-               f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）；12/27 10K 測試日 {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天＝碳水 355 g＋蛋白質＋脂肪 {g1(hu(FAT_FLOOR * WEIGHT * 10))} g，缺口為實際結果。週標題顯示本週缺口合計（每日消耗 − 目標）。",
+               f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）；12/27 10K 測試日 {DEFICIT} kcal。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天（10/10、10/17）與一般日相同（消耗 − 當天缺口；碳水 5 g/kg）。週標題顯示本週缺口合計（每日消耗 − 目標）。",
                "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
                f"蛋白質：固定 {g1(FIXED_P)} g＝雞蛋 × 2（{g1(item('egg', 2)['p'])}）＋Meiji 30 g × 2 瓶（60.0；早餐、晚餐各 1 瓶）＋肉片（里肌）{LUNCH_PORK_G:g} g（{g1(item('porkloin', LUNCH_PORK_G)['p'])}）。每天至少 130.0 g（1.83 g/kg）：固定食物不夠時，晚餐參考例加里肌肉片補到 130.0 g。另加午餐高麗菜、白飯與晚餐參考例（主食、肉／魚／餐點、加餐）、香蕉的蛋白質。",
                "週末晚餐參考例輪替燒肉、牛排、漢堡王（華堡＋小薯＋零卡飲料）、牛丼、鮭魚丼，肉／魚／漢堡已算進當天晚餐剩餘（2026-10-09 起不再把平日 −100 kcal 挪到週末）；長跑前一天用鮭魚丼。半馬週 10/19–10/25 與 10K 測試週 12/21–12/27 不用週末參考例。",
