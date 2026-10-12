@@ -250,3 +250,10 @@
 - 新規則排除的單趟（除已在清單的 5/14 4.75 km 4:26）：2025-09-20 0.49 km 4:46（…/15876749784）、2025-10-03 0.64 km 4:24（…/16016664513）（這兩趟原本因 <1 km 已不進每週最快，現在也不進每趟圖）、2026-05-11 4.10 km 4:49（…/18465485883）、2026-05-25 3.04 km 5:01（…/18649582344）。
 - 結果：5/11 週最快改為 5/17 4.02 km 5:35；5/25 週改為 5/27 5.02 km 5:25；全期最快 9/20 4.11 km 5:14。每週最快平均：至今 6:05（54 週）、近12個月 5:55（37 週，▲ 快 0:32，前期部分資料）、近6個月 5:53（24 週，▲ 快 0:05）、近3個月 5:37（11 週，▲ 快 0:31）。每趟圖（至今）116 → 112 點。
 - 備份 `index_template.pre_fast312_1012.html`、`UPDATE.pre_fast312_1012.md`。
+
+## 2026-10-12 早餐選填：小地瓜 2 顆
+- 使用者：「早上有時候會吃兩個小地瓜幫我新增成option讓我打勾」。`make_diet.py` 新增食物 `sweetpotato`（USDA FoodData Central SR Legacy 168483「Sweet potato, cooked, baked in skin, flesh, without salt」每 100 g：碳水 20.71、蛋白質 2.01、脂肪 0.15 g）。2 顆共 200 g：碳水 41.4 g、蛋白質 4.0 g、脂肪 0.3 g，4/4/9 計 184.3 kcal（USDA 標示 90 kcal/100 g＝180 kcal）。
+- 10/12–12/31 每天早餐（`slot=="早餐"`）在 diet.json 的 `meals[].optional_items` 加一項（id `bf-sweetpotato`，`optional:true`）；不進 `items`、`subtotal`、目標與 `text`（8:00 例行訊息不會列出）。10/25 比賽日早餐（起跑前 3 小時，比賽專用）不加；共 80 天。其他欄位與數值完全不變（已比對 diet.json）。
+- 頁面（`index_template.html` 的 `dOpt`／`dOptOn`）：早餐列「小地瓜 2 顆（共 200 g）」＋灰色「選填」標籤。打勾 key `dietEaten:YYYY-MM-DD:bf-sweetpotato`。未勾：早餐標題＝原計畫、自由餐不變。勾了：已吃加 184.3 kcal／4.0 g；早餐標題加 184.3、晚餐標題與自由餐同額減少（自由餐顯示新剩餘，下一行「已扣小地瓜 184.3 kcal（原 X kcal）」，行尾蛋白質減 4.0 g），四餐標題合計仍＝目標；全部打勾＝目標。即時重畫該天餐別（`dUpd` 收到選填 id 時重畫 `.dgs`）。
+- 測試：新增 `test_sweetpotato.py [url]`（標籤、打勾後自由餐 −184.3、標題合計不變、已吃、重新整理保留、取消恢復、key、10/25 沒有）；`test_check.py` 的「全部食物＝目標」排除未勾的選填項（備份 `test_check.pre_sweetpot1012.py`）。
+- 備份 `make_diet.pre_sweetpot1012.py`、`index_template.pre_sweetpot1012.html`、`UPDATE.pre_sweetpot1012.md`。

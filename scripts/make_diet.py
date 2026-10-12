@@ -66,6 +66,7 @@ F = {
  "creatine": dict(name="肌酸", unit="100 g", c=0, p=0, f=0, src="肌酸（一水肌酸）5 g：熱量、蛋白質、碳水、脂肪皆以 0 計，不影響任何目標"),
  "yakun_kopi": dict(name="亞坤 soya kopi O（Ya Kun Soya Milk Coffee O；暫以 Ya Kun 官方 Coffee O 熱 8 oz 計）", unit="杯", c=191, p=20, f=9, src="Ya Kun 官方飲品營養標示（app.yakun.com/nutritional-information → Ya_Kun_Drinks_NIP.jpg）Coffee O 8 oz（236.6 ml）熱、內用：每 100 ml 熱量 37.88 kcal、蛋白質 0.83 g、脂肪 0.37 g、碳水 8.07 g（糖 8%）→ 1 杯 碳水 19.1 g、蛋白質 2.0 g、脂肪 0.9 g（4/4/9 計 92.5 kcal；標示 37.88 × 2.366＝89.6 kcal）；同表 Soya Series 的 Soya Milk Coffee O 只有冰的 12 oz（數字與 Ginger Tea O 完全相同，疑為誤植）與 22 oz（17.28 kcal 與其蛋白質 1.65 g、脂肪 0.61 g、碳水 10.81 g 不符），所以不用"),
  "yakun_kaya": dict(name="亞坤咖椰吐司（Ya Kun Kaya Toast，1 份 2 片）", unit="份", c=380, p=52, f=167, src="FatSecret Singapore：Ya Kun Kaya Toast 2 slices 318 kcal、碳水 38.0 g、蛋白質 5.2 g、脂肪 16.7 g（4/4/9 計 323.1 kcal；www.fatsecret.com.sg/calories-nutrition/ya-kun/kaya-toast/2-slices）；Ya Kun 官方沒有公布吐司營養"),
+ "sweetpotato": dict(name="小地瓜（帶皮烤，吃果肉）", unit="100 g", c=207.1, p=20.1, f=1.5, src="USDA FoodData Central SR Legacy 168483「Sweet potato, cooked, baked in skin, flesh, without salt」每 100 g：碳水 20.71 g、蛋白質 2.01 g、脂肪 0.15 g（標示 90 kcal）；2 顆小地瓜共 200 g 計（選填，不算進目標）"),
  "powder":  dict(name="蛋白粉", unit="份", c=0, p=350, f=0, src="蛋白粉 1 份：蛋白質 35.0 g（依你提供）；品牌未知，碳水與脂肪未計入"),
 }
 # 午餐固定：麻辣燙（不加辣）＝肉片（里肌）160.6 g＋高麗菜 300 g，配白飯 310.5 g（2026-10-09 使用者：麻辣燙沒有豆腐；豆腐 100 g 的 83.2 kcal 改給肉片）。
@@ -538,6 +539,13 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             c, p, f = sums(m["items"])
             mo.append(dict(slot=m["slot"], title=m.get("title", ""), items=fmt_items(m["items"], m["slot"]), text_items=m.get("text_items", []),
                            subtotal=dict(carbs=g1(c), protein=g1(p), fat=g1(f), kcal=g1(kcal_t(c, p, f))), tips=m["tips"]))
+        # 2026-10-12 使用者：「早上有時候會吃兩個小地瓜幫我新增成option讓我打勾」：10/12 起每天早餐加選填項（不算進目標與任何小計）；
+        # 10/25 比賽日早餐（起跑前 3 小時）為比賽專用，不加。頁面打勾後已吃計入、晚餐自由餐剩餘扣掉。
+        if ds >= "2026-10-12":
+            for m_ in mo:
+                if m_["slot"] == "早餐":
+                    sp = item("sweetpotato", 200); sp["amount"] = "2 顆（共 200 g）"
+                    m_["optional_items"] = [dict(fmt_items([sp], "早餐")[0], optional=True)]
         train = "＋".join((f"跑步 {e['km']:g} km（{e['type']}）" if e["kind"] in ("run", "race") else
                           ("肌力（" + e["type"] + "）" if e["kind"] == "str" else e["type"])) for e in ents)
         notes = []
@@ -623,7 +631,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             (f"活動係數 {ACTIVITY:g} 依 Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天校正（手錶會高估，未完全採用）。" if ACTIVITY != 1.2 else
              f"活動係數 {ACTIVITY:g}：2026-10-06 依你的回饋（熱量估太多）由 1.3 改回 1.2；Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天只作參考（手錶會高估）。") if _B.get("watch_calibration") else "",
         ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "cabbage", "banana", "egg", "chicken", "porkloin", "meiji", "powder", "steak", "pork", "salmon", "whopper", "whopperjr", "bkfries",
-                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya")],
+                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya", "sweetpotato")],
     )
     return dict(meta=meta, days=out)
 

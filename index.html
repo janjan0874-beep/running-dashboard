@@ -177,6 +177,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dli .dnm em{display:block;font-style:normal;font-size:12px;color:var(--mut);margin-top:1px}
 .dli>b{flex:none;font-size:14px;font-variant-numeric:tabular-nums;color:var(--fg)}
 .dli input:checked+.dnm{color:var(--mut)}
+.dli .dopt{font-size:11px;font-weight:500;color:var(--mut);background:#f0f2f5;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:1px}   /* 2026-10-12 選填項（小地瓜）：灰色「選填」標籤，預設不算進目標 */
 .dli.nx{cursor:default;color:var(--mut);font-size:13px;padding-left:32px}
 .dgen{margin-top:18px;padding:0 2px;font-size:13px;color:#4b5563;line-height:1.6}
 .dgen h4{margin:0 0 4px;font-size:13.5px;color:var(--fg)}
@@ -741,29 +742,38 @@ const ckSet=(dt,id,v)=>{try{v?localStorage.setItem(CK+dt+':'+id,'1'):localStorag
 const t10=s=>Math.round(parseFloat(s)*10)||0, f10=n=>(n/10).toFixed(1);
 const ckBox=(dt,id)=>`<input type="checkbox" data-id="${id}"${ckGet(dt,id)?' checked':''} aria-label="已吃">`;
 function dSnack(d){const sn=d.dinner.example&&d.dinner.example.snack;return sn?{k:4*t10(sn.carbs)+4*t10(sn.protein)+9*t10(sn.fat),p:t10(sn.protein)}:null;}
+// 2026-10-12 選填項（make_diet.py 的 meals[].optional_items，目前只有早餐小地瓜 bf-sweetpotato）：不算進目標與餐別預設熱量；打勾後計入已吃，並從晚餐自由餐剩餘扣掉
+const dOpt=d=>{const o=[];d.meals.forEach(m=>(m.optional_items||[]).forEach(i=>o.push(i)));return o;};
+const dOptOn=d=>dOpt(d).filter(i=>ckGet(d.date,i.id)).reduce((a,i)=>({k:a.k+t10(i.kcal),p:a.p+t10(i.protein),n:a.n+[dNm(i.name)[0]]}),{k:0,p:0,n:''});
 function dItems(d){   // 可打勾的食物（十分之一 kcal／g）：各餐食物、晚餐 Meiji、晚餐自由餐（剩餘預算，扣掉另列的點心）、另加碳水點心
   const out=[]; d.meals.forEach(m=>m.items.forEach(i=>out.push({id:i.id,k:t10(i.kcal),p:t10(i.protein)})));
   (d.dinner.fixed_items||[]).forEach(i=>out.push({id:i.id,k:t10(i.kcal),p:t10(i.protein)}));
-  const sn=dSnack(d); out.push({id:'dinner-free',k:t10(d.dinner.kcal)-(sn?sn.k:0),p:t10(d.dinner.protein)-(sn?sn.p:0)});
+  dOpt(d).forEach(i=>out.push({id:i.id,k:t10(i.kcal),p:t10(i.protein)}));
+  const sn=dSnack(d), op=dOptOn(d); out.push({id:'dinner-free',k:t10(d.dinner.kcal)-(sn?sn.k:0)-op.k,p:t10(d.dinner.protein)-(sn?sn.p:0)-op.p});
   if(sn) out.push({id:'dinner-snack',k:sn.k,p:sn.p});
   return out;}
 function dProg(d){let n=0,k=0,p=0;const it=dItems(d);it.forEach(x=>{if(ckGet(d.date,x.id)){n++;k+=x.k;p+=x.p;}});return {n,tot:it.length,k,p};}
 const dSumHtml=d=>{const g=dProg(d);return `已吃 ${f10(g.k)} / ${d.targets.kcal} kcal<i>｜</i><b>蛋白質 ${f10(g.p)} / ${d.targets.protein} g</b>`;};
 const dEatHtml=d=>{const g=dProg(d);return g.n?`<i>｜</i>已吃<b>${f10(g.k)}</b>`:'';};
-function dUpd(c){const d=D.d.days[c.dataset.date];if(!d) return;const s=c.querySelector('.dsum');if(s) s.innerHTML=dSumHtml(d);const e=c.querySelector('.deat');if(e) e.innerHTML=dEatHtml(d);}
-document.addEventListener('change',e=>{const t=e.target;if(!t.matches||!t.matches('#d_week input[data-id]')) return;const c=t.closest('[data-date]');if(!c) return;ckSet(c.dataset.date,t.dataset.id,t.checked);dUpd(c);});
+function dUpd(c,id){const d=D.d.days[c.dataset.date];if(!d) return;
+  if(dOpt(d).some(i=>i.id===id)){const g=c.querySelector('.dgs');if(g) g.innerHTML=dGroups(d);}   // 選填項打勾／取消：重畫餐別（早餐、晚餐標題熱量與自由餐剩餘）
+  const s=c.querySelector('.dsum');if(s) s.innerHTML=dSumHtml(d);const e=c.querySelector('.deat');if(e) e.innerHTML=dEatHtml(d);}
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches||!t.matches('#d_week input[data-id]')) return;const c=t.closest('[data-date]');if(!c) return;ckSet(c.dataset.date,t.dataset.id,t.checked);dUpd(c,t.dataset.id);});
 // 每一行：勾選框＋食物＋份量，行尾蛋白質 g（粗體）；不顯示碳水、脂肪、時間點（跑前…）
-const dLine=(dt,id,nm,amt,p,sub)=>`<label class="dli">${ckBox(dt,id)}<span class="dnm">${nm}${amt?`<small>${amt}</small>`:''}${sub?`<em>${sub}</em>`:''}</span><b>${p} g</b></label>`;
+const dLine=(dt,id,nm,amt,p,sub,opt)=>`<label class="dli">${ckBox(dt,id)}<span class="dnm">${nm}${amt?`<small>${amt}</small>`:''}${opt?'<span class="dopt">選填</span>':''}${sub?`<em>${sub}</em>`:''}</span><b>${p} g</b></label>`;
 function dGroups(d){
   const dt=d.date, G={早餐:[],午餐:[],晚餐:[],點心:[]}, K={早餐:0,午餐:0,晚餐:0,點心:0}, cut=s=>s.replace(/^點 /,'').replace(/（[^）]*）$/,'');
   const it=i=>dLine(dt,i.id,dNm(i.name)[0].replace(' High Protein',''),i.amount,i.protein);
   d.meals.forEach(m=>{const g=m.slot.startsWith('早餐')?'早餐':m.slot.startsWith('午餐')?'午餐':'點心';
-    m.items.forEach(i=>{G[g].push(it(i));K[g]+=t10(i.kcal);});(m.text_items||[]).forEach(x=>G[g].push(`<div class="dli nx">${x.replace(/（[^）]*）$/,'')}</div>`));});
+    m.items.forEach(i=>{G[g].push(it(i));K[g]+=t10(i.kcal);});
+    (m.optional_items||[]).forEach(i=>{G[g].push(dLine(dt,i.id,dNm(i.name)[0],i.amount,i.protein,'',1));if(ckGet(dt,i.id))K[g]+=t10(i.kcal);});   // 選填：打勾才加進該餐熱量
+    (m.text_items||[]).forEach(x=>G[g].push(`<div class="dli nx">${x.replace(/（[^）]*）$/,'')}</div>`));});
   (d.dinner.fixed_items||[]).forEach(i=>{G.晚餐.push(it(i));K.晚餐+=t10(i.kcal);});
-  const ex=d.dinner.example||{}, sn=dSnack(d);
+  const ex=d.dinner.example||{}, sn=dSnack(d), op=dOptOn(d);
   const ps=(ex.parts||[]).map(q=>`${cut(q.name)} ${q.amount}`).join('＋'), eg=ex.parts?(ex.parts.length===1&&ex.food.includes(cut(ex.parts[0].name))?`${ex.food} ${ex.parts[0].amount}`:`${ex.food}（${ps}）`):ex.food?`${dNm(ex.food)[0]} ${ex.grams} g`:'';
-  G.晚餐.push(dLine(dt,'dinner-free','自由餐',`${f10(t10(d.dinner.kcal)-(sn?sn.k:0))} kcal`,f10(t10(d.dinner.protein)-(sn?sn.p:0)),eg?`例：${eg}`:''));
-  K.晚餐+=t10(d.dinner.kcal)-(sn?sn.k:0); if(sn) K.點心+=sn.k;
+  const fk=t10(d.dinner.kcal)-(sn?sn.k:0)-op.k, fp=t10(d.dinner.protein)-(sn?sn.p:0)-op.p;
+  G.晚餐.push(dLine(dt,'dinner-free','自由餐',`${f10(fk)} kcal`,f10(fp),(op.k?`已扣${op.n} ${f10(op.k)} kcal（原 ${f10(fk+op.k)} kcal）${eg?'<br>':''}`:'')+(eg?`例：${eg}`:'')));
+  K.晚餐+=fk; if(sn) K.點心+=sn.k;
   if(sn) G.點心.push(dLine(dt,'dinner-snack',dNm(ex.snack.name)[0],ex.snack.amount,ex.snack.protein));
   return Object.entries(G).filter(([,v])=>v.length).map(([k,v])=>`<div class="dgrp"><h4>${k}<span class="dmk">${f10(K[k])} kcal</span></h4>${v.join('')}</div>`).join('');
 }
@@ -771,7 +781,7 @@ function dDay(d,today,openDate){
   const isT=d.date===today;
   return `<details class="dday${isT?' today':''}" data-date="${d.date}"${d.date===openDate?' open':''}><summary><span class="dd">${+d.date.slice(5,7)}/${+d.date.slice(8,10)}<em>${d.weekday}</em>${isT?'<span class="dtag">今天</span>':''}</span>
     <span class="dk">目標<b data-k="kcal">${d.targets.kcal}</b> kcal<span class="deat">${dEatHtml(d)}</span></span></summary>
-    <div class="dbody"><div class="dsum">${dSumHtml(d)}</div>${dGroups(d)}</div></details>`;
+    <div class="dbody"><div class="dsum">${dSumHtml(d)}</div><div class="dgs">${dGroups(d)}</div></div></details>`;
 }
 function dShowWeek(wk,fromUser){
   const days=Object.values(D.d.days).filter(d=>d.week===wk).sort((a,b)=>a.date<b.date?-1:1); if(!days.length) return; dWeek=wk; const today=todayStr();
