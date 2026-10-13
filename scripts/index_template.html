@@ -420,7 +420,9 @@ const abbrM=m=>m.slice(2,4)+'/'+m.slice(5,7), abbrW=w=>w.slice(5,7)+'/'+w.slice(
 // 2026-10-12 使用者確認為 GPS 異常的單趟：不進任何配速圖與每週最快平均（里程、次數仍計入）。以 日期＋km 比對（activities.json 沒有 url；Strava https://www.strava.com/activities/18499634114）
 const PACE_EXCLUDE=[{date:'2026-05-14',km:4.75}];
 const FAST_SEC=312;   // 2026-10-12 使用者：真實最佳為 5:12/km，快於 5:12/km（pace_sec<312）的單趟一律視為 GPS 異常，不進配速圖與每週最快平均（里程、次數仍計入）
-const paceEx=r=>(r.pace_sec!=null&&r.pace_sec<FAST_SEC)||PACE_EXCLUDE.some(x=>x.date===r.date&&Math.abs(x.km-r.km)<0.005);
+const PACE_ALLOW=[{date:'2026-10-12',km:3.36}];  // 2026-10-13 使用者確認真實配速（5:09/km，https://www.strava.com/activities/20555419752），不套用 FAST_SEC
+const paceAllow=r=>PACE_ALLOW.some(x=>x.date===r.date&&Math.abs(x.km-r.km)<0.005);
+const paceEx=r=>(r.pace_sec!=null&&r.pace_sec<FAST_SEC&&!paceAllow(r))||PACE_EXCLUDE.some(x=>x.date===r.date&&Math.abs(x.km-r.km)<0.005);
 const SLOW_SEC=510;   // 2026-10-12 使用者：配速圖與每週最快平均不看慢於 8:30/km 的單趟（里程、次數等統計仍全部計入）
 const fmtP=s=>(s&&isFinite(s))?`${Math.floor(Math.round(s)/60)}:${String(Math.round(s)%60).padStart(2,'0')}`:'—';
 function paceAxis(vals){ // 只依保留的點決定範圍（上＝快），刻度每 30 或 60 秒

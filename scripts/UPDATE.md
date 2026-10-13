@@ -257,3 +257,7 @@
 - 頁面（`index_template.html` 的 `dOpt`／`dOptOn`）：早餐列「小地瓜 2 顆（共 200 g）」＋灰色「選填」標籤。打勾 key `dietEaten:YYYY-MM-DD:bf-sweetpotato`。未勾：早餐標題＝原計畫、自由餐不變。勾了：已吃加 184.3 kcal／4.0 g；早餐標題加 184.3、晚餐標題與自由餐同額減少（自由餐顯示新剩餘，下一行「已扣小地瓜 184.3 kcal（原 X kcal）」，行尾蛋白質減 4.0 g），四餐標題合計仍＝目標；全部打勾＝目標。即時重畫該天餐別（`dUpd` 收到選填 id 時重畫 `.dgs`）。
 - 測試：新增 `test_sweetpotato.py [url]`（標籤、打勾後自由餐 −184.3、標題合計不變、已吃、重新整理保留、取消恢復、key、10/25 沒有）；`test_check.py` 的「全部食物＝目標」排除未勾的選填項（備份 `test_check.pre_sweetpot1012.py`）。
 - 備份 `make_diet.pre_sweetpot1012.py`、`index_template.pre_sweetpot1012.html`、`UPDATE.pre_sweetpot1012.md`。
+
+## 2026-10-13 配速白名單（使用者確認 10/12 5:09/km 為真實）
+- `index_template.html` 新增 `PACE_ALLOW`（以 日期＋km 比對，`paceAllow()`）：清單內的單趟不套用 `FAST_SEC`（5:12）排除，會進每趟配速圖、7 趟移動平均、每週最快配速、總覽「每週最快平均」。`PACE_EXCLUDE` 仍優先排除。目前清單：2026-10-12 3.36 km 17:20 5:09/km（https://www.strava.com/activities/20555419752）。其他快於 5:12 的舊單趟照舊排除。之後要放行別趟，在 `PACE_ALLOW` 加 `{date:'YYYY-MM-DD',km:x.xx}`。
+- 備份 `index_template.pre_allow1013.html`、`UPDATE.pre_allow1013.md`。
