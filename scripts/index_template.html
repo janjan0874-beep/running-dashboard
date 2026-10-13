@@ -256,6 +256,14 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   .trtab{font-size:14px}
 }
 
+.hmcard{background:#eef4fb;border-radius:12px;padding:14px 16px;margin:0 0 12px}
+.hmcard h3{margin:0 0 10px;font-size:.95rem;color:#1d5fa3}
+.hmcard ul{list-style:none;margin:0;padding:0}
+.hmcard li{padding:9px 0;border-top:1px solid #dbe6f3}
+.hmcard li:first-child{border-top:0;padding-top:0}
+.hmcard .hk{font-size:12px;color:#6b7280}
+.hmcard .hv{font-size:1.15rem;font-weight:700;color:#1d5fa3;font-variant-numeric:tabular-nums;margin:2px 0}
+.hmcard .hd{font-size:12.5px;color:#6b7280;line-height:1.5}
 </style>
 </head>
 <body data-tab="overview">
@@ -290,6 +298,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   </section>
 
   <section class="pane" data-tab="pace">
+    <div class="hmcard" id="hmcard"></div>
     <div class="panel"><h3>每趟配速趨勢<small>點大小＝距離</small></h3><div id="c_pace" class="chart fill"></div><p class="take" id="k_pace" style="margin-top:6px"></p></div>
     <p class="note" id="n_pace"></p>
     <div class="panel"><h3>每週最快配速<small>分/公里</small></h3><div id="k_wpace" class="take"></div><div id="c_wpace" class="chart tail"></div>
@@ -444,7 +453,7 @@ async function load(){
   const g=f=>fetch('data/'+f+'?v='+Date.now()).then(r=>r.json());
   const [m,a,w,s,p,t]=await Promise.all(['monthly.json','activities.json','weekly.json','summary.json','plan.json','workouts.json'].map(g));
   D={m,a,w,s,p,t}; try{D.d=await g('diet.json');}catch(e){D.d=null;} $('updated').textContent=s.generated; $('through').textContent=s.data_through;
-  $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render();
+  $('thr').textContent=s.outlier_threshold+':00'; fixedRow(); plan(); render(); try{hmCard();}catch(e){console.error(e);}
 }
 // 期間定義：以「日曆月」計，含資料截止月；上一期為緊鄰的等長月份
 function period(n){
@@ -512,6 +521,32 @@ function fixedRow(){
   const it=[['累計里程',s.alltime.km,'km',''],['累計次數',s.alltime.runs,'次',`平均 ${s.alltime.pace}/km`],
     ['5K PR',pr['5K'],'',''],['10K PR',pr['10K'],'',''],['1K PR',pr['1K'],'',''],['1 英里 PR',pr['1 英里']||'—','','']];
   $('fixed').innerHTML=it.map(x=>`<div class="card"><div class="t">${x[0]}</div><div class="v">${x[1]}<i>${x[2]}</i></div>${x[3]?`<div class="s">${x[3]}</div>`:''}</div>`).join('');
+}
+
+// 2026-10-13 半馬分析卡（配速分頁）：每次載入依 activities.json 與今天日期自動計算，不受期間按鈕影響
+function hmCard(){
+  const el=$('hmcard'); if(!el||!D.a) return;
+  const GOAL=7200, GP=341, HM=21.0975, md=s=>+s.slice(5,7)+'/'+ +s.slice(8,10);
+  const t=new Date(), today=new Date(Date.UTC(t.getFullYear(),t.getMonth(),t.getDate()));
+  const iso=d=>d.toISOString().slice(0,10), back=n=>iso(new Date(today-n*dayMs));
+  const d56=back(56), d28=back(28), ms=x=>{x=Math.round(x);return `${Math.floor(x/60)}:${String(x%60).padStart(2,'0')}`;};
+  const hm=x=>{x=Math.round(x);return `${Math.floor(x/3600)}:${String(Math.floor(x%3600/60)).padStart(2,'0')}:${String(x%60).padStart(2,'0')}`;};
+  const ok=r=>!r.outlier&&r.pace_sec&&r.pace_sec<=SLOW_SEC&&!paceEx(r), sec=r=>hms(r.time);
+  const R8=D.a.filter(r=>r.date>=d56), R4=D.a.filter(r=>r.date>=d28);
+  const it=[];
+  const C=R8.filter(r=>ok(r)&&r.km>=5).map(r=>({r,p:sec(r)*Math.pow(HM/r.km,1.06)})).sort((a,b)=>a.p-b.p);
+  if(C.length){const b=C[0],df=Math.round(b.p-GOAL),pp=b.p/HM,g=Math.round(pp-GP);
+    it.push(['半馬預測（Riegel）',hm(b.p),`目標 2:00:00，${df<=0?'快 '+ms(-df):'慢 '+ms(df)}。依 ${md(b.r.date)} 的 ${b.r.km} km（${b.r.pace}/km）推算。`]);
+    it.push(['預測配速 vs 目標 5:41',`${ms(pp)}/km`,g===0?'與目標配速相同。':`比目標${g<0?'快':'慢'} ${Math.abs(g)} 秒/km。`+(C[1]?`次佳推算 ${hm(C[1].p)}（${md(C[1].r.date)} ${C[1].r.km} km）。`:'')]);}
+  const F=R4.filter(r=>r.pace_sec&&r.pace_sec<390);
+  if(R4.length) it.push(['近 4 週快於 6:30 的比例',`${Math.round(F.length/R4.length*100)}%`,`${R4.length} 趟中 ${F.length} 趟。80/20 原則建議 20% 以下；輕鬆跑目標 7:10/km。`]);
+  if(R8.length){const L=R8.reduce((a,b)=>b.km>a.km?b:a);
+    it.push(['近 8 週最長一趟',`${L.km.toFixed(1)} km`,`${md(L.date)}，${L.pace}/km。比半馬少 ${(HM-L.km).toFixed(1)} km。`]);}
+  const mon=new Date(today-((today.getUTCDay()+6)%7)*dayMs), W=[];
+  for(let i=8;i>=1;i--){const a=iso(new Date(mon-i*7*dayMs)),b=iso(new Date(mon-(i-1)*7*dayMs));W.push({w:a,km:D.a.filter(r=>r.date>=a&&r.date<b).reduce((s,r)=>s+r.km,0)});}
+  const lw=W[W.length-1],pk=W.reduce((a,b)=>b.km>a.km?b:a),av=W.reduce((s,x)=>s+x.km,0)/W.length;
+  it.push(['上週跑量',`${lw.km.toFixed(1)} km`,`近 8 週平均 ${av.toFixed(1)} km，高峰 ${pk.km.toFixed(1)} km（${md(pk.w)} 週）。`]);
+  el.innerHTML='<h3>半馬分析（10/25，目標 2:00）</h3><ul>'+it.map(x=>`<li><div class="hk">${x[0]}</div><div class="hv">${x[1]}</div><div class="hd">${x[2]}</div></li>`).join('')+'</ul>';
 }
 function render(){
   if(curTab==='train'){ if(D.t) trainRender(); return; }
