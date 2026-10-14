@@ -1,17 +1,17 @@
 {
- "through": "2026-10-12",
+ "through": "2026-10-13",
  "first_workout": "2025-03-22",
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
  "run_through": "2026-10-12",
- "workout_through": "2026-10-11",
+ "workout_through": "2026-10-13",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
   "HIIT"
  ],
  "type_counts": {
-  "Workout": 209,
+  "Workout": 210,
   "HIIT": 1,
   "Swim": 2,
   "Stair-Stepper": 1
@@ -2785,6 +2785,19 @@
    "cal": 199,
    "strength": true,
    "url": "https://www.strava.com/activities/20538416960"
+  },
+  {
+   "date": "2026-10-13",
+   "start": "22:29",
+   "name": "Night Activity",
+   "type": "Workout",
+   "elapsed": "0:32:22",
+   "elapsed_sec": 1942,
+   "avg_hr": 98,
+   "max_hr": 126,
+   "cal": 82,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20569174210"
   }
  ],
  "weekly": [
@@ -3940,15 +3953,15 @@
    "week": "2026-10-12",
    "complete": false,
    "run_sec": 1040,
-   "n": 0,
-   "n_workout": 0,
+   "n": 1,
+   "n_workout": 1,
    "n_hiit": 0,
-   "strength_sec": 0,
+   "strength_sec": 1942,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 0,
-   "hr_sum": 0,
-   "hr_n": 0
+   "cal": 82,
+   "hr_sum": 98,
+   "hr_n": 1
   }
  ],
  "monthly": [
@@ -4222,15 +4235,15 @@
    "month": "2026-10",
    "run_n": 6,
    "run_sec": 10888,
-   "n": 4,
-   "n_workout": 4,
+   "n": 5,
+   "n_workout": 5,
    "n_hiit": 0,
-   "strength_sec": 14155,
+   "strength_sec": 16097,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 1252,
-   "hr_sum": 462,
-   "hr_n": 4
+   "cal": 1334,
+   "hr_sum": 560,
+   "hr_n": 5
   }
  ]
 }
