@@ -253,37 +253,39 @@ def pick_sz(pp):
 # 只替換原本排到薩莉亞的那些天的晚餐參考例；晚餐剩餘預算、每日目標、輪替日期都不變（參考例在預算算完後才換）。
 # 份量：雞翅 1–8 隻、牛排（沙朗，熟）10–250 g 每 5 g、義大利麵（熟）0–400 g 每 5 g；碳水／蛋白質／脂肪都不超過晚餐剩餘，
 # 在這之內讓熱量、碳水、蛋白質、脂肪最接近剩餘（相對誤差平方和最小）。牛排的黑胡椒醬、義大利麵醬汁算在「醬料／油脂」。
-SZ_COMBOS = [("薩莉亞 雞翅＋牛排", "steak", range(10, 251, 5)), ("薩莉亞 雞翅＋義大利麵", "pasta", range(0, 401, 5))]
+SZ_WINGS, SZ_STEAK_G, SZ_PASTA_G = 5, 150, 250   # 2026-10-14 使用者：只能整份點餐。雞翅 1 份＝5 隻；沙朗牛排 1 份＝熟重 150 g（薩莉亞未公開，取標準份量）；義大利麵 1 盤＝熟麵 250 g（乾麵約 100 g）
+SZ_COMBOS = [("薩莉亞 雞翅＋牛排", "steak", SZ_STEAK_G), ("薩莉亞 雞翅＋義大利麵", "pasta", SZ_PASTA_G)]
 SZ_CHANGED = []
 def sz_override(out):
     n = 0
     for ds in sorted(out):
         day = out[ds]; dn = day["dinner"]; ex0 = dn["example"]
         if not ex0["food"].startswith("薩莉亞"): continue
-        name, key, rng = SZ_COMBOS[n % 2]; n += 1
+        name, key, g = SZ_COMBOS[n % 2]; n += 1
         B = [hu(float(dn[k]) * 10) for k in ("carbs", "protein", "fat")]
-        BK = kcal_t(*B)
-        best = None
-        for w in range(1, 9):
-            for g in rng:
-                parts = [item("sz_wing", w), item(key, g)]
-                c, p, f = sums(parts)
-                if c > B[0] or p > B[1] or f > B[2]: continue
-                err = sum(((b - x) / max(b, 1)) ** 2 for b, x in zip(B + [BK], [c, p, f, kcal_t(c, p, f)]))
-                if best is None or err < best[0]: best = (err, parts, c, p, f)
-        assert best, ds
-        _, parts, c, p, f = best
-        parts = [q for q in parts if q["c"] or q["p"] or q["f"]]
-        other_fat = B[2] - f; left = B[0] - c
-        nm = lambda q: "點 " + _pn(q).replace("薩莉亞 ", "") if q["key"] == "sz_wing" else "點 " + {"steak": "沙朗牛排（Sirloin Steak）", "pasta": "義大利麵（熟）"}[q["key"]].replace("（熟）", "")
-        body = "＋".join(f"{nm(q)} {q['amount']}" for q in parts)
-        ex = dict(food=name, treat=True, parts=[dict(name=nm(q), amount=q["amount"], carbs=g1(q["c"]), protein=g1(q["p"]), fat=g1(q["f"])) for q in parts],
-                  carbs=g1(c), protein=g1(p), fat=g1(f), other_fat=g1(other_fat))
-        ex["text"] = f"{name}：{body}（{_mac(c, p, f)}）＋青菜＋醬料／油脂 {g1(other_fat)} g" + (f"；還剩碳水 {g1(left)} g" if left >= 10 else "")
+        parts = [item("sz_wing", SZ_WINGS), item(key, g)]
+        c0 = sums(parts)[0]
+        if key == "steak" and B[0] - c0 > 0:   # 牛排日：剩下的碳水加點白飯（整數克）
+            rg = int((B[0] - c0) / F["rice"]["c"] * 100)
+            if rg > 0: parts.append(item("rice", rg))
+        c, p, f = sums(parts)
+        nm = lambda q: {"sz_wing": "點 雞翅（Chicken Wing）", "steak": f"點 沙朗牛排（Sirloin Steak，1 份熟重 {SZ_STEAK_G} g）", "pasta": f"點 義大利麵（1 盤，熟麵 {SZ_PASTA_G} g）", "rice": "加點白飯（Steamed Rice）"}[q["key"]]
+        amt = lambda q: {"sz_wing": f"{SZ_WINGS} 隻（1 份）", "steak": "1 份", "pasta": "1 盤"}.get(q["key"], q["amount"])
+        body = "＋".join(f"{nm(q)} {amt(q)}" for q in parts)
+        other_fat = max(0, B[2] - f); left = B[0] - c
+        over = [(lab, x - b) for lab, x, b in (("碳水", c, B[0]), ("蛋白質", p, B[1]), ("脂肪", f, B[2]))]
+        dk = kcal_t(c, p, f) - kcal_t(*B)
+        ex = dict(food=name, treat=True, parts=[dict(name=nm(q), amount=amt(q), carbs=g1(q["c"]), protein=g1(q["p"]), fat=g1(q["f"])) for q in parts],
+                  carbs=g1(c), protein=g1(p), fat=g1(f), kcal=g1(kcal_t(c, p, f)), other_fat=g1(other_fat),
+                  over={lab: g1(v) for lab, v in over if v > 0}, kcal_vs_allowance=g1(dk))
+        ov = "、".join(f"{lab} +{g1(v)} g" for lab, v in over if v > 0)
+        ex["text"] = (f"{name}：{body}（{_mac(c, p, f)}，{g1(kcal_t(c, p, f))} kcal）"
+                      + (f"；超出晚餐剩餘：{ov}；熱量{'超出 +' if dk >= 0 else '比剩餘少 '}{g1(abs(dk))} kcal" if ov else f"＋青菜＋醬料／油脂 {g1(other_fat)} g")
+                      + (f"；還剩碳水 {g1(left)} g" if left >= 10 else ""))
         day["text"] = day["text"].replace(f"（例：{ex0['text']}）", f"（例：{ex['text']}）")
         assert ex["text"] in day["text"], ds
         dn["example"] = ex
-        SZ_CHANGED.append((ds, name, ex["text"], g1(kcal_t(c, p, f))))
+        SZ_CHANGED.append((ds, name, ex["text"], g1(kcal_t(c, p, f)), [(l, v) for l, v in over], dk))
 
 def build():
     """先用 183 算出 D 以外的日子的缺口，反推 10/26 起一般日的統一缺口 D；再依晚餐剩餘算週末移轉、選薩莉亞日，最後重算。"""
