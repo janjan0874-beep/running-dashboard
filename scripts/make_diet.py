@@ -265,9 +265,6 @@ def sz_override(out):
         B = [hu(float(dn[k]) * 10) for k in ("carbs", "protein", "fat")]
         parts = [item("sz_wing", SZ_WINGS), item(key, g)]
         c0 = sums(parts)[0]
-        if key == "steak" and B[0] - c0 > 0:   # 牛排日：剩下的碳水加點白飯（整數克）
-            rg = int((B[0] - c0) / F["rice"]["c"] * 100)
-            if rg > 0: parts.append(item("rice", rg))
         c, p, f = sums(parts)
         nm = lambda q: {"sz_wing": "點 雞翅（Chicken Wing）", "steak": f"點 沙朗牛排（Sirloin Steak，1 份熟重 {SZ_STEAK_G} g）", "pasta": f"點 義大利麵（1 盤，熟麵 {SZ_PASTA_G} g）", "rice": "加點白飯（Steamed Rice）"}[q["key"]]
         amt = lambda q: {"sz_wing": f"{SZ_WINGS} 隻（1 份）", "steak": "1 份", "pasta": "1 盤"}.get(q["key"], q["amount"])
