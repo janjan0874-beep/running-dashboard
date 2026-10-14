@@ -286,3 +286,6 @@
 - 備份 `make_diet.pre_szwings1014.py`、`UPDATE.pre_szwings1014.md`；舊 diet.json `/tmp/diet.pre_szwings1014.json`。
 - **2026-10-14 11:56 更正：只能整份點餐**（取代上面「1–8 隻／10–250 g」的份量規則）：雞翅＝1 份 5 隻（`SZ_WINGS`）；沙朗牛排＝1 份熟重 150 g（`SZ_STEAK_G`，薩莉亞沒有公布重量，用標準份量）；義大利麵＝1 盤熟麵 250 g（`SZ_PASTA_G`，大約是乾麵 100 g）。超出晚餐剩餘時照樣排這個組合，參考例寫實際合計和「超出晚餐剩餘：蛋白質 +X g、脂肪 +Y g；熱量超出／比剩餘少 Z kcal」（`example.kcal`、`example.over`、`example.kcal_vs_allowance`）。牛排日如果還有剩的碳水，加點白飯（整數克）；義大利麵日剩的碳水寫「還剩碳水」。目標、晚餐預算、日期都不變。26 天全部超出蛋白質與脂肪（最多蛋白質 +75.0 g、脂肪 +34.8 g），23 天熱量超出（最多 +610.0 kcal）。備份 `make_diet.pre_szwhole1014.py`、`UPDATE.pre_szwhole1014.md`、`/tmp/diet.pre_szwhole1014.json`。
 - **2026-10-14 12:50 更正：牛排日不加白飯**：薩莉亞牛排日的組合只有雞翅 5 隻＋沙朗牛排 1 份（150 g），不再加點白飯；剩下的碳水寫成「還剩碳水 X g」。其他規則不變。備份 `make_diet.pre_sznorice1014.py`、`UPDATE.pre_sznorice1014.md`、`/tmp/diet.pre_sznorice1014.json`。
+
+## 2026-10-15 薩莉亞牛排日不喝晚餐 Meiji（使用者核准）
+- 13 個牛排日（10/6、10/12、10/19、10/26、11/2、11/9、11/16、11/23、11/30、12/7、12/14、12/21、12/28；`sz_override` 的牛排組合）晚餐沒有 Meiji：`dinner.fixed_items` 空、沒有 `dinner-meiji` 打勾框，晚餐剩餘（kcal／碳水／蛋白質／脂肪）加回 Meiji 的 178.1 kcal／9.8／30.0／2.1；每日目標、早餐 Meiji 不變，當天 Meiji 只有 1 瓶（`day.meiji_bottles=1`）。`text` 晚餐段改「（不喝 Meiji）自由餐剩餘」，`protein_note` 固定改 84.7 g。蛋白質下限 130 g 以「目標蛋白質 − 晚餐剩餘蛋白質 ＋ 組合蛋白質」檢查。其他天不變。備份 `make_diet.pre_sznomeiji1015.py`、`UPDATE.pre_sznomeiji1015.md`、`/tmp/diet.pre_sznomeiji1015.json`。

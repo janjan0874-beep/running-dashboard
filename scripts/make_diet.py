@@ -262,6 +262,17 @@ def sz_override(out):
         day = out[ds]; dn = day["dinner"]; ex0 = dn["example"]
         if not ex0["food"].startswith("薩莉亞"): continue
         name, key, g = SZ_COMBOS[n % 2]; n += 1
+        if key == "steak":   # 2026-10-15 使用者：薩莉亞牛排日晚餐不喝 Meiji；晚餐剩餘不再扣這瓶（目標不變）
+            mj = item("meiji", 1)
+            for k, v in (("carbs", mj["c"]), ("protein", mj["p"]), ("fat", mj["f"])): dn[k] = g1(hu(float(dn[k]) * 10) + v)
+            dn["kcal"] = g1(hu(float(dn["kcal"]) * 10) + kcal_t(mj["c"], mj["p"], mj["f"]))
+            dn["fixed_items"] = []; dn["fixed_subtotal"] = dict(carbs="0.0", protein="0.0", fat="0.0", kcal="0.0")
+            dn["tips"] = ["薩莉亞牛排日晚餐不喝 Meiji（使用者 2026-10-15 決定），其餘依下面的剩餘預算。"] + dn["tips"][1:]
+            day["text"] = day["text"].replace("晚餐：Meiji High Protein 1 瓶＋自由餐剩餘：", "晚餐：（不喝 Meiji）自由餐剩餘：")
+            day["meiji_bottles"] = 1
+            import re
+            m_ = re.search(r"固定 114\.7 g(.*?)(\d+\.\d) g$", day["targets"]["protein_note"])
+            if m_: day["targets"]["protein_note"] = f"固定 84.7 g（晚餐不喝 Meiji）{m_.group(1)}{g1(hu(float(m_.group(2)) * 10) + mj['p'])} g"
         B = [hu(float(dn[k]) * 10) for k in ("carbs", "protein", "fat")]
         parts = [item("sz_wing", SZ_WINGS), item(key, g)]
         c0 = sums(parts)[0]
