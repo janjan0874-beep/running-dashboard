@@ -53,6 +53,7 @@ F = {
  "fish":    dict(name="魚片（鯛魚，熟）", unit="100 g", c=0, p=263, f=17.2, src="USDA FDC 173699 Fish, snapper, mixed species, cooked, dry heat：蛋白質 26.3 g、脂肪 1.72 g、碳水 0 g／100 g"),
  "shrimp":  dict(name="鮮蝦（熟）", unit="100 g", c=2, p=240, f=2.8, src="USDA FDC 175180 Crustaceans, shrimp, cooked：蛋白質 24.0 g、脂肪 0.28 g、碳水 0.2 g／100 g"),
  "tomato":  dict(name="番茄", unit="100 g", c=38.9, p=8.8, f=2, src="USDA FDC 170457 Tomatoes, red, ripe, raw：碳水 3.89 g、蛋白質 0.88 g、脂肪 0.2 g／100 g"),
+ "sz_wing": dict(name="薩莉亞 雞翅（Chicken Wing，烤）", unit="隻", c=0, p=91, f=66, src="薩莉亞新加坡官方未公開營養成分（菜單只標 5 隻／8 隻，第三方菜單站估 5 隻約 500 kcal）；以 USDA FDC 173638「Chicken, broilers or fryers, wing, meat and skin, cooked, roasted」每 100 g 蛋白質 26.86 g、脂肪 19.46 g、碳水 0 g，1 隻可食部分 34 g 計：蛋白質 9.1 g、脂肪 6.6 g（5 隻 4/4/9 計 479.0 kcal）"),
  "sz_bolo": dict(name="薩莉亞 肉醬義大利麵（Spaghetti Bolognese）", unit="份", c=802, p=192, f=160, src="薩莉亞新加坡未公開營養成分；以薩莉亞日本（kalori.jp 推定值）ミートソースボロニア風 1 份：碳水 80.2 g、蛋白質 19.2 g、脂肪 16.0 g"),
  "sz_doria": dict(name="薩莉亞 米蘭風焗飯（Milano Style Doria）", unit="份", c=723, p=167, f=222, src="薩莉亞新加坡未公開營養成分；以薩莉亞日本（kalori.jp 推定值）ミラノ風ドリア 1 份：碳水 72.3 g、蛋白質 16.7 g、脂肪 22.2 g"),
  "sz_hamburg": dict(name="薩莉亞 漢堡排（Hamburg Steak）", unit="份", c=210, p=307, f=389, src="薩莉亞新加坡未公開營養成分；以薩莉亞日本（kalori.jp 推定值）ハンバーグステーキ 1 份：碳水 21.0 g、蛋白質 30.7 g、脂肪 38.9 g"),
@@ -128,7 +129,7 @@ RACE_BREAKFAST_C = 1420   # 142 g（2 g/kg），起跑前 3 小時
 def hu(x):  # 四捨五入到整數（十分之一克）
     return int(x + 0.5) if x >= 0 else -int(-x + 0.5)
 
-UNIT_WORD = {"powder": "份", "egg": "顆", "banana": "根", "meiji": "瓶", "whopper": "個", "whopperjr": "個", "bkfries": "份",
+UNIT_WORD = {"powder": "份", "egg": "顆", "banana": "根", "meiji": "瓶", "whopper": "個", "whopperjr": "個", "bkfries": "份", "sz_wing": "隻",
              "yakun_kopi": "杯", "yakun_kaya": "份", "sz_bolo": "份", "sz_doria": "份", "sz_hamburg": "份", "sz_chicken": "份", "sz_salad": "份"}
 
 def item(key, qty, when=""):
@@ -247,6 +248,42 @@ def pick_sz(pp):
             out[k] = [n for n in order if n in fit]
             ptr = (SZ_ROT.index(out[k][0]) + 1) % len(SZ_ROT)
     return out, short
+
+# 2026-10-14 使用者更正：薩莉亞一律點「雞翅＋牛排」或「雞翅＋義大利麵」（依日期輪流，從雞翅＋牛排開始）。
+# 只替換原本排到薩莉亞的那些天的晚餐參考例；晚餐剩餘預算、每日目標、輪替日期都不變（參考例在預算算完後才換）。
+# 份量：雞翅 1–8 隻、牛排（沙朗，熟）10–250 g 每 5 g、義大利麵（熟）0–400 g 每 5 g；碳水／蛋白質／脂肪都不超過晚餐剩餘，
+# 在這之內讓熱量、碳水、蛋白質、脂肪最接近剩餘（相對誤差平方和最小）。牛排的黑胡椒醬、義大利麵醬汁算在「醬料／油脂」。
+SZ_COMBOS = [("薩莉亞 雞翅＋牛排", "steak", range(10, 251, 5)), ("薩莉亞 雞翅＋義大利麵", "pasta", range(0, 401, 5))]
+SZ_CHANGED = []
+def sz_override(out):
+    n = 0
+    for ds in sorted(out):
+        day = out[ds]; dn = day["dinner"]; ex0 = dn["example"]
+        if not ex0["food"].startswith("薩莉亞"): continue
+        name, key, rng = SZ_COMBOS[n % 2]; n += 1
+        B = [hu(float(dn[k]) * 10) for k in ("carbs", "protein", "fat")]
+        BK = kcal_t(*B)
+        best = None
+        for w in range(1, 9):
+            for g in rng:
+                parts = [item("sz_wing", w), item(key, g)]
+                c, p, f = sums(parts)
+                if c > B[0] or p > B[1] or f > B[2]: continue
+                err = sum(((b - x) / max(b, 1)) ** 2 for b, x in zip(B + [BK], [c, p, f, kcal_t(c, p, f)]))
+                if best is None or err < best[0]: best = (err, parts, c, p, f)
+        assert best, ds
+        _, parts, c, p, f = best
+        parts = [q for q in parts if q["c"] or q["p"] or q["f"]]
+        other_fat = B[2] - f; left = B[0] - c
+        nm = lambda q: "點 " + _pn(q).replace("薩莉亞 ", "") if q["key"] == "sz_wing" else "點 " + {"steak": "沙朗牛排（Sirloin Steak）", "pasta": "義大利麵（熟）"}[q["key"]].replace("（熟）", "")
+        body = "＋".join(f"{nm(q)} {q['amount']}" for q in parts)
+        ex = dict(food=name, treat=True, parts=[dict(name=nm(q), amount=q["amount"], carbs=g1(q["c"]), protein=g1(q["p"]), fat=g1(q["f"])) for q in parts],
+                  carbs=g1(c), protein=g1(p), fat=g1(f), other_fat=g1(other_fat))
+        ex["text"] = f"{name}：{body}（{_mac(c, p, f)}）＋青菜＋醬料／油脂 {g1(other_fat)} g" + (f"；還剩碳水 {g1(left)} g" if left >= 10 else "")
+        day["text"] = day["text"].replace(f"（例：{ex0['text']}）", f"（例：{ex['text']}）")
+        assert ex["text"] in day["text"], ds
+        dn["example"] = ex
+        SZ_CHANGED.append((ds, name, ex["text"], g1(kcal_t(c, p, f))))
 
 def build():
     """先用 183 算出 D 以外的日子的缺口，反推 10/26 起一般日的統一缺口 D；再依晚餐剩餘算週末移轉、選薩莉亞日，最後重算。"""
@@ -601,6 +638,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         if ds in TREAT and TRC[0] == "漢堡王": BK_PENDING[0] = TR != "漢堡王"
         if TR in WD_ROT: WD_PTR[0] = (WD_ROT.index(TR) + 1) % len(WD_ROT)
         d += dt.timedelta(days=1)
+    sz_override(out)
     weeks = {}
     for x in out.values():
         w = weeks.setdefault(x["week"], dict(gap_t=0, days=0, first=x["date"]))
@@ -631,7 +669,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             (f"活動係數 {ACTIVITY:g} 依 Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天校正（手錶會高估，未完全採用）。" if ACTIVITY != 1.2 else
              f"活動係數 {ACTIVITY:g}：2026-10-06 依你的回饋（熱量估太多）由 1.3 改回 1.2；Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天只作參考（手錶會高估）。") if _B.get("watch_calibration") else "",
         ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "cabbage", "banana", "egg", "chicken", "porkloin", "meiji", "powder", "steak", "pork", "salmon", "whopper", "whopperjr", "bkfries",
-                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya", "sweetpotato")],
+                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_wing", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya", "sweetpotato")],
     )
     return dict(meta=meta, days=out)
 
