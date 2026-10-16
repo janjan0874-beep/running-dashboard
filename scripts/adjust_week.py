@@ -15,6 +15,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ADJ = os.path.join(HERE, "plan_adjust.json")
 NO_MAKEUP = {"2026-10-19", "2026-12-21"}
 CAP = Decimal("3.0")
+# 2026-10-16 使用者手動覆蓋（霾害）：10/17 輕鬆跑 8 km、10/18 8 km（核准的長跑例外）；動態補量不得改動這些日子
+MANUAL_LOCK = {"2026-10-17", "2026-10-18"}
 HARD = ("長跑", "節奏", "間歇", "目標配速", "測試", "配速模擬")
 
 def load():
@@ -48,7 +50,7 @@ def compute(today=None):
     gap = Decimal(str(make_plan.WEEK_TOTAL[wk])) - act - sum(Decimal(str(x["km"])) for x in rem)
     for x in rem:
         if gap <= 0: break
-        if x["kind"] != "run" or any(h in x["type"] for h in HARD): continue
+        if x["kind"] != "run" or x["date"] in MANUAL_LOCK or any(h in x["type"] for h in HARD): continue
         # 2026-10-09 12:32 使用者：補量後的距離一律無條件進位到整數 km（仍不超過原計畫 +3.0 km；原計畫非整數時取不超過上限的最大整數）
         orig = Decimal(str(x["km"])); new = (orig + min(gap, CAP)).to_integral_value(rounding=ROUND_CEILING)
         if new > orig + CAP: new = (orig + CAP).to_integral_value(rounding=ROUND_FLOOR)
