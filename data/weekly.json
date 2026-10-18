@@ -568,9 +568,9 @@
  },
  {
   "week": "2026-10-12",
-  "km": 3.36,
-  "runs": 1,
-  "partial": true,
-  "rolling4": 18.22
+  "km": 8.85,
+  "runs": 2,
+  "partial": false,
+  "rolling4": 15.55
  }
 ]

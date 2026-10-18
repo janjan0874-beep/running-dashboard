@@ -191,12 +191,12 @@
  },
  {
   "month": "2026-10",
-  "runs": 6,
-  "km": 30.35,
-  "hours": 3.02,
-  "time": "3:01:28",
-  "pace": "5:59",
-  "pace_sec": 359,
+  "runs": 7,
+  "km": 35.84,
+  "hours": 3.52,
+  "time": "3:31:04",
+  "pace": "5:53",
+  "pace_sec": 353,
   "outlier": false
  }
 ]
