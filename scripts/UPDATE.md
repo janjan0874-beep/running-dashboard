@@ -297,3 +297,7 @@
 - **手動覆蓋寫法**：`adjust_week.py` 新增 `MANUAL_LOCK = {"2026-10-17", "2026-10-18"}`，動態補量不得改動這兩天（不會把 10/17 輕鬆跑加量）；DAYS 本身就是新內容，所以也不會被還原。10/16 的 plan_adjust 條目（3→6）保留。之後要取消這個覆蓋，要使用者明確說，並同時改回 DAYS 與 WEEK_TOTAL 並移除 MANUAL_LOCK。
 - **10/25 半馬可能因霾害取消**（使用者說可能下週）：**目前只記錄，賽週（10/19 週）與 10/25 的計畫、飲食一律未改**。使用者確定後再改。
 - 備份 `make_plan.pre_haze1016.py`、`adjust_week.pre_haze1016.py`、`plan_adjust.pre_haze1016.json`、`UPDATE.pre_haze1016.md`；舊 JSON `/tmp/diet.pre_haze1016.json`、`/tmp/plan.pre_haze1016.json`。
+
+## 2026-10-17 8:00 例行
+- 新增 workouts.csv：2026-10-16 07:36 Morning Activity Workout 0:57:13（…/20602943834）。10/13–10/16 沒有新跑步（10/14 6 km、10/16 6 km 沒跑，不補）。週 10/12 已跑 3.36 km；10/17、10/18 為 MANUAL_LOCK，未改。
+- `test_tabs.py` 的 10/12 週逐日 km 預期改為霾害覆蓋後的 3／6／6／8／8（備份 `test_tabs.pre_haze1017.py`）。
