@@ -4,14 +4,14 @@
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
  "run_through": "2026-10-18",
- "workout_through": "2026-10-17",
+ "workout_through": "2026-10-18",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
   "HIIT"
  ],
  "type_counts": {
-  "Workout": 212,
+  "Workout": 213,
   "HIIT": 1,
   "Swim": 2,
   "Stair-Stepper": 1
@@ -2824,6 +2824,19 @@
    "cal": 395,
    "strength": true,
    "url": "https://www.strava.com/activities/20619213260"
+  },
+  {
+   "date": "2026-10-18",
+   "start": "11:42",
+   "name": "Lunch Activity",
+   "type": "Workout",
+   "elapsed": "0:45:13",
+   "elapsed_sec": 2713,
+   "avg_hr": 107,
+   "max_hr": 128,
+   "cal": 164,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20629419737"
   }
  ],
  "weekly": [
@@ -3979,15 +3992,15 @@
    "week": "2026-10-12",
    "complete": true,
    "run_sec": 2816,
-   "n": 3,
-   "n_workout": 3,
+   "n": 4,
+   "n_workout": 4,
    "n_hiit": 0,
-   "strength_sec": 8474,
+   "strength_sec": 11187,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 759,
-   "hr_sum": 343,
-   "hr_n": 3
+   "cal": 923,
+   "hr_sum": 450,
+   "hr_n": 4
   }
  ],
  "monthly": [
@@ -4261,15 +4274,15 @@
    "month": "2026-10",
    "run_n": 7,
    "run_sec": 12664,
-   "n": 7,
-   "n_workout": 7,
+   "n": 8,
+   "n_workout": 8,
    "n_hiit": 0,
-   "strength_sec": 22629,
+   "strength_sec": 25342,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 2011,
-   "hr_sum": 805,
-   "hr_n": 7
+   "cal": 2175,
+   "hr_sum": 912,
+   "hr_n": 8
   }
  ]
 }
