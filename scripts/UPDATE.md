@@ -317,3 +317,11 @@
 - 週 10/12：跑量 8.85／13.36 km＝66.2%（<80%）；重訓 4 次（10/13、10/16、10/17、10/18）。
 - 決策：維持 `DEFICIT = 183`、D＝219.5 不變；下週為半馬週（不加大缺口、10/23–10/24 補碳照舊），跑量不足不下修賽週碳水。diet.json 未變（逐日比對）。12/31 計畫合計 16094.9 kcal（目標 16093）。
 - 備份：`make_diet.pre_sunday1018.py`、`UPDATE.pre_sunday1018.md`、`/tmp/activities.pre_sun1018.csv`、`/tmp/diet.pre_sunday1018.json`。
+
+## 2026-10-19 8:00 例行
+- 新增 workouts.csv：2026-10-18 11:42 Lunch Activity Workout 0:45:13（avg 107／max 128 bpm、164 kcal，…/20629419737）。10/18 Lunch Run 5.49 km 已在 activities.csv（週日飲食調整時補入），10/18 計畫 10 km 只跑 5.49 km（不補）。10/19 尚無活動。
+- 週 10/12 最終：跑 8.85／13.36 km、Workout 4 次。週 10/19（半馬週）不補量。test_tabs 390 700 通過、無 JS 錯誤；線上 summary generated 2026-10-19。
+
+## 2026-10-20 8:00 例行
+- 新增 activities.csv：2026-10-19 Night Run（戶外）4.26 km、22:20、5:14/km（https://www.strava.com/activities/20648066627）。10/19–10/20 沒有新 Workout。
+- 週 10/19（半馬週，不補量）已跑 4.26／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤。
