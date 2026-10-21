@@ -325,3 +325,6 @@
 ## 2026-10-20 8:00 例行
 - 新增 activities.csv：2026-10-19 Night Run（戶外）4.26 km、22:20、5:14/km（https://www.strava.com/activities/20648066627）。10/19–10/20 沒有新 Workout。
 - 週 10/19（半馬週，不補量）已跑 4.26／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤。
+
+## 2026-10-21 8:00 例行
+- Strava 10/20、10/21 沒有新活動（10/20 重訓沒有 Workout 紀錄）。週 10/19（半馬週，不補量）已跑 4.26／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤。
