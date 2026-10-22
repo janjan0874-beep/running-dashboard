@@ -373,7 +373,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             rice_g = hu((RACE_BREAKFAST_C - bc) / F["rice"]["c"] * 100)
             meals.append(dict(slot="早餐（起跑前 3 小時）", items=base + [item("rice", rice_g)] + ([item("creatine", 5)] if ds >= CREATINE_FROM else []),
                               tips=[f"早餐碳水 {g1(RACE_BREAKFAST_C)} g（2 g/kg）；只吃平常吃過、低纖維的食物。"]))
-            meals.append(dict(slot="比賽中", items=[], text_items=["能量膠 × 2（10 km、16 km 各 1 包，配水）"],
+            meals.append(dict(slot="比賽中", items=[], text_items=["能量膠 × 2（11.6 km、16.2 km 補給站各 1 包，配水）"],
                               tips=["能量膠沒有指定品牌，碳水未計入今日總量；用 10/11、10/18 演練過的同一款。"]))
         else:
             meals.append(dict(slot="早餐", items=[item("egg", 2), item("meiji", 1)] + ([item("creatine", 5)] if ds >= CREATINE_FROM else []), tips=[]))   # 2026-10-09：早餐不喝蛋白粉（太飽），只留雞蛋 2 顆＋Meiji 1 瓶；少掉的熱量由晚餐吸收
