@@ -654,7 +654,7 @@ function plan(){
   const isToday=td.date===today, tm=(td.treadmill&&td.treadmill!=='—')?td.treadmill:'';
   $('today').innerHTML=`<div class="todaycard${td.kind==='race'?' race':''}"><div class="lab">${isToday?'今天':'下一次課表'} ${td.date.slice(5).replace('-','/')} ${td.weekday}</div>
     <div class="big">${tpre}${td.type}${td.km?`<span class="km">${td.km} km</span>`:''}</div>
-    ${td.km?`<div class="two"><div><b>🌳 戶外</b><br>${td.pace?'配速 '+td.pace:'輕鬆跑'}</div><div><b>🏃 跑步機</b><br>${tm||'—'}</div></div>`:''}
+    ${td.km?`<div class="two"><div><b>🌳 戶外</b><br>${td.pace?'配速 '+td.pace:'輕鬆跑'}</div>${td.kind==='race'&&td.date==='2026-10-25'?'':`<div><b>🏃 跑步機</b><br>${tm||'—'}</div>`}</div>`:''}
     <div class="nt">${td.note}</div></div>`;
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
   $('wkchips').innerHTML=weekKeys.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');

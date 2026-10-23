@@ -331,3 +331,10 @@
 
 ## 2026-10-22 8:00 例行
 - Strava 10/20–10/22 沒有新活動。週 10/19（半馬週，不補量）已跑 4.26／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤；已推送（ce14028）。
+
+## 2026-10-23 8:00 例行
+- 新增 activities.csv：2026-10-22 Night Run（跑步機）4.12 km、25:11、6:06/km、avg HR 170（https://www.strava.com/activities/20689511237）。10/20–10/22 沒有新 Workout。
+- 週 10/19（半馬週，不補量）已跑 8.38／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤；已推送（49800f8），線上 data_through 2026-10-22。
+
+## 2026-10-23 10/25 半馬移除跑步機版本（使用者決定：比賽在戶外）——8:00 例行流程不得改回
+- `make_plan.py` 10/25 race 列 treadmill 改為空字串（課表不再顯示「跑步機 9.9／10.1／10.3 km/h」）；`index_template.html` 今日卡片在 10/25 比賽日不顯示「🏃 跑步機」欄。其他訓練日跑步機速度不變。10/25 為 race，`adjust_week.py` 本來就不動（MANUAL_LOCK 不需改）。
