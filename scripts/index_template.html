@@ -535,11 +535,16 @@ function hmCard(){
   const R8=D.a.filter(r=>r.date>=d56), R4=D.a.filter(r=>r.date>=d28);
   const it=[];
   // 2026-10-13 使用者：預測要保守客觀。近 56 天 ≥10 km 的單趟（不足 3 趟才用 ≥5 km），Riegel 指數 1.08（低跑量修正），取最佳 3 趟推算的中位數
-  const EXP=1.08, P10=R8.filter(r=>ok(r)&&r.km>=10), P=P10.length>=3?P10:R8.filter(r=>ok(r)&&r.km>=5);
+  // 2026-10-25：10/25 賽事為 9.94 km，門檻改 ≥9.5 km；另加 10K 現況（≥5 km 最佳 3 趟換算 10K 中位數）與照計畫推估（plan.json predict）
+  const EXP=1.08, P10=R8.filter(r=>ok(r)&&r.km>=9.5), P=P10.length>=3?P10:R8.filter(r=>ok(r)&&r.km>=5);
+  const K=R8.filter(r=>ok(r)&&r.km>=5).map(r=>({r,p:sec(r)*Math.pow(10/r.km,EXP)})).sort((a,b)=>a.p-b.p).slice(0,3);
+  if(K.length){const m=K[Math.floor((K.length-1)/2)];
+    it.push(['目前 10K 預估（保守）',`${ms(m.p)}・${ms(m.p/10)}/km`,`近 8 週 5 km 以上最佳 ${K.length} 趟換算 10K 的中位數：`+K.map(c=>`${md(c.r.date)} ${c.r.km} km → ${ms(c.p)}`).join('、')+`。目標 50:00。`]);}
   const C=P.map(r=>({r,p:sec(r)*Math.pow(HM/r.km,EXP)})).sort((a,b)=>a.p-b.p).slice(0,3);
   if(C.length){const m=C[Math.floor((C.length-1)/2)],df=Math.round(m.p-GOAL),pp=m.p/HM,g=Math.round(pp-GP);
-    it.push(['半馬預測（保守）',`${hm(m.p)}・${ms(pp)}/km`,`目標 2:00:00，${df<=0?'快 '+ms(-df):'慢 '+ms(df)}；比目標配速 5:41 ${g<=0?'快':'慢'} ${Math.abs(g)} 秒/km。`]);
-    it.push(['推算依據',`${C.length} 趟中位數`,C.map(c=>`${md(c.r.date)} ${c.r.km} km ${c.r.pace}/km → ${hm(c.p)}`).join('<br>')+`<br>規則：近 8 週${P===P10?' 10 km 以上':' 5 km 以上'}最佳 ${C.length} 趟，Riegel 指數 1.08（週跑量低於 30 km 的修正，一般為 1.06）。`]);}
+    it.push(['目前半馬預估（保守）',`${hm(m.p)}・${ms(pp)}/km`,`目標 2:00:00，${df<=0?'快 '+ms(-df):'慢 '+ms(df)}；比目標配速 5:41 ${g<=0?'快':'慢'} ${Math.abs(g)} 秒/km。`]);
+    it.push(['推算依據',`${C.length} 趟中位數`,C.map(c=>`${md(c.r.date)} ${c.r.km} km ${c.r.pace}/km → ${hm(c.p)}`).join('<br>')+`<br>規則：近 8 週${P===P10?' 9.5 km 以上':' 5 km 以上'}最佳 ${C.length} 趟，Riegel 指數 1.08（週跑量低於 30 km 的修正，一般為 1.06）。`]);}
+  const PR=D.p&&D.p.predict; if(PR&&PR.projection) PR.projection.forEach(x=>it.push([x[0],x[1],x[2]+(x===PR.projection[PR.projection.length-1]?'<br>'+PR.note:'')]));
   const F=R4.filter(r=>r.pace_sec&&r.pace_sec<390);
   if(R4.length) it.push(['近 4 週快於 6:30 的比例',`${Math.round(F.length/R4.length*100)}%`,`${R4.length} 趟中 ${F.length} 趟。80/20 原則建議 20% 以下；輕鬆跑目標 7:10/km。`]);
   if(R8.length){const L=R8.reduce((a,b)=>b.km>a.km?b:a);
@@ -548,7 +553,7 @@ function hmCard(){
   for(let i=8;i>=1;i--){const a=iso(new Date(mon-i*7*dayMs)),b=iso(new Date(mon-(i-1)*7*dayMs));W.push({w:a,km:D.a.filter(r=>r.date>=a&&r.date<b).reduce((s,r)=>s+r.km,0)});}
   const lw=W[W.length-1],pk=W.reduce((a,b)=>b.km>a.km?b:a),av=W.reduce((s,x)=>s+x.km,0)/W.length;
   it.push(['上週跑量',`${lw.km.toFixed(1)} km`,`近 8 週平均 ${av.toFixed(1)} km，高峰 ${pk.km.toFixed(1)} km（${md(pk.w)} 週）。`]);
-  el.innerHTML='<h3>半馬分析（10/25，目標 2:00）</h3><ul>'+it.map(x=>`<li><div class="hk">${x[0]}</div><div class="hv">${x[1]}</div><div class="hd">${x[2]}</div></li>`).join('')+'</ul>';
+  el.innerHTML='<h3>成績預估（保守；10K 目標 50:00、3/21 半馬目標 2:00）</h3><ul>'+it.map(x=>`<li><div class="hk">${x[0]}</div><div class="hv">${x[1]}</div><div class="hd">${x[2]}</div></li>`).join('')+'</ul>';
 }
 function render(){
   if(curTab==='train'){ if(D.t) trainRender(); return; }
