@@ -13,7 +13,7 @@ import csv, json, os, datetime as dt, sys
 from decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING, ROUND_FLOOR
 HERE = os.path.dirname(os.path.abspath(__file__))
 ADJ = os.path.join(HERE, "plan_adjust.json")
-NO_MAKEUP = {"2026-10-19", "2026-12-21"}
+NO_MAKEUP = {"2026-10-19", "2026-12-21", "2027-02-15", "2027-03-08", "2027-03-15"}   # 2026-10-25：測試週、賽前減量、2XU 賽週不補量
 CAP = Decimal("3.0")
 # 2026-10-16 使用者手動覆蓋（霾害）：10/17 輕鬆跑 8 km、10/18 8 km（核准的長跑例外）；動態補量不得改動這些日子
 MANUAL_LOCK = {"2026-10-17", "2026-10-18", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24"}  # 2026-10-21 使用者：10/21 跳過、課移到 10/22，賽週不補量

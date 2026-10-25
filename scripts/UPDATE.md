@@ -345,3 +345,12 @@
 ## 2026-10-25 8:00 例行
 - 新增 activities.csv：2026-10-25 Morning Run（戶外，Garmin Run Singapore 10K，手錶 9.94 km）56:03、5:38/km、avg HR 187（https://www.strava.com/activities/20718077073）。新增 workouts.csv：2026-10-24 17:20 Afternoon Activity Workout 0:52:43（avg 103／max 132 bpm、162 kcal，…/20710945113）。
 - 週 10/19 最終：跑 18.32 km、Workout 1 次。plan.json 10/25 仍寫半馬 21.1 km（未改，已過日期）。PR 未更新（9.94 km 不足 10K）。test_tabs 390 700 通過、無 JS 錯誤；已推送（7b0f9d0）。
+
+## 2026-10-25 10/25 比賽改為 10K（實際結果）
+- Garmin Run Singapore 因霾害縮短為 10K（21K 組 5:00 起跑）。`make_plan.py` 只改 10/25 race 列：標題「🏁 Garmin Run Singapore（因霾害縮短為 10K）」、10 km、配速欄「實際 5:38/km（9.94 km 56:03，avg HR 187）」、說明改為實際結果；treadmill 仍為空字串（比賽在戶外，不要改回）。備份 `make_plan.pre_10k1025.py`。RACES／背景文字（line ~149、154、156）未改。Strava 10/25 Morning Run 已在 8:00 例行加入。test_tabs 390 700 通過、無 JS 錯誤；已推送（824b370），線上 plan.json 已確認。
+
+## 2026-10-25 課表重排：10K 破 50 ＋ 2XU 半馬破 2
+- 新目標（使用者 2026-10-25）：10K 50:00 以內（4:59/km）；2027-03-21 2XU Singapore Compression Run 半馬 2:00:00 以內（5:41/km）。`make_plan.py` 10/26–3/21 全部重排（10/1–10/25 不動），備份 `make_plan.pre_2xu1025.py`、`UPDATE.pre_2xu1025.md`。
+- 週跑量（整數）：15→16→17→18→16(減)→19→20→22→21(減＋12/27 10K 測試①)→23→25→27→24(減)→29→31→34→27(減＋2/21 10K 測試②)→37→38(長跑 19)→27(減量)→11(賽週＋3/21 比賽，不計入)。
+- 10% 規則改為：與前一個正常週比較（`CUTBACK` 集合內的減量／賽前週不當基準）；`NOWEEK` 排除 10/25、3/21 比賽日。STR_EXEMPT 加 2/20、3/20；`adjust_week.NO_MAKEUP` 加 2/15、3/8、3/15 週。
+- 輕鬆跑 `E2_PACE` 7:10–7:30（心率 ≤150）。GOALS：12/27、2/21 10K 測試、3/21 2XU 半馬（倒數自動切換）。飲食 `make_diet.py` 未改（仍到 12/31）。
