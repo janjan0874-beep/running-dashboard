@@ -341,3 +341,7 @@
 
 ## 2026-10-24 8:00 例行
 - Strava 10/23–10/24 沒有新活動（10/23 計畫 2 km 極輕鬆跑沒跑，不補）。週 10/19（半馬週，不補量）已跑 8.38／9.0 km、Workout 0 次。test_tabs 390 700 通過、無 JS 錯誤；已推送（e0ae6b4），線上 generated 2026-10-24。
+
+## 2026-10-25 8:00 例行
+- 新增 activities.csv：2026-10-25 Morning Run（戶外，Garmin Run Singapore 10K，手錶 9.94 km）56:03、5:38/km、avg HR 187（https://www.strava.com/activities/20718077073）。新增 workouts.csv：2026-10-24 17:20 Afternoon Activity Workout 0:52:43（avg 103／max 132 bpm、162 kcal，…/20710945113）。
+- 週 10/19 最終：跑 18.32 km、Workout 1 次。plan.json 10/25 仍寫半馬 21.1 km（未改，已過日期）。PR 未更新（9.94 km 不足 10K）。test_tabs 390 700 通過、無 JS 錯誤；已推送（7b0f9d0）。
