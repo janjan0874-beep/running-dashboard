@@ -661,7 +661,8 @@ function plan(){
     $('ck_items').innerHTML=c.items.map(x=>`<li>${x}</li>`).join('');
     $('ck_goals').textContent=c.goals.join('；');$('ck_rules').textContent=c.rules.join('；');}
   const today=todayStr();
-  weeksMap={};p.days.forEach(d=>(weeksMap[d.week]=weeksMap[d.week]||[]).push(d));
+  weeksMap={};p.days.filter(d=>d.date>=today).forEach(d=>(weeksMap[d.week]=weeksMap[d.week]||[]).push(d));
+  // 2026-10-25：已經過去的日期（新加坡日期）不顯示；整週都過去就整週拿掉（plan.json 資料保留）
   weekKeys=Object.keys(weeksMap).sort();
   // 今日課表
   const td0=p.days.find(d=>d.date===today)||p.days.find(d=>d.date>today)||p.days[p.days.length-1];
@@ -855,14 +856,14 @@ function dDay(d,today,openDate){
     <div class="dbody"><div class="dsum">${dSumHtml(d)}</div><div class="dgs">${dGroups(d)}</div></div></details>`;
 }
 function dShowWeek(wk,fromUser){
-  const days=Object.values(D.d.days).filter(d=>d.week===wk).sort((a,b)=>a.date<b.date?-1:1); if(!days.length) return; dWeek=wk; const today=todayStr();
+  const days=Object.values(D.d.days).filter(d=>d.week===wk&&d.date>=todayStr()).sort((a,b)=>a.date<b.date?-1:1); if(!days.length) return; dWeek=wk; const today=todayStr();
   document.querySelectorAll('#d_wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const od=D.d.days[today]?today:(Object.keys(D.d.days).sort().find(k=>k>today)||'');
   $('d_week').innerHTML=days.map(d=>dDay(d,today,od)).join('');
   if(fromUser){const b=document.querySelector('#d_wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
 function dietRender(){
-  const X=D.d, today=todayStr(), all=Object.values(X.days).sort((a,b)=>a.date<b.date?-1:1);
+  const X=D.d, today=todayStr(), all=Object.values(X.days).filter(d=>d.date>=today).sort((a,b)=>a.date<b.date?-1:1);
   const td=X.days[today]||all.find(d=>d.date>today)||all[all.length-1];
   const wks=[...new Set(all.map(d=>d.week))];
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
