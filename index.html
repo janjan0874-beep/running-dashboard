@@ -689,9 +689,9 @@ function plan(){
     const med=(L,dist)=>{const c=L.map(r=>hms(r.time)*Math.pow(dist/r.km,1.08)).sort((a,b)=>a-b).slice(0,3);return c.length?c[Math.floor((c.length-1)/2)]:null;};
     const f=x=>{x=Math.round(x);const h=Math.floor(x/3600),m=Math.floor(x%3600/60),s2=String(x%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${s2}`:`${m}:${s2}`;};
     const P10=R.filter(r=>r.km>=9.5), k=med(R.filter(r=>r.km>=5),10), h=med(P10.length>=3?P10:R.filter(r=>r.km>=5),21.0975);
-    return [k&&['目前 10K',f(k)],h&&['目前半馬',f(h)]].filter(Boolean);})();
+    return [k&&['10K',f(k)],h&&['半馬',f(h)]].filter(Boolean);})();
   $('ovgoal').innerHTML=`<h4>下一個目標</h4>`+up.map(x=>`<div class="gl"><div><div class="gn">${md2(x.date)} ${x.name}</div><div class="gs">${tgt(x)}${pv(x)?`｜推估 ${pv(x)}`:''}</div></div><div class="gd">還有<b>${dd(x.date)}</b>天</div></div>`).join('')
-    +(cur.length?`<div class="done">目前（保守）：${cur.map(c=>c[0].replace('（保守）','')+' '+c[1]).join('、')}</div>`:'')
+    +(cur.length?`<div class="done">目前（保守）：${cur.map(c=>c[0].replace(/（保守）|^目前\s*/g,'')+' '+c[1]).join('、')}</div>`:'')
     +past.map(x=>`<div class="done">✓ ${md2(x.date)} ${x.name}｜${(x.detail||'').replace(/^已完成：/,'已完成 ')}</div>`).join('')
     +`<div class="done">推估為照計畫完成訓練的假設，不是保證；測試後重算。</div>`;
   const ft=$('fold_test'); if(ft&&p.test_plan) ft.open=(g.date!==gs[0].date)||gs.length===1;
