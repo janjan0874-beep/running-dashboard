@@ -1,17 +1,17 @@
 {
- "through": "2026-10-22",
+ "through": "2026-10-25",
  "first_workout": "2025-03-22",
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
- "run_through": "2026-10-22",
- "workout_through": "2026-10-18",
+ "run_through": "2026-10-25",
+ "workout_through": "2026-10-24",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
   "HIIT"
  ],
  "type_counts": {
-  "Workout": 213,
+  "Workout": 214,
   "HIIT": 1,
   "Swim": 2,
   "Stair-Stepper": 1
@@ -2837,6 +2837,19 @@
    "cal": 164,
    "strength": true,
    "url": "https://www.strava.com/activities/20629419737"
+  },
+  {
+   "date": "2026-10-24",
+   "start": "17:20",
+   "name": "Afternoon Activity",
+   "type": "Workout",
+   "elapsed": "0:52:43",
+   "elapsed_sec": 3163,
+   "avg_hr": 103,
+   "max_hr": 132,
+   "cal": 162,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20710945113"
   }
  ],
  "weekly": [
@@ -4004,17 +4017,17 @@
   },
   {
    "week": "2026-10-19",
-   "complete": false,
-   "run_sec": 2851,
-   "n": 0,
-   "n_workout": 0,
+   "complete": true,
+   "run_sec": 6214,
+   "n": 1,
+   "n_workout": 1,
    "n_hiit": 0,
-   "strength_sec": 0,
+   "strength_sec": 3163,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 0,
-   "hr_sum": 0,
-   "hr_n": 0
+   "cal": 162,
+   "hr_sum": 103,
+   "hr_n": 1
   }
  ],
  "monthly": [
@@ -4286,17 +4299,17 @@
   },
   {
    "month": "2026-10",
-   "run_n": 9,
-   "run_sec": 15515,
-   "n": 8,
-   "n_workout": 8,
+   "run_n": 10,
+   "run_sec": 18878,
+   "n": 9,
+   "n_workout": 9,
    "n_hiit": 0,
-   "strength_sec": 25342,
+   "strength_sec": 28505,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 2175,
-   "hr_sum": 912,
-   "hr_n": 8
+   "cal": 2337,
+   "hr_sum": 1015,
+   "hr_n": 9
   }
  ]
 }
