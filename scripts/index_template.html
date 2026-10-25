@@ -548,7 +548,7 @@ function hmCard(){
   const EXP=1.08, P10=R8.filter(r=>ok(r)&&r.km>=9.5), P=P10.length>=3?P10:R8.filter(r=>ok(r)&&r.km>=5);
   const K=R8.filter(r=>ok(r)&&r.km>=5).map(r=>({r,p:sec(r)*Math.pow(10/r.km,EXP)})).sort((a,b)=>a.p-b.p).slice(0,3);
   if(K.length){const m=K[Math.floor((K.length-1)/2)];
-    it.push(['目前 10K 預估（保守）',`${ms(m.p)}・${ms(m.p/10)}/km`,`近 8 週 5 km 以上最佳 ${K.length} 趟換算 10K 的中位數：`+K.map(c=>`${md(c.r.date)} ${c.r.km} km → ${ms(c.p)}`).join('、')+`。目標 50:00。`]);}
+    it.push(['目前 10K 預估（保守）',`${ms(m.p)}・${ms(m.p/10)}/km`,`近 8 週 5 km 以上最佳 ${K.length} 趟換算 10K 的中位數：`+K.map(c=>`${md(c.r.date)} ${c.r.km} km → ${ms(c.p)}`).join('、')+`。12/27 目標 54:59、2/21 目標 52:59。`]);}
   const C=P.map(r=>({r,p:sec(r)*Math.pow(HM/r.km,EXP)})).sort((a,b)=>a.p-b.p).slice(0,3);
   if(C.length){const m=C[Math.floor((C.length-1)/2)],df=Math.round(m.p-GOAL),pp=m.p/HM,g=Math.round(pp-GP);
     it.push(['目前半馬預估（保守）',`${hm(m.p)}・${ms(pp)}/km`,`目標 2:00:00，${df<=0?'快 '+ms(-df):'慢 '+ms(df)}；比目標配速 5:41 ${g<=0?'快':'慢'} ${Math.abs(g)} 秒/km。`]);
@@ -562,7 +562,7 @@ function hmCard(){
   for(let i=8;i>=1;i--){const a=iso(new Date(mon-i*7*dayMs)),b=iso(new Date(mon-(i-1)*7*dayMs));W.push({w:a,km:D.a.filter(r=>r.date>=a&&r.date<b).reduce((s,r)=>s+r.km,0)});}
   const lw=W[W.length-1],pk=W.reduce((a,b)=>b.km>a.km?b:a),av=W.reduce((s,x)=>s+x.km,0)/W.length;
   it.push(['上週跑量',`${lw.km.toFixed(1)} km`,`近 8 週平均 ${av.toFixed(1)} km，高峰 ${pk.km.toFixed(1)} km（${md(pk.w)} 週）。`]);
-  el.innerHTML='<h3>成績預估（保守；10K 目標 50:00、3/21 半馬目標 2:00）</h3><ul>'+it.map(x=>`<li><div class="hk">${x[0]}</div><div class="hv">${x[1]}</div><div class="hd">${x[2]}</div></li>`).join('')+'</ul>';
+  el.innerHTML='<h3>成績預估（保守；10K 12/27 目標 54:59、2/21 目標 52:59、3/21 半馬目標 2:00）</h3><ul>'+it.map(x=>`<li><div class="hk">${x[0]}</div><div class="hv">${x[1]}</div><div class="hd">${x[2]}</div></li>`).join('')+'</ul>';
 }
 function render(){
   if(curTab==='train'){ if(D.t) trainRender(); return; }
@@ -691,6 +691,7 @@ function plan(){
     const P10=R.filter(r=>r.km>=9.5), k=med(R.filter(r=>r.km>=5),10), h=med(P10.length>=3?P10:R.filter(r=>r.km>=5),21.0975);
     return [k&&['10K',f(k)],h&&['半馬',f(h)]].filter(Boolean);})();
   $('ovgoal').innerHTML=`<h4>下一個目標</h4>`+up.map(x=>`<div class="gl"><div><div class="gn">${md2(x.date)} ${x.name}</div><div class="gs">${tgt(x)}${pv(x)?`｜推估 ${pv(x)}`:''}</div></div><div class="gd">還有<b>${dd(x.date)}</b>天</div></div>`).join('')
+    +(p.long_goal?`<div class="gl"><div><div class="gn">${p.long_goal.label}：${p.long_goal.name}</div><div class="gs">${p.long_goal.detail}</div></div><div class="gd">目標<b>${p.long_goal.target}</b></div></div>`:'')
     +(cur.length?`<div class="done">目前（保守）：${cur.map(c=>c[0].replace(/（保守）|^目前\s*/g,'')+' '+c[1]).join('、')}</div>`:'')
     +past.map(x=>`<div class="done">✓ ${md2(x.date)} ${x.name}｜${(x.detail||'').replace(/^已完成：/,'已完成 ')}</div>`).join('')
     +`<div class="done">推估為照計畫完成訓練的假設，不是保證；測試後重算。</div>`;
