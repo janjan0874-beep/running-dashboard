@@ -61,6 +61,15 @@ main{max-width:1100px;margin:auto;padding:10px 14px 0}
 .chart.tail{height:260px}
 .countdown{margin-top:8px;background:#fff4ec;border:1px solid #fbd9c0;border-radius:12px;padding:6px 12px;text-align:center;color:#8a4a1c;font-size:14px}
 .countdown b{font-size:1.4rem;color:#e0702a;margin:0 3px}
+.countdown.ovgoal{background:var(--card);border:1px solid var(--line);color:var(--fg);text-align:left;padding:10px 12px}
+.ovgoal h4{margin:0 0 6px;font-size:14px;color:var(--fg)}
+.ovgoal .gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+.ovgoal .gl:first-of-type{border-top:0}
+.ovgoal .gn{font-size:13.5px;font-weight:600}
+.ovgoal .gs{font-size:12px;color:var(--mut);margin-top:2px}
+.ovgoal .gd{white-space:nowrap;font-size:12px;color:var(--mut)}
+.ovgoal .gd b{font-size:1.25rem;color:var(--blue);margin:0 2px}
+.ovgoal .done{font-size:12px;color:var(--mut);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
 .sec2{font-size:1rem;font-weight:700;margin:18px 0 0}
 .sec2 small{font-weight:400;color:var(--mut);font-size:.8rem;margin-left:6px}
 .cards.more{margin-top:8px}
@@ -285,7 +294,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
   <section class="pane" data-tab="overview">
     <div class="cards" id="cards"></div>
     <div class="panel"><h3 class="wkh"><span>每週跑量<small>km・最近 12 週</small></span><b id="wk_now">本週 —</b></h3><div id="c_wk" class="chart wk"></div></div>
-    <div class="countdown"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
+    <div class="countdown ovgoal" id="ovgoal"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
     <p class="note" id="rangeNote">所選期間的統計</p>
     <div class="cards more" id="cards2"></div>
     <h2 class="sec2">全時間累計與 PR<small>不受上方期間影響</small></h2>
@@ -664,12 +673,27 @@ function plan(){
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
   $('wkchips').innerHTML=weekKeys.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');
   showWeek(td.week);
-  // 倒數：今天（含）之後最近的目標；半馬之前倒數半馬，之後倒數 12/27 的 10K 測試
+  // 2026-10-25 總覽目標卡：列出今天之後的所有目標（倒數天數、目標、保守推估單一值），已過的目標標為已完成
   const gs=p.goals||[{date:p.race_date,label:'目標',detail:''}];
-  const g=gs.find(x=>x.date>=today)||gs[gs.length-1];
-  const cd=Math.ceil((new Date(g.date+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5);
-  $('cdlab').textContent=`距離${g.label}（${g.date}）`;
-  $('cd').textContent=Math.max(cd,0);
+  const dd=d=>Math.max(0,Math.round((new Date(d+'T00:00:00+08:00')-new Date(today+'T00:00:00+08:00'))/864e5));
+  const up=gs.filter(x=>x.date>today), past=gs.filter(x=>x.date<=today), g=up[0]||gs[gs.length-1];
+  const md2=d=>+d.slice(5,7)+'/'+ +d.slice(8,10);
+  const PJ=(p.predict&&p.predict.projection)||[];
+  const one=v=>{v=String(v).split('（')[0].replace(/^約\s*/,'').trim();return /^\d:\d\d$/.test(v)?v+':00':v;};  // 只取單一值；h:mm → h:mm:00
+  const pv=x=>{const r=PJ.find(q=>q[0].startsWith(md2(x.date)+' '));return r?one(r[1]):'';};
+  const tgt=x=>(x.detail||'').split('｜')[0];
+  // 目前（保守）：同配速分頁 hmCard 規則，每次載入以 activities 動態計算（近 56 天、Riegel 1.08、最佳 3 趟中位數）
+  const cur=(()=>{if(!D.a) return (p.predict&&p.predict.current)||[];
+    const d56=new Date(Date.parse(today+'T00:00:00Z')-56*864e5).toISOString().slice(0,10);
+    const ok=r=>!r.outlier&&r.pace_sec&&r.pace_sec<=SLOW_SEC&&!paceEx(r), R=D.a.filter(r=>r.date>=d56&&ok(r));
+    const med=(L,dist)=>{const c=L.map(r=>hms(r.time)*Math.pow(dist/r.km,1.08)).sort((a,b)=>a-b).slice(0,3);return c.length?c[Math.floor((c.length-1)/2)]:null;};
+    const f=x=>{x=Math.round(x);const h=Math.floor(x/3600),m=Math.floor(x%3600/60),s2=String(x%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${s2}`:`${m}:${s2}`;};
+    const P10=R.filter(r=>r.km>=9.5), k=med(R.filter(r=>r.km>=5),10), h=med(P10.length>=3?P10:R.filter(r=>r.km>=5),21.0975);
+    return [k&&['目前 10K',f(k)],h&&['目前半馬',f(h)]].filter(Boolean);})();
+  $('ovgoal').innerHTML=`<h4>下一個目標</h4>`+up.map(x=>`<div class="gl"><div><div class="gn">${md2(x.date)} ${x.name}</div><div class="gs">${tgt(x)}${pv(x)?`｜推估 ${pv(x)}`:''}</div></div><div class="gd">還有<b>${dd(x.date)}</b>天</div></div>`).join('')
+    +(cur.length?`<div class="done">目前（保守）：${cur.map(c=>c[0].replace('（保守）','')+' '+c[1]).join('、')}</div>`:'')
+    +past.map(x=>`<div class="done">✓ ${md2(x.date)} ${x.name}｜${(x.detail||'').replace(/^已完成：/,'已完成 ')}</div>`).join('')
+    +`<div class="done">推估為照計畫完成訓練的假設，不是保證；測試後重算。</div>`;
   const ft=$('fold_test'); if(ft&&p.test_plan) ft.open=(g.date!==gs[0].date)||gs.length===1;
 }
 $('wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showWeek(b.dataset.wk,true);});

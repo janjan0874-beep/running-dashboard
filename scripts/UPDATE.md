@@ -361,3 +361,8 @@
 - 照計畫推估（make_plan.py `PREDICT` → plan.json `predict`，卡片顯示）：12/27 10K 約 55:00（54:30–56:00）、2/21 約 54:00（53:00–55:00）、3/21 半馬約 2:01（1:59–2:04）。測試後要依實際成績重算。
 - GOALS detail 加「保守推估」；TEST_PLAN 誠實預期改寫；RACE_PLAN「完賽約 1:59:40」註明是目標配速算術不是預估。
 - 備份：`make_plan.pre_pred1025.py`、`index_template.pre_pred1025.html`、`UPDATE.pre_pred1025.md`。
+
+## 2026-10-25 總覽分頁改為新目標
+- 總覽原本的單行倒數（今天＝10/25 時顯示「距離 Garmin Run SG 還有 0 天」）改為「下一個目標」卡（藍灰極簡，id `ovgoal`，仍保留 class `countdown` 供 test_tabs）：列出今天之後的所有 GOALS（12/27 10K 測試①、2/21 10K 測試②、3/21 2XU 半馬），各自倒數天數、目標（GOALS detail「｜」前段）、推估單一值（plan.json predict.projection 去掉「約」與括號範圍；h:mm 補成 h:mm:00）。
+- 「目前（保守）」10K／半馬在總覽每次載入動態計算（同 hmCard 規則：近 56 天、Riegel 1.08、最佳 3 趟中位數，半馬 ≥9.5 km）；今天為 56:34、2:07:34。
+- 已過的目標顯示「✓ 10/25 Garmin Run Singapore（霾害縮短為 10K）｜已完成 9.94 km 56:03」。只改 index_template.html 總覽區塊與 CSS；make_plan.py／scripts 未改。備份 `index_template.pre_ovgoal1025.html`、`UPDATE.pre_ovgoal1025.md`。
