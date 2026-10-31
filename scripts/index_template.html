@@ -422,7 +422,9 @@ function drawWeekly(){
   const tk=catTicks(x,w=>w===cur?'本週':abbrW(w));
   const shapes=tgt!=null?[{type:'line',xref:'x',yref:'y',x0:x.length-1.45,x1:x.length-0.55,y0:+tgt,y1:+tgt,line:{color:C_WKNOW,width:2,dash:'dot'}}]:[];
   const annotations=tgt!=null?[{xref:'x',yref:'y',x:x.length-0.55,y:+tgt,xanchor:'right',yanchor:'bottom',text:`目標 ${(+tgt).toFixed(1)}`,showarrow:false,font:{size:9.5,color:C_WKNOW}}]:[];
-  const lab=W.map(r=>r.km.toFixed(1));   // 每根長條上方標該週實際公里數（小字）；本週深藍，週初 0 km 時長條看不到，仍顯示 0.0
+  const slot=(el.offsetWidth-50)/Math.max(W.length,1), step=Math.max(1,Math.ceil(26/slot)), imax=y.indexOf(Math.max(...y)), n1=W.length-1;
+  // 窄螢幕避免重疊：每 step 根（由本週往回數）才標；0 km 週不標；本週與最高週一律標；完整數值仍在讀數列
+  const lab=W.map((r,i)=>(i===n1||i===imax||(r.km>0&&(n1-i)%step===0&&Math.abs(i-imax)>=step))?r.km.toFixed(1):'');   // 每根長條上方標該週實際公里數（小字）；本週深藍，週初 0 km 時長條看不到，仍顯示 0.0
   const ymax=Math.max(...y,tgt||0)*1.12||10;
   tipReset('c_wk');
   Plotly.react('c_wk',[{type:'bar',x,y,marker:{color:W.map(r=>r.week===cur?C_WKNOW:C_WK)},text:lab,textposition:'outside',textangle:0,constraintext:'none',cliponaxis:false,textfont:{size:9.5,color:W.map(r=>r.week===cur?C_WKNOW:'#6b7280')},customdata:cd,hovertemplate:'%{customdata}<extra></extra>'}],
