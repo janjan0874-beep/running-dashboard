@@ -293,7 +293,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 <main>
   <section class="pane" data-tab="overview">
     <div class="cards" id="cards"></div>
-    <div class="panel"><h3 class="wkh"><span>每週跑量<small>km・2026 起</small></span><b id="wk_now">本週 —</b></h3><div id="c_wk" class="chart wk"></div></div>
+    <div class="panel"><h3 class="wkh"><span>每週跑量<small id="wk_sub">km</small></span><b id="wk_now">本週 —</b></h3><div id="c_wk" class="chart wk"></div></div>
     <div class="countdown ovgoal" id="ovgoal"><span id="cdlab">距離下一個目標</span>還有<b id="cd">—</b>天</div>
     <p class="note" id="rangeNote">所選期間的統計</p>
     <div class="cards more" id="cards2"></div>
@@ -412,7 +412,9 @@ function drawWeekly(){
   const g=D.s.generated, gd=new Date(g+'T00:00:00Z'), cur=addD(g,-((gd.getUTCDay()+6)%7));   // 更新日所在週的週一
   let W=D.w.map(r=>({...r}));
   if(!W.some(r=>r.week===cur)&&W.length&&W[W.length-1].week<cur) W.push({week:cur,km:0,runs:0,partial:true});
-  W=W.filter(r=>r.week<=cur&&r.week>=WK_START);   // 2026-10-31：改為從 2026-01-01 所在週（週一 2025-12-29）起顯示
+  const rs=months?firstMonOnOrAfter(period(months).cur.sm+'-01'):WK_START, ws=rs>WK_START?rs:WK_START;   // 跟隨上方期間按鈕（日曆月，範圍起始月 1 日後第一個週一）；最早不早於 2025-12-29（2026-01-01 所在週）
+  W=W.filter(r=>r.week<=cur&&r.week>=ws);
+  $('wk_sub').textContent=`km・${RN[months]}（${md(ws)} 週起）`;   // 2026-10-31：改為從 2026-01-01 所在週（週一 2025-12-29）起顯示
   const tgt=(D.p&&D.p.weekly_km||{})[cur], now=W.find(r=>r.week===cur), thr=D.s.data_through;
   $('wk_now').textContent=`本週 ${(now?now.km:0).toFixed(1)}`+(tgt!=null?`／${(+tgt).toFixed(1)} km`:' km');
   const x=W.map(r=>r.week), y=W.map(r=>r.km);
