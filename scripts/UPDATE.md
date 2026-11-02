@@ -418,7 +418,7 @@
 - 備份 `*.pre_dayswap1102.*`（make_plan、make_diet、adjust_week、UPDATE）；舊 JSON `/tmp/{diet,plan}.pre_dayswap1102.json`。
 
 ## 2026-11-02 重訓日加核心收尾（使用者：「在重訓加入消腹的動作」）
-- 11/2 起每個重訓日（週一／三／五，`kind=str` 且 type「重訓」，共 57 天到 3/17）在 plan.json 多一個 `core` 欄位（`make_plan.py` 的 `CORE`／`CORE_FROM`）：核心收尾 10 分鐘（重訓後），2 輪、動作間休息 30 秒：反向捲腹 12 下、死蟲每邊 10 下、仰臥抬腿 10 下、棒式 40 秒、臀橋 15 下。
+- 11/2 起每個重訓日（週一／三／五，`kind=str` 且 type「重訓」，共 57 天到 3/17）在 plan.json 多一個 `core` 欄位（`make_plan.py` 的 `CORE`／`CORE_FROM`）：核心收尾 10 分鐘（重訓後），2 輪、動作間休息 30 秒：反向捲腹 12 下、懸吊抬膝 10 下（2026-11-02 由死蟲改，健身房較好做）、仰臥抬腿 10 下、棒式 40 秒、臀橋 15 下。
 - 不寫進 note（make_diet 會從 note 讀「N 分鐘」算消耗），所以飲食完全不變（diet.json 前後逐位元相同）。
 - 課表分頁日卡在說明下方顯示一個小區塊 `.day .core`（左側藍線、淡灰底、灰字 12px，標題藍字）。
 - 備份 `*.pre_core1102.*`（make_plan、index_template、UPDATE）。

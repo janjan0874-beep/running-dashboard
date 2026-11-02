@@ -228,7 +228,7 @@ DAYS = [
 # 2026-11-02 使用者「在重訓加入消腹的動作」：11/2 起每個重訓日在重訓後加固定 10 分鐘核心收尾（plan.json day.core；不寫進 note，飲食消耗不變）
 CORE_FROM = "2026-11-02"
 CORE = dict(title="核心收尾 10 分鐘（重訓後）", rounds="2 輪，動作間休息 30 秒", moves=[
- "反向捲腹 Reverse crunch 12 下", "死蟲 Dead bug 每邊 10 下", "仰臥抬腿 Lying leg raise 10 下", "棒式 Plank 40 秒", "臀橋 Glute bridge 15 下"])
+ "反向捲腹 Reverse crunch 12 下", "懸吊抬膝 Hanging knee raise 10 下", "仰臥抬腿 Lying leg raise 10 下", "棒式 Plank 40 秒", "臀橋 Glute bridge 15 下"])
 
 # 重訓日（2026-10-09 起每週二、四、六；Python weekday 1／3／5）
 STR_FROM, STR_WEEKDAYS = "2026-10-09", (1, 3, 5)
