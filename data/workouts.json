@@ -1,9 +1,9 @@
 {
- "through": "2026-10-31",
+ "through": "2026-11-01",
  "first_workout": "2025-03-22",
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
- "run_through": "2026-10-31",
+ "run_through": "2026-11-01",
  "workout_through": "2026-10-31",
  "target_per_week": 2,
  "strength_types": [
@@ -4057,8 +4057,8 @@
   },
   {
    "week": "2026-10-26",
-   "complete": false,
-   "run_sec": 3924,
+   "complete": true,
+   "run_sec": 7119,
    "n": 2,
    "n_workout": 2,
    "n_hiit": 0,
@@ -4350,6 +4350,20 @@
    "cal": 2650,
    "hr_sum": 1227,
    "hr_n": 11
+  },
+  {
+   "month": "2026-11",
+   "run_n": 1,
+   "run_sec": 3195,
+   "n": 0,
+   "n_workout": 0,
+   "n_hiit": 0,
+   "strength_sec": 0,
+   "other_n": 0,
+   "other_sec": 0,
+   "cal": 0,
+   "hr_sum": 0,
+   "hr_n": 0
   }
  ]
 }

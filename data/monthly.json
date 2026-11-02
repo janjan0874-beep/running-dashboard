@@ -198,5 +198,15 @@
   "pace": "5:50",
   "pace_sec": 350,
   "outlier": false
+ },
+ {
+  "month": "2026-11",
+  "runs": 1,
+  "km": 8.27,
+  "hours": 0.89,
+  "time": "0:53:15",
+  "pace": "6:26",
+  "pace_sec": 386,
+  "outlier": false
  }
 ]
