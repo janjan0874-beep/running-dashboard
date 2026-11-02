@@ -273,6 +273,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 .hmcard .hk{font-size:12px;color:#6b7280}
 .hmcard .hv{font-size:1.15rem;font-weight:700;color:#1d5fa3;font-variant-numeric:tabular-nums;margin:2px 0}
 .hmcard .hd{font-size:12.5px;color:#6b7280;line-height:1.5}
+.day .core{margin-top:4px;padding:5px 8px;border-left:3px solid var(--blue);background:#f4f7fb;color:var(--mut);font-size:12px;line-height:1.5}.day .core b{color:var(--blue);font-weight:600}
 </style>
 </head>
 <body data-tab="overview">
@@ -646,7 +647,7 @@ function dayHTML(d,today,p){
   const cls=d.kind==='race'?'race':(d.date===today?'today':(d.km?'':(d.kind==='str'?'str':'rest')));
   const ex=[d.pace?`配速 ${d.pace}`:'',(d.treadmill&&d.treadmill!=='—')?`跑步機 ${d.treadmill}`:''].filter(Boolean).join('・');
   return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="rt"><span class="km">${d.km?d.km+' km':''}</span>${ckHTML(d)}</span></div>
-    <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div></div>`;
+    <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div>${d.core?`<div class="core"><b>${d.core.title}</b>｜${d.core.rounds}<br>${d.core.moves.join('・')}</div>`:''}</div>`;
 }
 function showWeek(wk,fromUser){
   if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), ph=(p.week_phase||{})[wk]; const wdays=weeksMap[wk]; const wend=wdays[wdays.length-1].date; const act=D.a.filter(r=>r.date>=wk&&r.date<=wend).reduce((x,r)=>x+(+r.km),0); const planned=wdays.reduce((s,d)=>s+((d.kind==='run'||d.kind==='race')?+d.km:0),0); const isFut=false; const t=act;

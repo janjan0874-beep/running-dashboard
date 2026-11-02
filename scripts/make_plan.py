@@ -225,6 +225,11 @@ DAYS = [
  ("2027-03-21","race","🏁 2XU Singapore Compression Run 半馬 21.1 km",21.1,"0–5 km 5:45；5–18 km 5:40；18 km 後 5:35","","目標 2:00:00 以內（平均 5:41/km）。策略見下方「2XU 賽日策略」。"),
 ]
 
+# 2026-11-02 使用者「在重訓加入消腹的動作」：11/2 起每個重訓日在重訓後加固定 10 分鐘核心收尾（plan.json day.core；不寫進 note，飲食消耗不變）
+CORE_FROM = "2026-11-02"
+CORE = dict(title="核心收尾 10 分鐘（重訓後）", rounds="2 輪，動作間休息 30 秒", moves=[
+ "反向捲腹 Reverse crunch 12 下", "死蟲 Dead bug 每邊 10 下", "仰臥抬腿 Lying leg raise 10 下", "棒式 Plank 40 秒", "臀橋 Glute bridge 15 下"])
+
 # 重訓日（2026-10-09 起每週二、四、六；Python weekday 1／3／5）
 STR_FROM, STR_WEEKDAYS = "2026-10-09", (1, 3, 5)
 # 2026-11-02 使用者：從 11/2 這週起改為週一、三、五重訓（weekday 0／2／4），跑步改週二（輕鬆）、四（速度課）、六（輕鬆）、日（長跑）
@@ -332,6 +337,7 @@ def build(apply_adjust=True, check_actual=True, today=None):
             note = f"本週跑量不足，由 {a['from']:g} km 加到 {km:g} km（{a['set'][5:].replace('-', '/')} 動態補量）；" + note
         days.append(dict(date=d, weekday="週"+WD[dd.weekday()], kind=kind, type=t, km=km, pace=pace, treadmill=tm, note=note,
                          week=week_key(dd).isoformat()))
+        if kind == "str" and t == "重訓" and d >= CORE_FROM: days[-1]["core"] = CORE
     weeks = {}
     for x in days:
         if x["date"] not in NOWEEK:
