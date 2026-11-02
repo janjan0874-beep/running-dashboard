@@ -156,6 +156,7 @@ def round10(x):
     return int(x/10 + 0.5) * 10
 
 def classify(entries, tomorrow):
+    # 2026-11-02 課表改週一三五重訓、二四六日跑步：分級完全依 make_plan 的 kind／type／km 決定，不看星期，飲食自動跟著新排法
     d = entries[0]["date"]
     if d in LOAD_DAYS: return "load"
     if any(e["kind"] == "race" for e in entries): return "race"
