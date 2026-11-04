@@ -282,6 +282,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 .cal .day .km{display:none}
 .cal .day.today{background:#eaf2fb;border:1.5px solid var(--blue)}
 .cal .day.sel{box-shadow:0 0 0 2px rgba(91,155,213,.35)}
+.cal .day.past{opacity:.6;background:#f9fafb}
 .cal .pastc{border-radius:8px;background:transparent;border:1px dashed #eceef2;cursor:default}
 .cal .it{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;padding:2px 1px;border-radius:6px;background:#f4f7fb}
 .cal .it.str,.cal .it.rest{background:#f3f4f6}
@@ -690,13 +691,12 @@ function showWeek(wk,fromUser){
   const nStr=all.filter(d=>d.kind==='str').length, nRun=all.filter(d=>(d.kind==='run'||d.kind==='race')&&+d.km>0).length;
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const dates=[...Array(7)].map((_,i)=>calAdd(wk,i));
-  const vis=dates.filter(x=>x>=today);
+  const vis=dates;
   if(!calSel||!vis.includes(calSel)) calSel=vis.includes(today)?today:vis[0];
   const cells=dates.map(dt=>{
     const lab=+dt.slice(5,7)+'/'+ +dt.slice(8,10);
-    if(dt<today) return `<div class="pastc" aria-hidden="true"></div>`;
     const ds=all.filter(d=>d.date===dt), km=ds.reduce((s,d)=>s+((d.kind==='run'||d.kind==='race')?+d.km:0),0);
-    return `<div class="day${dt===today?' today':''}${dt===calSel?' sel':''}" data-date="${dt}"><span class="dt">${lab}</span><span class="km">${km?km+' km':''}</span>${ds.map(calItem).join('')}</div>`;
+    return `<div class="day${dt<today?' past':''}${dt===today?' today':''}${dt===calSel?' sel':''}" data-date="${dt}"><span class="dt">${lab}</span><span class="km">${km?km+' km':''}</span>${ds.map(calItem).join('')}</div>`;
   }).join('');
   $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>已跑 ${t.toFixed(1)} km</span></h3>
     <div class="wkcnt">重訓 <b>${nStr}</b> 次・跑步 <b>${nRun}</b> 次</div>
