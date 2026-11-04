@@ -274,6 +274,28 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 .hmcard .hv{font-size:1.15rem;font-weight:700;color:#1d5fa3;font-variant-numeric:tabular-nums;margin:2px 0}
 .hmcard .hd{font-size:12.5px;color:#6b7280;line-height:1.5}
 .day .core{margin-top:4px;padding:5px 8px;border-left:3px solid var(--blue);background:#f4f7fb;color:var(--mut);font-size:12px;line-height:1.5}.day .core b{color:var(--blue);font-weight:600}
+/* 2026-11-04 課表日曆格式（一～日 7 欄；藍灰） */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-top:6px}
+.cal .wh{text-align:center;font-size:11px;color:var(--mut);font-weight:600;padding:2px 0}
+.cal .day{margin:0;padding:4px 3px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;min-height:74px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
+.cal .day .dt{font-weight:700;font-size:12px;color:var(--fg);text-align:center}
+.cal .day .km{display:none}
+.cal .day.today{background:#eaf2fb;border:1.5px solid var(--blue)}
+.cal .day.sel{box-shadow:0 0 0 2px rgba(91,155,213,.35)}
+.cal .pastc{border-radius:8px;background:transparent;border:1px dashed #eceef2;cursor:default}
+.cal .it{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;padding:2px 1px;border-radius:6px;background:#f4f7fb}
+.cal .it.str,.cal .it.rest{background:#f3f4f6}
+.cal .it .tl{font-size:11px;font-weight:600;line-height:1.2;color:var(--blue);word-break:normal;overflow-wrap:anywhere}
+.cal .it.str .tl,.cal .it.rest .tl{color:var(--mut)}
+.cal .it .pc{font-size:9.5px;line-height:1.2;color:var(--mut);word-break:normal;overflow-wrap:anywhere}
+.cal .it .pck{width:16px;height:16px;margin:1px 0 0;accent-color:var(--blue);cursor:pointer}
+.wkcnt{font-size:.8rem;color:var(--mut);margin:2px 0 0}
+.wkcnt b{color:var(--blue);font-weight:700}
+.caldet{margin-top:8px}
+.caldet .day{margin:0;border-bottom:0;padding:6px 2px 0}
+.caldet .day .km{color:var(--blue)}
+.caldet .day.today,.caldet .day.race{background:transparent;border:0}
+.caldet .badge{background:var(--blue)!important;color:#fff}
 </style>
 </head>
 <body data-tab="overview">
@@ -649,13 +671,40 @@ function dayHTML(d,today,p){
   return `<div class="day ${cls}"><div class="r1"><span class="dt">${d.date.slice(5).replace('-','/')}<em>${d.weekday}</em>${d.date===today?'<span class="badge">今天</span>':''}</span><span class="rt"><span class="km">${d.km?d.km+' km':''}</span>${ckHTML(d)}</span></div>
     <div class="ty">${d.type}</div>${ex?`<div class="ex">${ex}</div>`:''}<div class="nt">${d.note}</div>${d.core?`<div class="core"><b>${d.core.title}</b>｜${d.core.rounds}<br>${d.core.moves.join('・')}</div>`:''}</div>`;
 }
+const calAdd=(iso,n)=>{const t=new Date(iso+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);};
+let calSel=null;
+function calItem(d){
+  const run=(d.kind==='run'||d.kind==='race');
+  const pc=run?(d.pace||''):'';
+  const tl=d.kind==='str'?'重訓':(run?(d.kind==='race'?'比賽':'跑步')+' '+d.km+' km':'休息');
+  return `<div class="it ${run?'run':d.kind}"><span class="tl">${tl}</span>${pc?`<span class="pc">${pc}</span>`:''}${ckHTML(d)}</div>`;
+}
+function calDetail(date,today,p){
+  const ds=D.p.days.filter(d=>d.date===date); if(!ds.length) return '';
+  return ds.map(d=>dayHTML(d,today,p).replace(/<input[^>]*class="pck"[^>]*>/,'')).join('');
+}
 function showWeek(wk,fromUser){
-  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr(), ph=(p.week_phase||{})[wk]; const wdays=weeksMap[wk]; const wend=wdays[wdays.length-1].date; const act=D.a.filter(r=>r.date>=wk&&r.date<=wend).reduce((x,r)=>x+(+r.km),0); const planned=wdays.reduce((s,d)=>s+((d.kind==='run'||d.kind==='race')?+d.km:0),0); const isFut=false; const t=act;
+  if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr();
+  const all=p.days.filter(d=>d.week===wk);   // 整週（含已過去的日子）：計數用
+  const wend=calAdd(wk,6); const t=D.a.filter(r=>r.date>=wk&&r.date<=wend).reduce((x,r)=>x+(+r.km),0);
+  const nStr=all.filter(d=>d.kind==='str').length, nRun=all.filter(d=>(d.kind==='run'||d.kind==='race')&&+d.km>0).length;
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
-  const days=weeksMap[wk];
-  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>${isFut?'計畫':'已跑'} ${t.toFixed(1)} km</span></h3>${days.map(d=>dayHTML(d,today,p)).join('')}</div>`;
+  const dates=[...Array(7)].map((_,i)=>calAdd(wk,i));
+  const vis=dates.filter(x=>x>=today);
+  if(!calSel||!vis.includes(calSel)) calSel=vis.includes(today)?today:vis[0];
+  const cells=dates.map(dt=>{
+    const lab=+dt.slice(5,7)+'/'+ +dt.slice(8,10);
+    if(dt<today) return `<div class="pastc" aria-hidden="true"></div>`;
+    const ds=all.filter(d=>d.date===dt), km=ds.reduce((s,d)=>s+((d.kind==='run'||d.kind==='race')?+d.km:0),0);
+    return `<div class="day${dt===today?' today':''}${dt===calSel?' sel':''}" data-date="${dt}"><span class="dt">${lab}</span><span class="km">${km?km+' km':''}</span>${ds.map(calItem).join('')}</div>`;
+  }).join('');
+  $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>已跑 ${t.toFixed(1)} km</span></h3>
+    <div class="wkcnt">重訓 <b>${nStr}</b> 次・跑步 <b>${nRun}</b> 次</div>
+    <div class="cal">${['一','二','三','四','五','六','日'].map(x=>`<div class="wh">${x}</div>`).join('')}${cells}</div>
+    <div class="caldet">${calDetail(calSel,today,p)}</div></div>`;
   if(fromUser){const b=document.querySelector('#wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}
 }
+$('plan').addEventListener('click',e=>{if(e.target.closest('input'))return;const c=e.target.closest('.cal .day[data-date]');if(!c)return;calSel=c.dataset.date;showWeek(curWeek);});
 function plan(){
   pMigrate();
   const p=D.p; $('caveat').textContent=p.caveat;
