@@ -440,3 +440,7 @@
 - 課表分頁每週改為 7 欄日曆（一～日），每格：日期、項目（重訓／跑步 X km＋配速小字／休息）、原本的打勾框（同 key `plan-check-日期-run|str|rest`，舊勾選保留，不自動打勾）。今天以前的日子顯示空白虛線格（不顯示內容），但週標題下「重訓 N 次・跑步 N 次」以整週計（跑步＝kind run/race 且 km>0）。點某格在日曆下方顯示該日完整說明（含核心收尾，內容不變），預設今天。週切換 chips、左右滑動不變；只用藍灰。
 - 只改 index_template.html（`showWeek()`、新增 `calItem/calDetail/calAdd`、`.cal` CSS）；make_plan／課表數字／飲食未動。備份 `*.pre_calendar1104.*`。
 - **2026-11-04 21:4x 修改（使用者：「週一週二的要留著吧」）**：本週已過的日子改為正常顯示項目與打勾框（淡灰 `.cal .day.past`，opacity .6），不再是空白格；已過的整週仍隱藏。備份 `*.pre_calendar2_1104.*`。
+
+## 2026-11-05 8:00 例行
+- 新增 activities.csv：2026-11-04 Night Trail Run（跑步機）3.36 km、21:08、6:17/km、avg HR 148（https://www.strava.com/activities/20858187748）。新增 workouts.csv：2026-11-04 22:32 Night Activity Workout 0:30:51（avg 98／max 120 bpm、67 kcal，…/20858186977）。
+- 週 11/2（目標 22 km）已跑 3.36 km、Workout 2 次；剩餘 11/5 4＋11/7 7＋11/8 8 km，無動態補量。test_tabs 390 700（8767 埠）通過、無 JS 錯誤；已推送。
