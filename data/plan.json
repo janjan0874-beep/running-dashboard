@@ -541,12 +541,34 @@
   {
    "date": "2026-11-07",
    "weekday": "週六",
+   "kind": "str",
+   "type": "重訓",
+   "km": 0,
+   "pace": "",
+   "treadmill": "",
+   "note": "",
+   "week": "2026-11-02",
+   "core": {
+    "title": "核心收尾 10 分鐘（重訓後）",
+    "rounds": "2 輪，動作間休息 30 秒",
+    "moves": [
+     "羅馬椅抬膝 Captain's chair knee raise 12 下",
+     "下斜反向捲腹 Decline reverse crunch 12 下",
+     "下斜捲腹 Decline crunch 12 下",
+     "棒式 Plank 40 秒",
+     "臀橋 Glute bridge 15 下"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "weekday": "週六",
    "kind": "run",
    "type": "輕鬆跑",
-   "km": 10,
-   "pace": "7:10–7:30",
+   "km": 5,
+   "pace": "7:20/km",
    "treadmill": "8.2 km/h",
-   "note": "本週跑量不足，由 7 km 加到 10 km（11/07 動態補量）；全程輕鬆、心率盡量 ≤150，累積有氧量。",
+   "note": "全程輕鬆、心率盡量 ≤150，累積有氧量。",
    "week": "2026-11-02"
   },
   {
@@ -555,7 +577,7 @@
    "kind": "run",
    "type": "輕鬆長跑",
    "km": 8,
-   "pace": "7:10–7:30",
+   "pace": "7:20/km",
    "treadmill": "8.2 km/h",
    "note": "全程輕鬆，心率盡量 ≤150。週日回報：體重、體脂、腰圍、疲勞度（1–5 分）。",
    "week": "2026-11-02"

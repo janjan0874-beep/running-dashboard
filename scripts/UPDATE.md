@@ -444,3 +444,6 @@
 ## 2026-11-05 8:00 例行
 - 新增 activities.csv：2026-11-04 Night Trail Run（跑步機）3.36 km、21:08、6:17/km、avg HR 148（https://www.strava.com/activities/20858187748）。新增 workouts.csv：2026-11-04 22:32 Night Activity Workout 0:30:51（avg 98／max 120 bpm、67 kcal，…/20858186977）。
 - 週 11/2（目標 22 km）已跑 3.36 km、Workout 2 次；剩餘 11/5 4＋11/7 7＋11/8 8 km，無動態補量。test_tabs 390 700（8767 埠）通過、無 JS 錯誤；已推送。
+
+## 2026-11-07 8:00 例行
+- Strava 11/4 之後沒有新活動（11/5 計畫 HM 配速感 4 km 沒跑；11/6 重訓沒有 Workout 紀錄）。週 11/2（目標 22 km）已跑 3.36 km、Workout 2 次；動態補量 11/7 維持 7→10 km（+3 上限），剩餘 10＋8＝18 km，仍差 0.64 km。test_tabs 390 700 通過、無 JS 錯誤；已推送（80d662d），線上 data_through 2026-11-04。
