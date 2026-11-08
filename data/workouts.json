@@ -1,17 +1,17 @@
 {
- "through": "2026-11-04",
+ "through": "2026-11-07",
  "first_workout": "2025-03-22",
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
- "run_through": "2026-11-04",
- "workout_through": "2026-11-04",
+ "run_through": "2026-11-07",
+ "workout_through": "2026-11-07",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
   "HIIT"
  ],
  "type_counts": {
-  "Workout": 218,
+  "Workout": 220,
   "HIIT": 1,
   "Swim": 2,
   "Stair-Stepper": 1
@@ -2902,6 +2902,32 @@
    "cal": 67,
    "strength": true,
    "url": "https://www.strava.com/activities/20858186977"
+  },
+  {
+   "date": "2026-11-07",
+   "start": "14:56",
+   "name": "Afternoon Activity",
+   "type": "Workout",
+   "elapsed": "0:30:38",
+   "elapsed_sec": 1838,
+   "avg_hr": 103,
+   "max_hr": 122,
+   "cal": 93,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20892879816"
+  },
+  {
+   "date": "2026-11-07",
+   "start": "16:10",
+   "name": "Afternoon Activity",
+   "type": "Workout",
+   "elapsed": "1:11:41",
+   "elapsed_sec": 4301,
+   "avg_hr": 159,
+   "max_hr": 190,
+   "cal": 805,
+   "strength": true,
+   "url": "https://www.strava.com/activities/20892880423"
   }
  ],
  "weekly": [
@@ -4098,16 +4124,16 @@
   {
    "week": "2026-11-02",
    "complete": false,
-   "run_sec": 1268,
-   "n": 2,
-   "n_workout": 2,
+   "run_sec": 2386,
+   "n": 4,
+   "n_workout": 4,
    "n_hiit": 0,
-   "strength_sec": 4641,
+   "strength_sec": 10780,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 174,
-   "hr_sum": 195,
-   "hr_n": 2
+   "cal": 1072,
+   "hr_sum": 457,
+   "hr_n": 4
   }
  ],
  "monthly": [
@@ -4393,17 +4419,17 @@
   },
   {
    "month": "2026-11",
-   "run_n": 2,
-   "run_sec": 4463,
-   "n": 2,
-   "n_workout": 2,
+   "run_n": 3,
+   "run_sec": 5581,
+   "n": 4,
+   "n_workout": 4,
    "n_hiit": 0,
-   "strength_sec": 4641,
+   "strength_sec": 10780,
    "other_n": 0,
    "other_sec": 0,
-   "cal": 174,
-   "hr_sum": 195,
-   "hr_n": 2
+   "cal": 1072,
+   "hr_sum": 457,
+   "hr_n": 4
   }
  ]
 }

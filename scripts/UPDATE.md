@@ -447,3 +447,7 @@
 
 ## 2026-11-07 8:00 例行
 - Strava 11/4 之後沒有新活動（11/5 計畫 HM 配速感 4 km 沒跑；11/6 重訓沒有 Workout 紀錄）。週 11/2（目標 22 km）已跑 3.36 km、Workout 2 次；動態補量 11/7 維持 7→10 km（+3 上限），剩餘 10＋8＝18 km，仍差 0.64 km。test_tabs 390 700 通過、無 JS 錯誤；已推送（80d662d），線上 data_through 2026-11-04。
+
+## 2026-11-08 8:00 例行
+- 新增 activities.csv：2026-11-07 Morning Run（跑步機）3.06 km、18:38、6:05/km、avg HR 156（https://www.strava.com/activities/20889553377）。新增 workouts.csv：2026-11-07 14:56 Afternoon Activity Workout 0:30:38（avg 103／max 122 bpm、93 kcal，…/20892879816）；2026-11-07 16:10 Afternoon Activity Workout 1:11:41（avg 159／max 190 bpm、805 kcal，…/20892880423）。11/5、11/6、11/8 沒有新活動（11/5 計畫 HM 配速感 4 km 沒跑；11/6 重訓沒有 Workout 紀錄）。
+- 週 11/2（目標 22 km）已跑 6.42 km、Workout 4 次；今天輕鬆長跑 10 km（11/7、11/8 為 MANUAL_LOCK，不補量）。
