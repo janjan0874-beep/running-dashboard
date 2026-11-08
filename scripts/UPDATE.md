@@ -450,4 +450,11 @@
 
 ## 2026-11-08 8:00 例行
 - 新增 activities.csv：2026-11-07 Morning Run（跑步機）3.06 km、18:38、6:05/km、avg HR 156（https://www.strava.com/activities/20889553377）。新增 workouts.csv：2026-11-07 14:56 Afternoon Activity Workout 0:30:38（avg 103／max 122 bpm、93 kcal，…/20892879816）；2026-11-07 16:10 Afternoon Activity Workout 1:11:41（avg 159／max 190 bpm、805 kcal，…/20892880423）。11/5、11/6、11/8 沒有新活動（11/5 計畫 HM 配速感 4 km 沒跑；11/6 重訓沒有 Workout 紀錄）。
-- 週 11/2（目標 22 km）已跑 6.42 km、Workout 4 次；今天輕鬆長跑 10 km（11/7、11/8 為 MANUAL_LOCK，不補量）。
+- 週 11/2（目標 22 km）已跑 6.42 km、Workout 4 次；今天輕鬆長跑 10 km（11/7、11/8 為 MANUAL_LOCK，不補量）。test_tabs 390 700 通過、無 JS 錯誤；已推送（6ae2151），線上 generated 2026-11-08、data_through 2026-11-07。
+
+## 2026-11-08 週日飲食動態調整
+- 使用者回報：體重 71.0 kg、體脂 17.0%（10/06 為 71.0 kg、17.5%）；腰圍、疲勞度未回報。33 天體重變化 0.0%、體脂 −0.5 個百分點；脂肪質量 12.425 → 12.070 kg（−0.355 kg），去脂體重 58.575 → 58.930 kg。
+- 週 11/02（目標 22 km）：Strava Run 16.42 km＝74.6%（11/04 3.36、11/07 3.06、11/08 Nike Run Club: Sunday Evening Run 10.00 km／1:02:05／6:13/km，寫入 activities.csv，url 待 8:00 例行補）；Workout 4 次（11/02、11/04、11/07 0:30:38 與 1:11:41）。11/08 另有 Yoga「Afternoon Activity」51:43（不算 Workout，缺 url／開始時間／熱量，留給 8:00 例行補）。
+- 決策：維持 `DEFICIT = 183`、10/26 起 D＝231.4 不變（體脂有降，不適用「體重與體脂都沒動 → +100」；體重週降幅 0.0%，不適用 −100 或維持帶的 0.3–0.7% 規則；跑量 <80% 不加大缺口，下週碳水仍照課表 23 km 排）。profile.json `body.body_fat_pct` 17.5 → 17.0、`body.as_of` 改 2026-11-08（體重 71.0 不變，BMR／缺口計算不變）。
+- 12/31 計畫合計目標 16093 kcal 仍由 D 自動對齊；實際 33 天只掉 0.355 kg 脂肪，若維持此速度無法在 12/31 前到 15%，不硬加大缺口。
+- 備份：`make_diet.pre_sunday1108.py`、`UPDATE.pre_sunday1108.md`、`/tmp/diet.pre_sunday1108.json`、`/tmp/profile.pre_sunday1108.json`。
