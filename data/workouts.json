@@ -4,7 +4,7 @@
  "run_detail_from": "2025-03-20",
  "run_week_from": "2025-03-24",
  "run_through": "2026-11-08",
- "workout_through": "2026-11-07",
+ "workout_through": "2026-11-08",
  "target_per_week": 2,
  "strength_types": [
   "Workout",
@@ -14,7 +14,8 @@
   "Workout": 220,
   "HIIT": 1,
   "Swim": 2,
-  "Stair-Stepper": 1
+  "Stair-Stepper": 1,
+  "Yoga": 1
  },
  "rows": [
   {
@@ -2928,6 +2929,19 @@
    "cal": 805,
    "strength": true,
    "url": "https://www.strava.com/activities/20892880423"
+  },
+  {
+   "date": "2026-11-08",
+   "start": "14:14",
+   "name": "Afternoon Activity",
+   "type": "Yoga",
+   "elapsed": "0:51:43",
+   "elapsed_sec": 3103,
+   "avg_hr": 80,
+   "max_hr": 112,
+   "cal": 71,
+   "strength": false,
+   "url": "https://www.strava.com/activities/20904873335"
   }
  ],
  "weekly": [
@@ -4129,8 +4143,8 @@
    "n_workout": 4,
    "n_hiit": 0,
    "strength_sec": 10780,
-   "other_n": 0,
-   "other_sec": 0,
+   "other_n": 1,
+   "other_sec": 3103,
    "cal": 1072,
    "hr_sum": 457,
    "hr_n": 4
@@ -4425,8 +4439,8 @@
    "n_workout": 4,
    "n_hiit": 0,
    "strength_sec": 10780,
-   "other_n": 0,
-   "other_sec": 0,
+   "other_n": 1,
+   "other_sec": 3103,
    "cal": 1072,
    "hr_sum": 457,
    "hr_n": 4
