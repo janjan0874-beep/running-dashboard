@@ -458,3 +458,9 @@
 - 決策：維持 `DEFICIT = 183`、10/26 起 D＝231.4 不變（體脂有降，不適用「體重與體脂都沒動 → +100」；體重週降幅 0.0%，不適用 −100 或維持帶的 0.3–0.7% 規則；跑量 <80% 不加大缺口，下週碳水仍照課表 23 km 排）。profile.json `body.body_fat_pct` 17.5 → 17.0、`body.as_of` 改 2026-11-08（體重 71.0 不變，BMR／缺口計算不變）。
 - 12/31 計畫合計目標 16093 kcal 仍由 D 自動對齊；實際 33 天只掉 0.355 kg 脂肪，若維持此速度無法在 12/31 前到 15%，不硬加大缺口。
 - 備份：`make_diet.pre_sunday1108.py`、`UPDATE.pre_sunday1108.md`、`/tmp/diet.pre_sunday1108.json`、`/tmp/profile.pre_sunday1108.json`。
+
+## 2026-11-09 8:00 例行
+- 補 activities.csv：2026-11-08 Nike Run Club: Sunday Evening Run 10.00 km、Moving Time 1:02:05、配速 6:12/km（週日飲食調整時已寫入，配速原為 6:13；活動頁顯示 6:12）、url https://www.strava.com/activities/20906405083。11/9 沒有新跑步。
+- 新增 workouts.csv：2026-11-08 14:14 Afternoon Activity Yoga 0:51:43（avg 80／max 112 bpm、71 kcal，…/20904873335）。Yoga 不算 Workout。
+- 週 11/2 最終：跑 16.42／22 km、Workout 4 次。週 11/9（目標 23 km）已跑 0 km、Workout 0 次；今天重訓，無動態補量。
+- test_tabs 390 700 通過、無 JS 錯誤；已推送（af6a613），線上 generated 2026-11-09、data_through 2026-11-08。
