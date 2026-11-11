@@ -464,3 +464,8 @@
 - 新增 workouts.csv：2026-11-08 14:14 Afternoon Activity Yoga 0:51:43（avg 80／max 112 bpm、71 kcal，…/20904873335）。Yoga 不算 Workout。
 - 週 11/2 最終：跑 16.42／22 km、Workout 4 次。週 11/9（目標 23 km）已跑 0 km、Workout 0 次；今天重訓，無動態補量。
 - test_tabs 390 700 通過、無 JS 錯誤；已推送（af6a613），線上 generated 2026-11-09、data_through 2026-11-08。
+
+## 2026-11-10 8:00 例行
+- 新增 workouts.csv：2026-11-09 16:06 Afternoon Activity Workout 0:36:19（avg 98／max 121 bpm、89 kcal，…/20917519761）。11/9、11/10 沒有新跑步。
+- 週 11/9（目標 23 km）已跑 0 km、Workout 1 次；今天輕鬆跑 3 km，無動態補量。
+- test_tabs 390 700 通過、無 JS 錯誤；已推送（94af3fe），線上 generated 2026-11-10、data_through 2026-11-08。
