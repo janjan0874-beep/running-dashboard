@@ -203,7 +203,7 @@ def main():
         w4=dict(runs=len(w4), km=round(sum(a["km"] for a in w4), 1), km_per_week=round(sum(a["km"] for a in w4)/4, 1)),
         longest=dict(km=longest["km"], date=longest["date"]),
         best_month=max(mj, key=lambda m: m["km"])["month"],
-        trend=dict(m3=sum_months(3), m3_prev=sum_months(3, 3), m6=sum_months(6), m6_prev=sum_months(6, 6),
+        trend=dict(m1=sum_months(1), m1_prev=sum_months(1, 1), m3=sum_months(3), m3_prev=sum_months(3, 3),
                    m12=sum_months(12), m12_prev=round(sum(m["km"] for m in mj[:-12]), 1) if len(mj) > 12 else None,
                    aug_to_sep_pct=jump, sep_km=sep["km"] if sep else None, aug_km=aug["km"] if aug else None),
         outlier_threshold=prof["pace_outlier_threshold_min"],

@@ -303,7 +303,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
 <div class="stick"><div class="in">
   <header><h1>🏃 跑步儀表板</h1><div class="hdr-r"><div class="note">更新 <span id="updated">—</span><br>資料截至 <span id="through">—</span></div><button id="refresh" type="button" aria-label="重新整理" title="重新整理"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg></button></div></header>
   <div class="ranges" id="ranges">
-    <button data-m="3">近3個月</button><button data-m="6">近6個月</button><button data-m="12">近12個月</button><button data-m="0" class="on">至今</button>
+    <button data-m="1">近1個月</button><button data-m="3">近3個月</button><button data-m="12">近12個月</button><button data-m="0" class="on">至今</button>
   </div>
 </div></div>
 <nav id="tabbar" role="tablist" aria-label="分頁">
@@ -484,7 +484,7 @@ const addM=(ym,k)=>{let y=+ym.slice(0,4),m=+ym.slice(5,7)-1+k;y+=Math.floor(m/12
 const dayMs=864e5, isoMs=s=>Date.parse(s+'T00:00:00Z');
 const lastDay=ym=>{const y=+ym.slice(0,4),m=+ym.slice(5,7);return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);};
 let D={}, months=0;
-const RN={3:'近3個月',6:'近6個月',12:'近12個月',0:'至今'};
+const RN={1:'近1個月',3:'近3個月',12:'近12個月',0:'至今'};
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}  // 2026-10-10：請瀏覽器保留本站資料（打勾），不支援就略過
 async function load(){
@@ -961,7 +961,7 @@ $('ranges').addEventListener('click',e=>{const b=e.target.closest('button');if(!
 const onMQ=()=>{if(D.m) render();};
 MQ.addEventListener?MQ.addEventListener('change',onMQ):MQ.addListener(onMQ);
 (()=>{let r=null;try{r=localStorage.getItem('dash_range');}catch(e){}
-  if(r!=null&&['0','3','6','12'].includes(r)){months=+r;document.querySelectorAll('#ranges button').forEach(x=>x.classList.toggle('on',+x.dataset.m===months));}
+  if(r!=null&&['0','1','3','12'].includes(r)){months=+r;document.querySelectorAll('#ranges button').forEach(x=>x.classList.toggle('on',+x.dataset.m===months));}
   let t=tabFromHash();if(!t){try{t=localStorage.getItem('dash_tab');}catch(e){}}
   curTab=null;setTab(TABS.includes(t)?t:'overview',{fromHash:true,noScroll:true});
   if(location.hash!=='#tab='+curTab) history.replaceState(null,'','#tab='+curTab);})();
