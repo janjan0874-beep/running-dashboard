@@ -491,3 +491,8 @@
 - summary.json 的 trend 改為 m1／m1_prev，拿掉 m6／m6_prev（前端本來就用 activities／monthly 即時計算，不讀這個欄位）。
 - 備份：`*.pre_1m1112.*`（index_template、test_tabs、update_dashboard、UPDATE）。
 
+## 2026-11-12 配速分頁圖表放到最上面（使用者：「配速圖表要放上面吧」「都文字我看屁啊」）
+- 配速分頁：每趟配速趨勢圖改到期間按鈕正下方；每週最快配速圖也改到該區塊說明文字上面；成績預估文字卡移到兩張圖下面。只改順序，圖表、資料與規則不變。
+- 總覽、月度、訓練已檢查：月度圖本來就在最上面；總覽與訓練是 KPI 卡片＋圖，第一屏都看得到主圖，沒改（總覽仍要第一屏同時看到 KPI 與每週跑量圖）。
+- 備份：`*.pre_chartTop1112.*`（index_template、UPDATE）。
+
