@@ -500,3 +500,8 @@
 - 新增 activities.csv：2026-11-12 23:47 Night Run 2.25 km、13:19、5:54/km（https://www.strava.com/activities/20961348275；心率未顯示、151 kcal）。11/09–11/11、11/13 早上沒有新跑步；11/12 沒有其他活動；11/10、11/13 早上也沒有 Workout。
 - 週 11/9（目標 23 km）已跑 2.25 km、Workout 2 次；動態補量 11/14 維持 7→10 km（+3 上限），剩餘 10＋9＝19 km，合計 21.25 km，仍差 1.75 km。今天重訓（含核心收尾 10 分鐘）。
 - test_tabs 390 700 通過、無 JS 錯誤（本週 2.25 km 在頁面以 toFixed(1) 顯示 2.3 km，測試改為同時接受 Python 與 JS 一位小數進位）；已推送（07445f3），線上 generated 2026-11-13、data_through 2026-11-12。
+
+## 2026-11-14 8:00 例行
+- 新增 workouts.csv：2026-11-13 19:37 Evening Workout 0:40:39（avg 93／max 119 bpm、102 kcal，https://www.strava.com/activities/20971172242）。11/13、11/14 早上沒有新跑步。
+- 週 11/9（目標 23 km）已跑 2.25 km、Workout 3 次；動態補量 11/14 維持 7→10 km（+3 上限），剩餘 10＋9＝19 km，合計 21.25 km，仍差 1.75 km。今天輕鬆跑＋strides 10 km。
+- test_tabs 390 700 通過、無 JS 錯誤；已推送（c455ea0），線上 generated 2026-11-14、data_through 2026-11-12。
