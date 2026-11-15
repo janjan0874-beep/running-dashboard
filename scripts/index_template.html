@@ -153,6 +153,7 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dtab tr.sub td{font-weight:700;border-top:1px solid #dfe3e8}
 .mtips{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:#4b5563;line-height:1.5}
 .mtips li{margin-bottom:2px}
+.dnote{margin:6px 0 4px;padding:6px 8px;font-size:12.5px;line-height:1.5;color:#7c2d12;background:#fff7ed;border-radius:6px}
 .budget{margin-top:12px;background:#f1f8f5;border:1px solid #cfe9dd;border-radius:12px;padding:10px 12px}
 .budget h4{margin:0 0 2px;font-size:14px}
 .budget .tgrid>div{background:#fff;border:0}
@@ -908,7 +909,7 @@ function dDay(d,today,openDate){
   const isT=d.date===today;
   return `<details class="dday${isT?' today':''}" data-date="${d.date}"${d.date===openDate?' open':''}><summary><span class="dd">${+d.date.slice(5,7)}/${+d.date.slice(8,10)}<em>${d.weekday}</em>${isT?'<span class="dtag">今天</span>':''}</span>
     <span class="dk">目標<b data-k="kcal">${d.targets.kcal}</b> kcal<span class="deat">${dEatHtml(d)}</span></span></summary>
-    <div class="dbody"><div class="dsum">${dSumHtml(d)}</div><div class="dgs">${dGroups(d)}</div></div></details>`;
+    <div class="dbody"><div class="dsum">${dSumHtml(d)}</div>${(d.notes||[]).filter(n=>n.includes('跑完才吃')).map(n=>`<p class="dnote">${n}</p>`).join('')}<div class="dgs">${dGroups(d)}</div></div></details>`;
 }
 function dShowWeek(wk,fromUser){
   const days=Object.values(D.d.days).filter(d=>d.week===wk&&d.date>=todayStr()).sort((a,b)=>a.date<b.date?-1:1); if(!days.length) return; dWeek=wk; const today=todayStr();
@@ -930,7 +931,8 @@ function dietRender(){
     <li>熱量缺口：10/25 前每天 ${X.meta.deficit} kcal，10/26 起 ${gd.d} kcal；12/31 前合計 ${String(gd.goal).replace('.0','')} kcal。</li>
     <li><b>蛋白質：每天至少 130.0 g</b>（固定 114.7 g：雞蛋 2 顆、Meiji 2 瓶、午餐肉片 160.6 g），當天目標見每天第一行。</li>
     <li>早餐、午餐固定（午餐 700 kcal），晚餐自由吃剩下的。</li>
-    <li>10/23、10/24 賽前補碳：碳水 568 g，不設缺口。</li></ul>`;
+    <li>10/23、10/24 賽前補碳：碳水 568 g，不設缺口。</li>
+    <li><b>11/16 起跑步日：跑步熱量跑完才吃</b>，沒跑每 1 km 碳水少 17.8 g（先不吃訓練前後香蕉，再扣晚餐主食、午餐白飯）。</li></ul>`;
 }
 $('d_wkchips').addEventListener('click',e=>{const b=e.target.closest('button');if(b)dShowWeek(b.dataset.wk,true);});
 // ===== 分頁 =====
