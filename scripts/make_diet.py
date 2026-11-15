@@ -19,6 +19,11 @@ BODY_FAT = float(_B["body_fat_pct"]); BODY_FAT_GOAL = float(_B["body_fat_goal_pc
 # 週 11/02：跑 16.42／22 km＝74.6%（<80%；11/04 3.36、11/07 3.06、11/08 10.00）；Workout 4 次（11/02、11/04、11/07×2）。
 # 決策：維持 DEFICIT＝183、10/26 起 D＝231.4（體脂有降不加缺口；跑量不足不加大缺口、下週碳水仍照課表 23 km 排）。
 # 12/31 計畫合計仍約目標 16093 kcal；實際減脂 0.355 kg／33 天，若維持此速度無法在 12/31 前到 15%，不硬加大缺口。
+# 2026-11-15 週日複核：本週沒有體重／體脂／腰圍／疲勞回報（最後一次 11/08：71.0 kg、17.0%），體重規則無法套用。
+# 週 11/09：跑 2.25／23 km＝9.8%（截至 11/15 20:38，11/15 長跑 9 km 未出現在 Strava）；Workout 6 次。連 2 週 <80%（74.6%、9.8%）。
+# 決策：缺口不動（D 自動算 230.7）；跑量完成度 <80% → 依實際消耗下修碳水：11/16 起跑步日的跑步熱量改成「跑完才吃」，
+# 沒跑就碳水少 17.8 g／km，依序扣訓練前後香蕉、晚餐主食、午餐白飯，見 RUN_EARN_FROM。
+RUN_EARN_FROM = "2026-11-16"
 DEFICIT = 183          # kcal/天：10/6–10/25 一般日的缺口（2026-11-11 起 12/27 已改一般日，不再用此缺口）
 # 12/31 前減脂目標：2.09 kg × 7700 kcal＝16093 kcal（10/6–12/31 合計）。10/26 起的一般日用同一個缺口 D，
 # 由 build() 依其他日子的實際缺口自動反推（課表一改，每日 8:00 重建時 D 會自動重算），D 上限 400。
@@ -616,6 +621,14 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         if adj == "cap":
             ch = [f"晚餐碳水預算 {g1(dc)} g"]
             notes.append(f"脂肪已到上限 {g1(CAP_T)} g（{FAT_CAP:.1f} g/kg），多出的熱量放進碳水：碳水增為 {g1(C)} g（" + "、".join(ch) + "）。")
+        _rk = sum(hu(RUN_KCAL_PER_KG_KM * WEIGHT * e["km"] * 10) for e in ents if e["kind"] == "run")
+        if ds >= RUN_EARN_FROM and _rk > 0 and mode == "normal":   # 2026-11-15 週日調整：跑量完成度 9.8%，跑步熱量改成跑完才吃
+            _km = sum(e["km"] for e in ents if e["kind"] == "run")
+            _pc = hu(RUN_KCAL_PER_KG_KM * WEIGHT * 10) / 4
+            _need = _rk // 4; _tb = sums([t for t in tr_items if t["key"] == "banana"])[0]
+            _b = min(_tb, _need); _d = min(dc, _need - _b); _l = _need - _b - _d
+            _parts = ([f"訓練前後香蕉不吃（碳水 {g1(_b)} g）"] if _b else []) + ([f"晚餐主食碳水少 {g1(_d)} g" + ("（晚餐主食全部不吃）" if _d == dc else "")] if _d else []) + ([f"午餐白飯少 {round(_l / F['rice']['c'] * 100)} g（碳水 {g1(_l)} g）"] if _l else [])
+            notes.append(f"跑步熱量 {g1(_rk)} kcal 跑完才吃：今天 {_km:g} km 沒跑，碳水少 {g1(_need)} g＝" + "、".join(_parts) + f"；只跑一部分，每少跑 1 km 碳水少 {g1(_pc)} g，依同樣順序扣。")
         if d.weekday() == 6:
             notes.append("週日：早上起床、如廁後空腹量體重、體脂、腰圍，記錄後回報。")
         if tier == "prelong":

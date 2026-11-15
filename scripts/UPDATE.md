@@ -505,3 +505,16 @@
 - 新增 workouts.csv：2026-11-13 19:37 Evening Workout 0:40:39（avg 93／max 119 bpm、102 kcal，https://www.strava.com/activities/20971172242）。11/13、11/14 早上沒有新跑步。
 - 週 11/9（目標 23 km）已跑 2.25 km、Workout 3 次；動態補量 11/14 維持 7→10 km（+3 上限），剩餘 10＋9＝19 km，合計 21.25 km，仍差 1.75 km。今天輕鬆跑＋strides 10 km。
 - test_tabs 390 700 通過、無 JS 錯誤；已推送（c455ea0），線上 generated 2026-11-14、data_through 2026-11-12。
+
+
+## 2026-11-15 8:00 例行
+- 新增 workouts.csv：2026-11-14 10:17 Morning Workout 0:59:31（avg 143／max 179 bpm、524 kcal，https://www.strava.com/activities/20979099709）；2026-11-14 19:31 Evening Workout 0:57:59（avg 107／max 155 bpm、263 kcal，https://www.strava.com/activities/20985786428）。11/14、11/15 早上沒有新跑步（11/14 計畫輕鬆跑＋strides 10 km 沒跑）。
+- 週 11/9（目標 23 km）已跑 2.25 km、Workout 5 次；今天是輕鬆長跑 9 km，動態補量不可加在長跑、11/14 已過不能改，剩餘 9 km，合計 11.25 km，仍差 11.75 km。
+- test_tabs 390 700 通過、無 JS 錯誤；已推送（19e96f2），線上 generated 2026-11-15、data_through 2026-11-12。
+
+## 2026-11-15 週日飲食動態調整
+- 本週沒有體重／體脂／腰圍／疲勞回報（最後一次 11/08：71.0 kg、17.0%），體重規則無法套用，提醒使用者回報。
+- 週 11/09（目標 23 km）：Strava Run 2.25 km＝9.8%（11/12 2.25；截至 11/15 20:38，11/15 輕鬆長跑 9 km 未出現在 Strava，11/15 只有 Morning Workout 59:48 …/20992216257，留給 8:00 例行寫入）；Workout 6 次（11/09、11/11、11/13、11/14×2、11/15）。連 2 週 <80%（74.6%、9.8%）。
+- 決策：缺口不動（DEFICIT 183、10/26 起 D＝230.7 自動算；無量測不加缺口）。跑量 <80% → 依實際消耗下修碳水：新增 `RUN_EARN_FROM = "2026-11-16"`，11/16 起跑步日 notes 加「跑步熱量跑完才吃」：沒跑就碳水少 跑步 kcal／4（17.8 g／km），依序扣訓練前後香蕉、晚餐主食、午餐白飯；目標數字本身不變。
+- 12/31 計畫合計 16093.7 kcal（目標 16093）；但這是假設課表跑完，實際沒跑又照吃時缺口會不足。
+- 備份：`make_diet.pre_sunday1115.py`、`UPDATE.pre_sunday1115.md`、`/tmp/diet.pre_sunday1115.json`。
