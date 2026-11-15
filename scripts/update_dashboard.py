@@ -222,7 +222,7 @@ def main():
     json.dump(p, open(os.path.join(DATA, "plan.json"), "w"), ensure_ascii=False, indent=1)
     md = make_plan.to_md(p)
     open(os.path.join(HERE, "plan.md"), "w").write(md); open(os.path.join(REPO, "plan.md"), "w").write(md)
-    # 飲食：依課表逐日產生 data/diet.json（以日期為鍵，每日訊息可引用 days[日期].text）
+    # 飲食：依課表逐日產生 data/diet.json（以日期為鍵；11/16 起跑步日依 activities.csv 實跑公里重算 carbs_shown／run_adjust，8:00 訊息請用 days[日期].text 的碳水＋蛋白質短訊）
     import make_diet
     json.dump(make_diet.build(), open(os.path.join(DATA, "diet.json"), "w"), ensure_ascii=False, separators=(",", ":"))
     # 網頁：index.html 由 index_template.html（含手機版 RWD 設計）原樣輸出，每日更新不會覆蓋成舊版

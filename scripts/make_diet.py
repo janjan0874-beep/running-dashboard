@@ -332,7 +332,68 @@ def build():
                              fixed_gap=g1(fixed_gap), capped=capped, shortfall=g1(short) if capped else "0.0",
                              text=f"12/31 前總熱量缺口目標 {g1(GOAL_T).replace('.0', '')} kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}），目前計畫合計 {g1(total)} kcal"
                                   + (f"；10/26 起一般日每天缺口 {g1(d_t)} kcal" if not capped else f"；每天缺口已到上限 {D_CAP:g} kcal，仍差 {g1(short)} kcal"))
+    apply_run_status(p)
     return p
+
+def _today_sg():
+    return (dt.datetime.utcnow() + dt.timedelta(hours=8)).date().isoformat()
+
+def load_actual_run_km():
+    """Strava 實跑公里（activities.csv，同日多趟加總）。update_dashboard.py 每日 8:00 會先補新活動再重建 diet.json。"""
+    import csv
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "activities.csv")
+    km = {}
+    if os.path.isfile(path):
+        with open(path, newline="") as f:
+            for r in csv.DictReader(f):
+                try: km[r["date"]] = km.get(r["date"], 0.0) + float(r["km"])
+                except (KeyError, ValueError, TypeError): pass
+    return km
+
+def apply_run_status(p):
+    """依 Strava 實跑調整各日「要吃的碳水」（蛋白質維持計畫值）。不改 targets.carbs／kcal／餐點，只寫 targets.carbs_shown、run_adjust，並把 text 收成短訊（8:00／週日飲食訊息用）。
+    規則（11/16 起跑步日）：已過的日子按實跑比例扣（沒跑＝全扣、少跑＝少跑的 km × 17.8 g、跑滿＝全量）；今天已有實跑則同樣扣，尚未跑則仍顯示計畫碳水並註明「沒跑要少吃碳水 X g」（晚上可能還會跑）；未來日同樣顯示計畫值＋短註記。重訓／休息日不變。"""
+    today = _today_sg()
+    actuals = load_actual_run_km()
+    p["meta"]["run_earn_from"] = RUN_EARN_FROM
+    p["meta"]["run_earn_per_km"] = g1(hu(RUN_KCAL_PER_KG_KM * WEIGHT * 10) / 4)
+    for ds, day in p["days"].items():
+        planned = day["targets"]["carbs"]
+        protein = day["targets"]["protein"]
+        shown, note, status, cut_s, act_out, pk = planned, "", "na", "0.0", None, 0
+        re_ = day.get("run_earn")
+        if re_:
+            pk, rk = re_["planned_km"], re_["rk"]
+            full = re_["cut_full_t"]
+            if ds < today:
+                a = actuals.get(ds, 0.0)
+                a_rk = hu(RUN_KCAL_PER_KG_KM * WEIGHT * a * 10)
+                cut_t = max(0, rk - a_rk) // 4
+                shown = g1(max(0, hu(float(planned) * 10) - cut_t))
+                act_out, cut_s = round(a, 2), g1(cut_t)
+                if a + 1e-9 >= pk:
+                    status, note = "done", ""
+                elif a <= 0:
+                    status, note = "skipped", f"沒跑，碳水已少 {g1(cut_t)} g"
+                else:
+                    status, note = "partial", f"實跑 {a:g}／{pk:g} km，碳水已少 {g1(cut_t)} g"
+            elif ds == today:
+                a = actuals.get(ds, 0.0)
+                act_out = round(a, 2)
+                if a + 1e-9 >= pk:
+                    status, cut_s, note = "done", "0.0", ""
+                elif a > 0:
+                    a_rk = hu(RUN_KCAL_PER_KG_KM * WEIGHT * a * 10)
+                    cut_t = max(0, rk - a_rk) // 4
+                    shown, cut_s = g1(max(0, hu(float(planned) * 10) - cut_t)), g1(cut_t)
+                    status, note = "partial", f"實跑 {a:g}／{pk:g} km，碳水已少 {g1(cut_t)} g"
+                else:
+                    status, cut_s, note = "pending", g1(full), f"沒跑要少吃碳水 {g1(full)} g"
+            else:
+                status, cut_s, note = "future", g1(full), f"沒跑要少吃碳水 {g1(full)} g"
+        day["targets"]["carbs_shown"] = shown
+        day["run_adjust"] = dict(planned_km=pk, actual_km=act_out, cut=cut_s, carbs=shown, protein=protein, status=status, note=note)
+        day["text"] = f"{ds[5:].replace('-', '/')}（{day['weekday']}）｜{day['training']}｜碳水 {shown} g｜蛋白質 {protein} g。" + (f"{note}。" if note else "")
 
 def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
     YK_FATFIX.clear()
@@ -621,14 +682,13 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         if adj == "cap":
             ch = [f"晚餐碳水預算 {g1(dc)} g"]
             notes.append(f"脂肪已到上限 {g1(CAP_T)} g（{FAT_CAP:.1f} g/kg），多出的熱量放進碳水：碳水增為 {g1(C)} g（" + "、".join(ch) + "）。")
+        # 11/16 起跑步日：計畫碳水仍按課表全量寫入 targets；顯示值與短註記由 build() 結尾的 apply_run_status() 依 Strava 實跑公里決定（過去／今天已跑則按少跑的 km 比例扣碳水，未來日與今天尚未跑則維持計畫值並註明沒跑要少吃）。
+        run_earn = None
         _rk = sum(hu(RUN_KCAL_PER_KG_KM * WEIGHT * e["km"] * 10) for e in ents if e["kind"] == "run")
-        if ds >= RUN_EARN_FROM and _rk > 0 and mode == "normal":   # 2026-11-15 週日調整：跑量完成度 9.8%，跑步熱量改成跑完才吃
+        if ds >= RUN_EARN_FROM and _rk > 0 and mode == "normal":
             _km = sum(e["km"] for e in ents if e["kind"] == "run")
             _pc = hu(RUN_KCAL_PER_KG_KM * WEIGHT * 10) / 4
-            _need = _rk // 4; _tb = sums([t for t in tr_items if t["key"] == "banana"])[0]
-            _b = min(_tb, _need); _d = min(dc, _need - _b); _l = _need - _b - _d
-            _parts = ([f"訓練前後香蕉不吃（碳水 {g1(_b)} g）"] if _b else []) + ([f"晚餐主食碳水少 {g1(_d)} g" + ("（晚餐主食全部不吃）" if _d == dc else "")] if _d else []) + ([f"午餐白飯少 {round(_l / F['rice']['c'] * 100)} g（碳水 {g1(_l)} g）"] if _l else [])
-            notes.append(f"跑步熱量 {g1(_rk)} kcal 跑完才吃：今天 {_km:g} km 沒跑，碳水少 {g1(_need)} g＝" + "、".join(_parts) + f"；只跑一部分，每少跑 1 km 碳水少 {g1(_pc)} g，依同樣順序扣。")
+            run_earn = dict(planned_km=_km, rk=_rk, per_km_t=_pc, cut_full_t=_rk // 4)
         if d.weekday() == 6:
             notes.append("週日：早上起床、如廁後空腹量體重、體脂、腰圍，記錄後回報。")
         if tier == "prelong":
@@ -651,6 +711,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                                 carbs_gkg=f"{C/10/WEIGHT:.2f}", protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT_T/10/WEIGHT:.2f}",
                                 carbs_reduced=adj == "floor", carbs_raised=adj == "cap"),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
+        if run_earn: day["run_earn"] = run_earn
         def short(m):
             if m["slot"] == "早餐" and any(i["id"] == "bf-creatine" for i in m["items"]):   # 2026-10-09：早餐行固定格式「雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g」；週末（10/11 起）再接「＋亞坤 soya kopi O 1 杯＋亞坤咖椰吐司 1 份」
                 return "早餐：" + "＋".join(f"{i['name'].split('（')[0].replace(' High Protein', '')} {i['amount']}" for i in m["items"])

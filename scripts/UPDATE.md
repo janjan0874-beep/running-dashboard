@@ -69,7 +69,8 @@
 
 ## 「飲食」分頁（第 7 分頁，刀叉圖示；2026-10-06 新增）
 - 來源：`make_diet.py` → `data/diet.json`（`update_dashboard.py` 每次執行都會重產，每日 8:00 例行流程不需額外步驟）。範圍 2026-10-06～2026-12-31。
-- **diet.json 格式**：`{"meta": {...}, "days": {"YYYY-MM-DD": {...}}}`。每日訊息直接引用 `days["2026-10-06"]["text"]`（一段完整繁中摘要：當日目標、早餐、午餐、訓練前後、晚餐剩餘預算＋參考、睡前、週日提醒）。其他欄位：`tier`／`tier_label`、`training`、`targets`（carbs／protein／fat／kcal 字串，0.1 精度）、`meals[]`（slot、items[name, when, amount, carbs, protein, fat, kcal]、subtotal、tips）、`dinner`（剩餘預算＋example）、`notes`、`sunday`。
+- **diet.json 格式**：`{"meta": {...}, "days": {"YYYY-MM-DD": {...}}}`。每日訊息直接引用 `days["YYYY-MM-DD"]["text"]`，**2026-11-15 起改為短訊**：日期、課表標籤、碳水 g、**蛋白質 g**，跑步日再加一行「沒跑要少吃碳水 X g」或「實跑 A／B km，碳水已少 X g」。不要再列各餐、不要寫 kcal／脂肪。其他欄位仍完整保留（餐點、kcal 仍由 `make_diet.py` 計算）：`tier`／`tier_label`、`training`、`targets`（carbs／protein／fat／kcal 為計畫值；另有 `carbs_shown`＝儀表板與訊息要用的碳水）、`run_adjust`、`meals[]`、`dinner`、`notes`、`sunday`。
+- **每日 8:00 例行與週日飲食動態調整的回覆**：只報告當天（週日調整則下週逐日）的碳水 g 與 **蛋白質 g**、課表標籤，以及跑步日的短註記；不要再列各餐菜單，不要寫 kcal／脂肪。
 - 使用者資料在 `profile.json` 的 `body`（176 cm、32 歲、男、71 kg、體脂 17.5%、目標 15%）；體重變了改這裡即可。
 - **熱量（2026-10-06 起）**：BMR＝Mifflin-St Jeor 10×71＋6.25×176−5×32＋5＝1655；消耗（TDEE）＝1655×1.3＋課表運動（活動係數 2026-10-06 由 1.2 改 1.3：Pixel Watch 5 9/7–10/4 每日總消耗週平均 2227／2542／2702／2561，4 週平均 2508 kcal；手錶會高估，只部分校正；係數與手錶資料存在 profile.json `body.activity_factor`、`body.watch_calibration`，make_diet.py 讀取；備份 `*.pre_af13.*`）（跑步 71 kcal/km×公里；肌力（MET 5.0−1）×71×小時，時間取課表 note 的「N 分鐘」，沒寫算 45 分鐘；Hyrox／HIIT 用 MET 8.0；休息 0）。目標＝TDEE−183；10/23、10/24、10/25 吃到維持（`MAINTENANCE`）。卡片顯示「消耗 X kcal（基礎代謝 1655 × 1.2 ＋ 運動 Y）」「目標 X kcal（−183）」與運動明細。
 - **活動係數改回 1.2（2026-10-06 13:14，第五版）**：使用者「熱量估太多了我會胖死」→ `profile.json` `body.activity_factor` 由 1.3 改回 1.2（`watch_calibration.decision` 已註記；手錶資料只作參考）。維持熱量 1655 × 1.2 ＝ 1986.0（比 1.3 少 165.5 kcal）；一般日 10/6–10/25 仍是 −183（相對 1.3 的維持熱量等於 −348.5）；10/23–10/25 與長跑前一天的目標是公式值（碳水＋蛋白質＋脂肪），不受係數影響，但缺口變小（10/10、10/17 盈餘 625.4 kcal），所以 10/26 起的統一缺口 D 自動由 237.3 升到 249.8 kcal。減少的熱量全部由晚餐剩餘吸收（早餐、午餐 700 kcal 固定）；很多日子碰到脂肪下限 42.6 g，碳水由晚餐減少（卡片 notes 註明）。10/26 起的休息日晚餐剩餘 389.4 kcal（碳水 174.8 g）。註腳的活動係數說明改為「由 1.3 改回 1.2」。備份 `profile.pre_af12back.json`、`make_diet.pre_af12back.py`、`UPDATE.pre_af12back.md`。
@@ -519,3 +520,9 @@
 - 12/31 計畫合計 16093.7 kcal（目標 16093）；但這是假設課表跑完，實際沒跑又照吃時缺口會不足。
 - 備份：`make_diet.pre_sunday1115.py`、`UPDATE.pre_sunday1115.md`、`/tmp/diet.pre_sunday1115.json`。
 - 網頁：飲食分頁每天卡片展開後顯示「跑完才吃」提醒（.dnote），飲食大方向加第 5 行；備份 index_template.pre_sunday1115.html。
+
+## 2026-11-15 飲食分頁改成每天只看碳水／蛋白質，並依實跑動態調整（使用者：「飲食可以改成每天要吃的蛋白質跟碳水就好了我很難一一追蹤各餐」「配合運動的狀態調整」「動態調整」）
+- 飲食分頁每天一列：日期、課表標籤、碳水 g、**蛋白質 g**（粗體）；跑步日加一行短註記「沒跑要少吃碳水 X g」（未來日／今天尚未跑）或「實跑 A／B km，碳水已少 X g」／「沒跑，碳水已少 X g」（已過的日子依 Strava）。只顯示今天與未來（過往隱藏）。拿掉各餐打勾、小地瓜選填、kcal／脂肪與長篇說明。飲食大方向縮成 4 行（蛋白質至少 130.0 g、碳水照表、11/16 起沒跑或少跑每 1 km 碳水少 17.8 g、週日回報體圍）。藍＋灰不變。
+- 動態調整（`make_diet.apply_run_status`，`update_dashboard.py` 每日 8:00 重建 diet.json 時依 `activities.csv` 重算）：11/16 起跑步日，計畫碳水仍寫在 `targets.carbs`（餐點算法不變）；顯示用 `targets.carbs_shown`／`run_adjust`。已過的日子按實跑比例扣（沒跑＝全扣、少跑＝少跑 km × 17.8 g、跑滿＝全量）；今天已有實跑則同樣扣，尚未跑則仍顯示計畫值並註明少多少（晚上可能還會跑）；未來日同。重訓／休息日不變。**蛋白質維持計畫值，不隨少跑下修。**
+- 8:00 例行與週日飲食調整的訊息改讀短版 `days[日期].text`（只含碳水、蛋白質、課表、跑步短註記）。
+- 備份：`*.pre_dietSimple1115.*`（index_template、make_diet、test_tabs、update_dashboard、UPDATE）。
