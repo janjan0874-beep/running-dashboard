@@ -690,7 +690,7 @@ let calSel=null;
 function calItem(d){
   const run=(d.kind==='run'||d.kind==='race');
   const pc=run?(d.pace||''):'';
-  const tl=d.kind==='str'?'重訓':(run?(d.kind==='race'?'比賽':'跑步')+' '+d.km+' km':'休息');
+  const tl=/REVL/i.test(d.type||'')?'REVL 課程':d.kind==='str'?'重訓':(run?(d.kind==='race'?'比賽':'跑步')+' '+d.km+' km':'休息');
   return `<div class="it ${run?'run':d.kind}"><span class="tl">${tl}</span>${pc?`<span class="pc">${pc}</span>`:''}${ckHTML(d)}</div>`;
 }
 function calDetail(date,today,p){
@@ -701,7 +701,7 @@ function showWeek(wk,fromUser){
   if(!weeksMap[wk]) return; curWeek=wk; const p=D.p, today=todayStr();
   const all=p.days.filter(d=>d.week===wk);   // 整週（含已過去的日子）：計數用
   const wend=calAdd(wk,6); const t=D.a.filter(r=>r.date>=wk&&r.date<=wend).reduce((x,r)=>x+(+r.km),0);
-  const nStr=all.filter(d=>d.kind==='str').length, nRun=all.filter(d=>(d.kind==='run'||d.kind==='race')&&+d.km>0).length;
+  const nStr=all.filter(d=>d.kind==='str'&&!/REVL/i.test(d.type||'')).length, nRevl=all.filter(d=>/REVL/i.test(d.type||'')).length, nRun=all.filter(d=>(d.kind==='run'||d.kind==='race')&&+d.km>0).length;
   document.querySelectorAll('#wkchips button').forEach(b=>b.classList.toggle('on',b.dataset.wk===wk));
   const dates=[...Array(7)].map((_,i)=>calAdd(wk,i));
   const vis=dates;
@@ -712,7 +712,7 @@ function showWeek(wk,fromUser){
     return `<div class="day${dt<today?' past':''}${dt===today?' today':''}${dt===calSel?' sel':''}" data-date="${dt}"><span class="dt">${lab}</span><span class="km">${km?km+' km':''}</span>${ds.map(calItem).join('')}</div>`;
   }).join('');
   $('plan').innerHTML=`<div class="panel week"><h3>週起 ${wk.slice(5).replace('-','/')}<span>已跑 ${t.toFixed(1)} km</span></h3>
-    <div class="wkcnt">重訓 <b>${nStr}</b> 次・跑步 <b>${nRun}</b> 次</div>
+    <div class="wkcnt">重訓 <b>${nStr}</b> 次・跑步 <b>${nRun}</b> 次${nRevl?`・REVL <b>${nRevl}</b> 次`:''}</div>
     <div class="cal">${['一','二','三','四','五','六','日'].map(x=>`<div class="wh">${x}</div>`).join('')}${cells}</div>
     <div class="caldet">${calDetail(calSel,today,p)}</div></div>`;
   if(fromUser){const b=document.querySelector('#wkchips button.on'); b&&b.scrollIntoView({inline:'center',block:'nearest'});}

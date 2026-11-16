@@ -166,7 +166,7 @@ def round10(x):
     return int(x/10 + 0.5) * 10
 
 def classify(entries, tomorrow):
-    # 2026-11-02 課表改週一三五重訓、二四六日跑步：分級完全依 make_plan 的 kind／type／km 決定，不看星期，飲食自動跟著新排法
+    # 2026-11-02 課表改週一三五重訓、二四六日跑步：分級完全依 make_plan 的 kind／type／km 決定，不看星期，飲食自動跟著新排法。2026-11-16：REVL 週日 kind=str，走肌力日碳水下限；運動消耗用 Hyrox MET。
     d = entries[0]["date"]
     if d in LOAD_DAYS: return "load"
     if any(e["kind"] == "race" for e in entries): return "race"
@@ -185,11 +185,11 @@ def exercise(ents):
         if e["kind"] in ("run", "race"):
             k = hu(RUN_KCAL_PER_KG_KM * WEIGHT * e["km"] * 10); tot += k
             parts.append(f"跑步 {e['km']:g} km × {RUN_KCAL_PER_KG_KM * WEIGHT:g} = {g1(k)}")
-        elif e["kind"] == "str" or "Hyrox" in e["type"] or "HIIT" in e["type"]:
-            met = MET_HYROX if ("Hyrox" in e["type"] or "HIIT" in e["type"]) else MET_STRENGTH
+        elif e["kind"] == "str" or "Hyrox" in e["type"] or "HIIT" in e["type"] or "REVL" in e["type"] or "HYROX" in e["type"]:
+            met = MET_HYROX if any(k in e["type"] for k in ("Hyrox", "HYROX", "HIIT", "REVL")) else MET_STRENGTH
             m = re.search(r"(\d+)\s*分鐘", e["note"]); mins = int(m.group(1)) if m else STR_MIN_DEFAULT
             k = hu((met - 1) * WEIGHT * mins / 60 * 10); tot += k
-            nm = "Hyrox／HIIT" if met == MET_HYROX else "肌力"
+            nm = ("REVL" if "REVL" in e["type"] else "Hyrox／HIIT") if met == MET_HYROX else "肌力"
             parts.append(f"{nm} {mins} 分鐘：（MET {met:.1f} − 1）× {WEIGHT:g} × {mins}／60 = {g1(k)}")
     return tot, parts
 
@@ -667,7 +667,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                     sp = item("sweetpotato", 200); sp["amount"] = "2 顆（共 200 g）"
                     m_["optional_items"] = [dict(fmt_items([sp], "早餐")[0], optional=True)]
         train = "＋".join((f"跑步 {e['km']:g} km（{e['type']}）" if e["kind"] in ("run", "race") else
-                          ("肌力（" + e["type"] + "）" if e["kind"] == "str" else e["type"])) for e in ents)
+                          (e["type"] if "REVL" in e["type"] else ("肌力（" + e["type"] + "）" if e["kind"] == "str" else e["type"]))) for e in ents)
         notes = []
         GAP = TDEE_T - TK
         if mode == "load":
@@ -741,7 +741,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         weeks=week_gap, weight=WEIGHT, height=HEIGHT, age=AGE, sex=SEX, body_fat=BODY_FAT, body_fat_goal=BODY_FAT_GOAL, deficit=DEFICIT, bmr=g1(BMR_T), start=START, end=END,
         summary=f"176 cm、32 歲、男、{WEIGHT:g} kg、體脂 {BODY_FAT:g}%，目標 12/31 前體脂 {BODY_FAT_GOAL:g}%。基礎代謝 {BMR:g} kcal；每日消耗＝{BMR:g} × {ACTIVITY:g}＋當天課表運動；目標＝消耗 − 缺口（10/6–10/25 一般日 {DEFICIT} kcal；10/26 起一般日 {g1(late_def_t)} kcal；特殊日見下）。",
         rules=[f"基礎代謝（Mifflin-St Jeor，男）：10 × {WEIGHT:g} ＋ 6.25 × {HEIGHT:g} − 5 × {AGE} ＋ 5 ＝ {BMR:g} kcal；× {ACTIVITY:g}（日常活動）＝ {g1(BASE_T)} kcal。",
-               f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT 用 MET {MET_HYROX:.1f}；休息日 0。",
+               f"運動消耗：跑步 {RUN_KCAL_PER_KG_KM * WEIGHT:g} kcal／km（1.0 kcal/kg/km）× 課表公里；肌力（MET {MET_STRENGTH:.1f} − 1）× {WEIGHT:g} × 小時（課表沒寫時間就算 {STR_MIN_DEFAULT} 分鐘）；Hyrox／HIIT／REVL 用 MET {MET_HYROX:.1f}；休息日 0。",
                f"每日目標＝消耗 − 缺口：10/6–10/25 的一般日 {DEFICIT} kcal；10/26 起的一般日統一 {g1(late_def_t)} kcal，由 12/31 前總缺口目標 16093 kcal（{FAT_LOSS_KG:g} kg 脂肪 × {KCAL_PER_KG}）扣掉其他日子的實際缺口後平均分配（上限 {D_CAP:g} kcal）。特殊日：10/23、10/24 賽前補碳＝碳水 568 g＋蛋白質＋脂肪 {FAT_LOAD:g} g（不設缺口）；10/25 比賽日＝碳水 355 g＋蛋白質＋脂肪 {FAT_RACE:g} g（不設缺口）；14 km 以上長跑的前一天（10/10、10/17）與一般日相同（消耗 − 當天缺口；碳水 5 g/kg）。週標題顯示本週缺口合計（每日消耗 − 目標）。",
                "碳水：休息日與肌力日 3 g/kg（213 g）；輕鬆跑／恢復跑日（含 10 km 以下的輕鬆長跑）4 g/kg（284 g）；10 km 以上長跑日、強度課日、10K 測試日、半馬日與 14 km 以上長跑的前一天 5 g/kg（355 g）；10/23、10/24 肝醣超補 8 g/kg（568 g）。",
                f"蛋白質：固定 {g1(FIXED_P)} g＝雞蛋 × 2（{g1(item('egg', 2)['p'])}）＋Meiji 30 g × 2 瓶（60.0；早餐、晚餐各 1 瓶）＋肉片（里肌）{LUNCH_PORK_G:g} g（{g1(item('porkloin', LUNCH_PORK_G)['p'])}）。每天至少 130.0 g（1.83 g/kg）：固定食物不夠時，晚餐參考例加里肌肉片補到 130.0 g。另加午餐高麗菜、白飯與晚餐參考例（主食、肉／魚／餐點、加餐）、香蕉的蛋白質。",
@@ -751,7 +751,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                f"脂肪：補到碳水 × 4＋蛋白質 × 4＋脂肪 × 9 剛好等於目標熱量；下限 {FAT_FLOOR:.1f} g/kg（{g1(FLOOR_T)} g）、上限 {FAT_CAP:.1f} g/kg（{g1(CAP_T)} g）。低於下限時改減碳水，高於上限時多的熱量放進碳水（晚餐；午餐固定 700.0 kcal 不調整），卡片上會註明。"],
         footnotes=[
             "基礎代謝：Mifflin MD, St Jeor ST, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr 1990;51:241–247。",
-            "運動 MET：Compendium of Physical Activities（Ainsworth BE et al. 2011；Herrmann SD et al. 2024 成人版）；肌力 MET 5.0、Hyrox／HIIT MET 8.0，淨消耗＝（MET − 1）× 體重 × 小時。",
+            "運動 MET：Compendium of Physical Activities（Ainsworth BE et al. 2011；Herrmann SD et al. 2024 成人版）；肌力 MET 5.0、Hyrox／HIIT／REVL MET 8.0，淨消耗＝（MET − 1）× 體重 × 小時。",
             "跑步淨消耗 1 kcal/kg/km：跑步每公里的淨能量消耗與速度大致無關，約等於體重（kg）kcal（Margaria et al. 1963；ACSM Guidelines 跑步代謝公式）。",
             "每公斤體重的碳水、蛋白質、脂肪建議依據：ACSM／美國營養與飲食學會／加拿大營養師協會 2016 聯合立場聲明（Thomas et al., Med Sci Sports Exerc 48:543）與 ISSN 立場聲明（Jäger et al. 2017 蛋白質與運動；Kerksick et al. 2017 營養時機）。",
             f"午餐固定 {g1(LUNCH_KCAL_T)} kcal＝肉片（里肌，USDA FDC 168250）{LUNCH_PORK_G:g} g＋高麗菜 300 g＋白飯 {LUNCH_RICE_G:g} g；麻辣燙的湯與油沒有計入（用油每家不同），請不要喝湯。",
