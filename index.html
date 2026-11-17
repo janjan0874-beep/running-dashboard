@@ -204,6 +204,17 @@ ul.plain li,ol.plain li{margin-bottom:6px;line-height:1.55;font-size:14px}
 .dday .dmac b{font-size:1.2rem;color:var(--fg);font-weight:700;margin:0 2px 0 4px}
 .dday .dmac .dp,.dday .dmac .dp b{color:var(--fg);font-weight:700}
 .dday .dhint{margin:6px 0 0;font-size:12.5px;color:#4b5563;line-height:1.45}
+.dday .dafter{margin-top:6px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.dday .dafter b{font-size:14.5px;color:var(--fg);font-weight:700;margin:0 2px 0 4px}
+.dday .dafter .dp,.dday .dafter .dp b{color:var(--fg);font-weight:700}
+.dday .dafter .alab{flex:0 0 auto;font-size:12.5px;font-weight:600;color:var(--fg);margin-right:4px}
+.dbf{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:8px 0 2px;padding:10px 14px}
+.dbf h4{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--fg)}
+.dbf .bfi{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;padding:3px 0;font-size:13px;color:var(--fg)}
+.dbf .bfi .bn{flex:1 1 140px;min-width:0;line-height:1.35}
+.dbf .bfi .bm{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap}
+.dbf .bfi .bm b{color:var(--fg);font-weight:700;margin:0 1px 0 3px}
+.dbf .bfi.rem{color:var(--mut);font-size:12.5px}
 .dweek h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin:14px 0 0;font-size:1rem}
 .dweek h3 span{font-size:.8rem;font-weight:500;color:var(--mut)}
 .dgoal{background:#eef6f1;border:1px solid #cfe9dd;color:#1f5f43;border-radius:12px;padding:8px 12px;font-size:13.5px;line-height:1.5;font-weight:600;margin-bottom:2px}
@@ -362,6 +373,7 @@ footer{color:var(--mut);font-size:.75rem;text-align:center;padding:14px 16px 10p
       <p class="note"><b>長期目標：</b><span id="ck_goals"></span></p><p class="note"><b>安全規則：</b><span id="ck_rules"></span></p></div></details>
   </section>
   <section class="pane" data-tab="diet">
+    <div class="dbf" id="d_bf" hidden></div>
     <div class="wkchips" id="d_wkchips"></div>
     <div id="d_week"></div>
     <div class="dgen" id="d_gen"></div>
@@ -881,9 +893,11 @@ function dDay(d,today){
   const c=(d.targets.carbs_shown!=null&&d.targets.carbs_shown!=='')?d.targets.carbs_shown:d.targets.carbs;
   const p=d.targets.protein;
   const note=(d.run_adjust&&d.run_adjust.note)||'';
+  const ab=d.after_breakfast;
+  const after=ab?`<div class="dafter"><span class="alab">早餐後還要吃</span><span>碳水<b data-k="after-carbs">${ab.carbs}</b> g</span><span class="dp"><b>蛋白質</b><b data-k="after-protein">${ab.protein}</b> g</span></div>`:'';
   return `<div class="dday${isT?' today':''}" data-date="${d.date}"><div class="drow"><span class="dd">${+d.date.slice(5,7)}/${+d.date.slice(8,10)}<em>${d.weekday}</em>${isT?'<span class="dtag">今天</span>':''}</span><span class="dlab">${d.training||''}</span></div>
     <div class="dmac"><span>碳水<b data-k="carbs">${c}</b> g</span><span class="dp"><b>蛋白質</b><b data-k="protein">${p}</b> g</span></div>
-    ${note?`<p class="dhint">${note}</p>`:''}</div>`;
+    ${after}${note?`<p class="dhint">${note}</p>`:''}</div>`;
 }
 function dShowWeek(wk,fromUser){
   const days=Object.values(D.d.days).filter(d=>d.week===wk&&d.date>=todayStr()).sort((a,b)=>a.date<b.date?-1:1); if(!days.length) return; dWeek=wk; const today=todayStr();
@@ -898,11 +912,20 @@ function dietRender(){
   const fmt=wk=>{const a=new Date(isoMs(wk)),b=new Date(isoMs(wk)+6*dayMs);return `${a.getUTCMonth()+1}/${a.getUTCDate()}–${b.getUTCMonth()+1}/${b.getUTCDate()}`;};
   if($('d_wkchips').dataset.n!==String(wks.length)){$('d_wkchips').innerHTML=wks.map(wk=>`<button data-wk="${wk}">${fmt(wk)}</button>`).join('');$('d_wkchips').dataset.n=wks.length;}
   dShowWeek(dWeek&&wks.includes(dWeek)?dWeek:td.week);
+  const bf=X.meta.breakfast;
+  if(bf&&$('d_bf')){
+    const rows=(bf.items||[]).map(i=>{
+      if(i.key==='creatine') return `<div class="bfi rem"><span class="bn">肌酸 ${i.amount||'5 g'}（每天）</span></div>`;
+      return `<div class="bfi"><span class="bn">${i.label||i.name}</span><span class="bm">碳水 ${i.carbs} g　蛋白質 <b>${i.protein}</b> g</span></div>`;
+    }).join('');
+    $('d_bf').innerHTML=`<h4>固定早餐</h4>${rows}`;
+    $('d_bf').hidden=false;
+  }
   const from=(X.meta.run_earn_from||'2026-11-16').slice(5).replace('-','/');
   const pk=X.meta.run_earn_per_km||'17.8';
   $('d_gen').innerHTML=`<h4>飲食大方向</h4><ul>
     <li><b>蛋白質：每天至少 130.0 g</b>，當天目標見各日（粗體）。</li>
-    <li>碳水：照各日列出的克數吃。</li>
+    <li>碳水：照各日列出的克數吃；固定早餐已從「早餐後還要吃」扣除。</li>
     <li>${from} 起跑步日沒跑或少跑，碳水按實跑公里減少（每少 1 km 少 ${pk} g）；尚未跑的日子會註明少多少。</li>
     <li>週日請回報體重、體脂、腰圍。</li></ul>`;
 }

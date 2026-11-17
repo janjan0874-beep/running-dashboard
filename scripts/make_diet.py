@@ -76,6 +76,8 @@ F = {
  "porkloin": dict(name="肉片（里肌，熟）", unit="100 g", c=0, p=262, f=36, src="USDA FDC 168250 Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted：每 100 g 蛋白質 26.18 g、脂肪 3.51 g、碳水 0 g；本表取 0.1 g（蛋白質 26.2 g、脂肪 3.6 g，脂肪由 3.51 四捨五入到 3.6，午餐 4/4/9 才剛好 700.0 kcal）"),
  "meiji":   dict(name="Meiji High Protein（350 ml）", unit="瓶", c=98, p=300, f=21, src="Meiji High Protein 350 ml：蛋白質 30.0 g（依你提供）；碳水 9.8 g、脂肪 2.1 g（巧克力口味瓶身標示；香蕉、綠茶口味碳水 8.1 g）"),
  "creatine": dict(name="肌酸", unit="100 g", c=0, p=0, f=0, src="肌酸（一水肌酸）5 g：熱量、蛋白質、碳水、脂肪皆以 0 計，不影響任何目標"),
+ "fn_soymilk": dict(name="F&N 高蛋白豆奶（475 ml）", unit="盒", c=323, p=204, f=114, src="使用者 2026-11-17 提供瓶身（F&N／Fraser and Neave 高蛋白豆奶，整盒 475 ml）：每 100 ml 66 kcal、蛋白質 4.3 g、脂肪 2.4 g、碳水 6.8 g、糖 4.2 g；整盒蛋白質 20.4 g、碳水 32.3 g、脂肪 11.4 g、313.5 kcal"),
+ "fu_yogurt": dict(name="Farmers Union Greek Style High Protein 藍莓優格（150 g，無添加糖）", unit="袋", c=40, p=153, f=39, src="Woolworths 商品頁營養標示（https://www.woolworths.com.au/shop/productdetails/6035164/farmers-union-greek-style-high-protein-yoghurt-pouch-blueberry）：每袋 1 份 150 g，能量 472 kJ、蛋白質 15.3 g、脂肪 3.9 g、碳水 4.0 g、糖 3.4 g。NTUC FairPrice 同品 150 g 袋、標示 15 g 蛋白質、無添加糖（未公布完整營養表）。"),
  "yakun_kopi": dict(name="亞坤 soya kopi O（Ya Kun Soya Milk Coffee O；暫以 Ya Kun 官方 Coffee O 熱 8 oz 計）", unit="杯", c=191, p=20, f=9, src="Ya Kun 官方飲品營養標示（app.yakun.com/nutritional-information → Ya_Kun_Drinks_NIP.jpg）Coffee O 8 oz（236.6 ml）熱、內用：每 100 ml 熱量 37.88 kcal、蛋白質 0.83 g、脂肪 0.37 g、碳水 8.07 g（糖 8%）→ 1 杯 碳水 19.1 g、蛋白質 2.0 g、脂肪 0.9 g（4/4/9 計 92.5 kcal；標示 37.88 × 2.366＝89.6 kcal）；同表 Soya Series 的 Soya Milk Coffee O 只有冰的 12 oz（數字與 Ginger Tea O 完全相同，疑為誤植）與 22 oz（17.28 kcal 與其蛋白質 1.65 g、脂肪 0.61 g、碳水 10.81 g 不符），所以不用"),
  "yakun_kaya": dict(name="亞坤咖椰吐司（Ya Kun Kaya Toast，1 份 2 片）", unit="份", c=380, p=52, f=167, src="FatSecret Singapore：Ya Kun Kaya Toast 2 slices 318 kcal、碳水 38.0 g、蛋白質 5.2 g、脂肪 16.7 g（4/4/9 計 323.1 kcal；www.fatsecret.com.sg/calories-nutrition/ya-kun/kaya-toast/2-slices）；Ya Kun 官方沒有公布吐司營養"),
  "sweetpotato": dict(name="小地瓜（帶皮烤，吃果肉）", unit="100 g", c=207.1, p=20.1, f=1.5, src="USDA FoodData Central SR Legacy 168483「Sweet potato, cooked, baked in skin, flesh, without salt」每 100 g：碳水 20.71 g、蛋白質 2.01 g、脂肪 0.15 g（標示 90 kcal）；2 顆小地瓜共 200 g 計（選填，不算進目標）"),
@@ -135,13 +137,15 @@ YAKUN_FROM = "2026-10-11"   # 2026-10-11 使用者：週六、日早餐多吃亞
 YAKUN_SKIP = {"2026-10-24", "2026-10-25"}   # 肝醣超補日、半馬比賽日不吃亞坤；2026-11-11 拿掉 12/27 測試後，12/26 恢復亞坤
 YK_FATFIX = []   # 亞坤扣完晚餐脂肪預算不夠的日子（報告用）
 CREATINE_FROM = "2026-10-09"   # 2026-10-09 起每天早餐加肌酸 5 g（0 kcal、0 g 蛋白質，可打勾，id bf-creatine）
+BF_FROM = "2026-11-17"   # 2026-11-17 使用者：固定早餐改 F&N 高蛋白豆奶 475 ml 整盒＋Farmers Union 藍莓高蛋白優格 150 g＋肌酸 5 g；取代雞蛋 2 顆＋Meiji、週末亞坤與選填地瓜。每日碳水／蛋白質目標規則不變（g/kg、130 g 下限、沒跑少吃碳水）。
 RACE_BREAKFAST_C = 1420   # 142 g（2 g/kg），起跑前 3 小時
 
 def hu(x):  # 四捨五入到整數（十分之一克）
     return int(x + 0.5) if x >= 0 else -int(-x + 0.5)
 
 UNIT_WORD = {"powder": "份", "egg": "顆", "banana": "根", "meiji": "瓶", "whopper": "個", "whopperjr": "個", "bkfries": "份", "sz_wing": "隻",
-             "yakun_kopi": "杯", "yakun_kaya": "份", "sz_bolo": "份", "sz_doria": "份", "sz_hamburg": "份", "sz_chicken": "份", "sz_salad": "份"}
+             "yakun_kopi": "杯", "yakun_kaya": "份", "sz_bolo": "份", "sz_doria": "份", "sz_hamburg": "份", "sz_chicken": "份", "sz_salad": "份",
+             "fn_soymilk": "盒", "fu_yogurt": "袋"}
 
 def item(key, qty, when=""):
     """qty：份數；單位為 100 g 的食物 qty＝克數/100。回傳十分之一克。"""
@@ -151,6 +155,24 @@ def item(key, qty, when=""):
     else:
         q = qty; amount = f"{qty} {UNIT_WORD[key]}"
     return dict(key=key, name=fd["name"], when=when, amount=amount, c=hu(fd["c"]*q), p=hu(fd["p"]*q), f=hu(fd["f"]*q))
+
+def breakfast_items(ds):
+    """11/17 起固定早餐：高蛋白豆奶整盒＋優格 1 袋＋肌酸 5 g；之前維持雞蛋 2 顆＋Meiji 1 瓶＋肌酸。"""
+    if ds >= BF_FROM:
+        items = [item("fn_soymilk", 1), item("fu_yogurt", 1)]
+    else:
+        items = [item("egg", 2), item("meiji", 1)]
+    if ds >= CREATINE_FROM:
+        items.append(item("creatine", 5))
+    return items
+
+def breakfast_totals():
+    """固定早餐合計（十分之一克），不含肌酸（0）。"""
+    items = [item("fn_soymilk", 1), item("fu_yogurt", 1)]
+    c, p, f = sums(items)
+    return dict(carbs=c, protein=p, fat=f,
+                items=[dict(key=i["key"], name=i["name"], label={"fn_soymilk":"F&N 高蛋白豆奶 475 ml","fu_yogurt":"Farmers Union 藍莓優格 150 g"}.get(i["key"], i["name"]), amount=i["amount"], carbs=g1(i["c"]), protein=g1(i["p"])) for i in items]
+                      + [dict(key="creatine", name="肌酸", label="肌酸 5 g", amount="5 g", carbs="0.0", protein="0.0", note="每天")])
 
 def g1(t):   # 十分之一克 → "12.3"
     return f"{t/10:.1f}"
@@ -357,6 +379,12 @@ def apply_run_status(p):
     actuals = load_actual_run_km()
     p["meta"]["run_earn_from"] = RUN_EARN_FROM
     p["meta"]["run_earn_per_km"] = g1(hu(RUN_KCAL_PER_KG_KM * WEIGHT * 10) / 4)
+    bt = breakfast_totals()
+    p["meta"]["breakfast"] = dict(
+        from_date=BF_FROM, title="固定早餐",
+        carbs=g1(bt["carbs"]), protein=g1(bt["protein"]),
+        items=bt["items"],
+    )
     for ds, day in p["days"].items():
         planned = day["targets"]["carbs"]
         protein = day["targets"]["protein"]
@@ -393,7 +421,14 @@ def apply_run_status(p):
                 status, cut_s, note = "future", g1(full), f"沒跑要少吃碳水 {g1(full)} g"
         day["targets"]["carbs_shown"] = shown
         day["run_adjust"] = dict(planned_km=pk, actual_km=act_out, cut=cut_s, carbs=shown, protein=protein, status=status, note=note)
-        day["text"] = f"{ds[5:].replace('-', '/')}（{day['weekday']}）｜{day['training']}｜碳水 {shown} g｜蛋白質 {protein} g。" + (f"{note}。" if note else "")
+        after = ""
+        if ds >= BF_FROM:
+            bt = breakfast_totals()
+            ac = g1(max(0, hu(float(shown) * 10) - bt["carbs"]))
+            ap = g1(max(0, hu(float(protein) * 10) - bt["protein"]))
+            day["after_breakfast"] = dict(carbs=ac, protein=ap)
+            after = f"早餐後還要吃：碳水 {ac} g、蛋白質 {ap} g。"
+        day["text"] = f"{ds[5:].replace('-', '/')}（{day['weekday']}）｜{day['training']}｜碳水 {shown} g｜蛋白質 {protein} g。" + after + (f"{note}。" if note else "")
 
 def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
     YK_FATFIX.clear()
@@ -449,7 +484,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             meals.append(dict(slot="比賽中", items=[], text_items=["能量膠 × 2（11.6 km、16.2 km 補給站各 1 包，配水）"],
                               tips=["能量膠沒有指定品牌，碳水未計入今日總量；用 10/11、10/18 演練過的同一款。"]))
         else:
-            meals.append(dict(slot="早餐", items=[item("egg", 2), item("meiji", 1)] + ([item("creatine", 5)] if ds >= CREATINE_FROM else []), tips=[]))   # 2026-10-09：早餐不喝蛋白粉（太飽），只留雞蛋 2 顆＋Meiji 1 瓶；少掉的熱量由晚餐吸收
+            meals.append(dict(slot="早餐", items=breakfast_items(ds), tips=[]))   # 2026-11-17 起：F&N 高蛋白豆奶 475 ml＋Farmers Union 藍莓優格 150 g＋肌酸 5 g；此前雞蛋 2 顆＋Meiji 1 瓶＋肌酸
         # 2026-10-06 使用者：Meiji 改為早餐 1 瓶、晚餐 1 瓶（不再放訓練後／下午點心／睡前）
         tr_items = []
         if has_run and ds != HALF_RACE: tr_items.append(item("banana", 1, "跑前 45 分鐘"))
@@ -600,7 +635,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         assert dc >= 0 and dfat >= 0 and dp >= 0, (ds, dc, dfat, dp)
         # ---- 2026-10-11 週末亞坤早餐：每日目標（熱量、碳水、蛋白質、脂肪）沿用上面算好的值，亞坤的碳水／蛋白質／脂肪從晚餐剩餘預算扣；晚餐參考例依扣完的預算重選
         TR_base = TR; yk = []; yk_note = None
-        if ds >= YAKUN_FROM and d.weekday() >= 5 and ds not in YAKUN_SKIP:
+        if ds >= YAKUN_FROM and ds < BF_FROM and d.weekday() >= 5 and ds not in YAKUN_SKIP:
             assert not leans, (ds, "leans on yakun day")
             yk = [item("yakun_kopi", 1), item("yakun_kaya", 1)]
             # 2026-10-11 12:21 使用者：亞坤的週末早餐＝Meiji 1 瓶＋soya kopi O＋咖椰吐司＋肌酸 5 g，不吃雞蛋 2 顆；雞蛋的碳水／蛋白質／脂肪加回晚餐預算
@@ -648,7 +683,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                                    text=f"{ex['name'].replace('（熟）','')} {ex['amount']}（碳水 {g1(ex['c'])} g、蛋白質 {g1(ex['p'])} g、脂肪 {g1(ex['f'])} g）" + (f"＋肉片（里肌）{sum(10 for _ in leans)} g" if leans else "") + f"＋青菜＋烹調油／醬汁／配料脂肪 {g1(other_fat)} g") if not TR else
                                dish_example(ex, dc, other_fat)),
                       tips=["晚餐喝 Meiji 1 瓶，其餘自由選，控制在上面的剩餘預算內（剩餘預算已扣掉這瓶 Meiji）。",
-                            "蛋白質已由早餐、午餐與 2 瓶 Meiji 吃夠；晚餐加肉、魚或豆腐，請從脂肪預算扣。"] if not TR else
+                            ( "蛋白質已由固定早餐、午餐與晚餐 Meiji 1 瓶吃夠；晚餐加肉、魚或豆腐，請從脂肪預算扣。" if ds >= BF_FROM else "蛋白質已由早餐、午餐與 2 瓶 Meiji 吃夠；晚餐加肉、魚或豆腐，請從脂肪預算扣。")] if not TR else
                            ["晚餐喝 Meiji 1 瓶，其餘自由選，控制在上面的剩餘預算內（剩餘預算已扣掉這瓶 Meiji）。",
                             (f"週末吃好點：本週平日晚餐共少 {g1(wk_cut(ds))} kcal，平分到週六、日（今天 +{g1(SH)} kcal）；參考例的肉／魚已算進上面的蛋白質與脂肪預算（豬排丼、鰻魚丼等也可以，控制在同樣的預算內）。" if SH > 0 else
                              "平日晚餐輪替（每週 2 天薩莉亞）：參考例的肉／魚／餐點已算進上面的蛋白質與脂肪預算；也可以換成同樣預算內的其他餐點。"
@@ -661,7 +696,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
                            subtotal=dict(carbs=g1(c), protein=g1(p), fat=g1(f), kcal=g1(kcal_t(c, p, f))), tips=m["tips"]))
         # 2026-10-12 使用者：「早上有時候會吃兩個小地瓜幫我新增成option讓我打勾」：10/12 起每天早餐加選填項（不算進目標與任何小計）；
         # 10/25 比賽日早餐（起跑前 3 小時）為比賽專用，不加。頁面打勾後已吃計入、晚餐自由餐剩餘扣掉。
-        if ds >= "2026-10-12":
+        if "2026-10-12" <= ds < BF_FROM:
             for m_ in mo:
                 if m_["slot"] == "早餐":
                     sp = item("sweetpotato", 200); sp["amount"] = "2 顆（共 200 g）"
@@ -707,13 +742,13 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
         day = dict(date=ds, weekday="週" + WD[d.weekday()], week=ents[0]["week"], tier=tier,
                    tier_label=f"{TIER_LABEL[tier]}｜碳水 {CARB_GKG[tier]} g/kg", training=train, energy=energy,
                    targets=dict(carbs=g1(C), protein=g1(P), fat=g1(FAT_T), kcal=g1(TK),
-                                protein_note=(f"固定 {g1(FIXED_P - item('egg', 2)['p'])} g（週末亞坤早餐不吃雞蛋）＋亞坤、" if yk else f"固定 {g1(FIXED_P)} g＋") + f"午餐高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - FIXED_P + (item('egg', 2)['p'] if yk else 0))} g",
+                                protein_note=(f"固定 {g1(item('fn_soymilk',1)['p']+item('fu_yogurt',1)['p']+item('meiji',1)['p']+item('porkloin', LUNCH_PORK_G)['p'])} g（高蛋白豆奶＋優格＋晚餐 Meiji 1 瓶＋午餐肉片）＋" if ds >= BF_FROM else (f"固定 {g1(FIXED_P - item('egg', 2)['p'])} g（週末亞坤早餐不吃雞蛋）＋亞坤、" if yk else f"固定 {g1(FIXED_P)} g＋")) + f"午餐高麗菜、白飯與晚餐{'參考例' if TR else '主食'}、香蕉 {g1(P - (item('fn_soymilk',1)['p']+item('fu_yogurt',1)['p']+item('meiji',1)['p']+item('porkloin', LUNCH_PORK_G)['p'] if ds >= BF_FROM else FIXED_P) + (item('egg', 2)['p'] if yk else 0))} g",
                                 carbs_gkg=f"{C/10/WEIGHT:.2f}", protein_gkg=f"{P/10/WEIGHT:.2f}", fat_gkg=f"{FAT_T/10/WEIGHT:.2f}",
                                 carbs_reduced=adj == "floor", carbs_raised=adj == "cap"),
                    meals=mo, dinner=dinner, notes=notes, sunday=d.weekday() == 6)
         if run_earn: day["run_earn"] = run_earn
         def short(m):
-            if m["slot"] == "早餐" and any(i["id"] == "bf-creatine" for i in m["items"]):   # 2026-10-09：早餐行固定格式「雞蛋 2 顆＋Meiji 1 瓶＋肌酸 5 g」；週末（10/11 起）再接「＋亞坤 soya kopi O 1 杯＋亞坤咖椰吐司 1 份」
+            if m["slot"] == "早餐" and any(i["id"] == "bf-creatine" for i in m["items"]):   # 2026-11-17 起：F&N 高蛋白豆奶＋優格＋肌酸 5 g；此前雞蛋 2 顆＋Meiji 1 瓶＋肌酸；11/17 前週末再接亞坤
                 return "早餐：" + "＋".join(f"{i['name'].split('（')[0].replace(' High Protein', '')} {i['amount']}" for i in m["items"])
             parts_ = [f"{i['name'].split('（')[0]} {i['amount']}" + (f"（{i['when']}）" if i["when"] and i["when"] != m["slot"] else "") for i in m["items"]] + m.get("text_items", [])
             return f"{m['slot']}：" + (m["title"] + "（" if m["title"] else "") + "、".join(parts_) + ("）" if m["title"] else "")
@@ -760,7 +795,7 @@ def _build(late_def_t, SHIFT, SZ_DAY, probe=False):
             (f"活動係數 {ACTIVITY:g} 依 Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天校正（手錶會高估，未完全採用）。" if ACTIVITY != 1.2 else
              f"活動係數 {ACTIVITY:g}：2026-10-06 依你的回饋（熱量估太多）由 1.3 改回 1.2；Pixel Watch 9/7–10/4 平均消耗 {_B['watch_calibration']['avg_4wk']} kcal／天只作參考（手錶會高估）。") if _B.get("watch_calibration") else "",
         ] + ["食物數值：" + F[k]["src"] for k in ("rice", "pasta", "cabbage", "banana", "egg", "chicken", "porkloin", "meiji", "powder", "steak", "pork", "salmon", "whopper", "whopperjr", "bkfries",
-                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_wing", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya", "sweetpotato")],
+                                                 "fish", "shrimp", "tomato", "ricenoodle", "eggnoodle", "bread", "sz_wing", "sz_bolo", "sz_salad", "sz_doria", "sz_hamburg", "sz_chicken", "yakun_kopi", "yakun_kaya", "sweetpotato", "fn_soymilk", "fu_yogurt", "creatine")],
     )
     return dict(meta=meta, days=out)
 
