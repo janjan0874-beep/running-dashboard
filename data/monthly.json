@@ -201,12 +201,12 @@
  },
  {
   "month": "2026-11",
-  "runs": 5,
-  "km": 26.94,
-  "hours": 2.81,
-  "time": "2:48:25",
-  "pace": "6:15",
-  "pace_sec": 375,
+  "runs": 6,
+  "km": 29.04,
+  "hours": 3.17,
+  "time": "3:10:03",
+  "pace": "6:33",
+  "pace_sec": 393,
   "outlier": false
  }
 ]

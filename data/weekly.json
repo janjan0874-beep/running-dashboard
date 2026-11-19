@@ -598,14 +598,14 @@
   "week": "2026-11-09",
   "km": 2.25,
   "runs": 1,
-  "partial": true,
-  "rolling4": 15.45
+  "partial": false,
+  "rolling4": 14.08
  },
  {
   "week": "2026-11-16",
-  "km": 0,
-  "runs": 0,
+  "km": 2.1,
+  "runs": 1,
   "partial": true,
-  "rolling4": null
+  "rolling4": 13.54
  }
 ]
